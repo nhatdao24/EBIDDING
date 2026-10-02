@@ -1,0 +1,119 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@{
+    var number = 1;
+    var frmCode = "frm_BidContractorQuestion_IndexManager";
+
+}
+
+@if (Model.ObjList.Count() == 0)
+{
+    <div class="card m-t-10 border-grey">
+        <div class="body align-center" style="height: 300px;">
+            <h4>@LanguageUtilities.LangText("lblKhongTimThay", frmCode)!</h4>
+        </div>
+    </div>
+}
+
+@foreach (var question in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+{
+    <div class="card m-t-10 border-grey">
+        <div class="body">
+            <div class="conversation">
+                <div class="question">
+                    @if (question.TYPE == UserType.NhaThau)
+                    {
+                        <div class="user">@question.Contractor.TEN_NGAN ► CTD</div> 
+                    }
+                    else
+                    {
+                        if (question.IS_ALL)
+                        {
+                            <div class="user">CTD ► @LanguageUtilities.LangText("lblTatCa4", frmCode)</div>
+                        }
+                        else
+                        {
+                            <div class="user">CTD ► @question.Contractor.TEN_NGAN</div>
+                        }
+                    }
+
+                    <div class="time">
+                        @question.CREATE_DATE.ToString()
+                        @if (!question.IS_BID_CLOSE.Value)
+                        {
+                            <span>(@LanguageUtilities.LangText("lblGDMoThau2", frmCode))</span>
+                        }
+                        else
+                        {
+                            <span>(@LanguageUtilities.LangText("lblGDDongThau2", frmCode))</span>
+                        }
+                    </div>
+
+                    <div class="content">
+                        @Html.Raw(question.CONTENTS)
+                    </div>
+                    <div class="reply">
+                        @if (question.TYPE == UserType.NhaThau && ProfileUtilities.User.USER_TYPE == UserType.NB)
+                        {
+                            <a href="#" onclick="AddAnswerManager('@question.PKID');">@LanguageUtilities.LangText("lblTraLoi", frmCode)</a>
+                        }
+                    </div>
+                    @if (question.ListFile.Count > 0)
+                    {
+                        <div class="file">
+                            @{Html.RenderPartial("ListFile", question.ListFile.Select(x => x.FileUpload).ToList());} 
+                        </div>
+                    }
+
+                </div>
+
+                @if (question.ListAnswer.Count > 0)
+                {
+                    if (!string.IsNullOrEmpty(Model.ObjDetail.CONTRACTOR_ID))
+                    {
+                        if (question.ListAnswer.Where(x => x.CONTRACTOR_ID == Model.ObjDetail.CONTRACTOR_ID).Count() == 0)
+                        {
+                            continue;
+                        }
+                    }
+                    <div class="answer">
+                        @foreach (var answer in question.ListAnswer.OrderByDescending(x => x.CREATE_DATE))
+                        {
+                            if (!string.IsNullOrEmpty(Model.ObjDetail.CONTRACTOR_ID) && answer.CONTRACTOR_ID != Model.ObjDetail.CONTRACTOR_ID)
+                            {
+                                continue;
+                            }
+
+                            if (question.TYPE == UserType.NhaThau)
+                            {
+                                <div class="user">CTD</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                            }
+                            else
+                            {
+                                <div class="user">@answer.Contractor.TEN_NGAN</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                            }
+                            <div class="content">
+                                @Html.Raw(answer.CONTENTS)
+                            </div>
+
+                            if (answer.ListFile.Count > 0)
+                            {
+                                <div class="file">
+                                    @{Html.RenderPartial("ListFile", answer.ListFile.Select(x => x.FileUpload).ToList());} 
+                                </div>
+                            }
+
+                            if (number < question.ListAnswer.Count() && question.ListAnswer.Count() > 1)
+                            {
+                                <hr />
+                            }
+                            number++;
+                        }
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    number = 1;
+}

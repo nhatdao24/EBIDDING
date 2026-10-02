@@ -1,0 +1,55 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@{
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            @if (lang == "vi")
+            {
+                <tr>
+                    <th width="20px" class="align-center">
+                        <input type="checkbox" id="chkAllBidForAdd" onclick="Forms.CheckAll('chkItemBidForAdd', '#chkAllBidForAdd')" style="margin:0;" class="filled-in" />
+                        <label for="chkAllBidForAdd"></label>
+                    </th>
+                    <th class="align-center">Mã gói thầu</th>
+                    <th>Tên gói thầu</th>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <th width="20px" class="align-center">
+                        <input type="checkbox" id="chkAllBidForAdd" onclick="Forms.CheckAll('chkItemBidForAdd', '#chkAllBidForAdd')" style="margin:0;" class="filled-in" />
+                        <label for="chkAllBidForAdd"></label>
+                    </th>
+                    <th class="align-center">Package code</th>
+                    <th>Package name</th>
+                </tr>
+            }
+
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListBid)
+            {
+                var price = Model.ObjListBidPrice.FirstOrDefault(x => x.BID_ID == item.PKID);
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemBidForAdd" name="chkItemBidForAdd" id="@("chkItemBidForAdd_" + item.PKID)" modelName="@item.TEN_GOI_THAU" modelId="@item.PKID" modelPrice="@price.PRICE" style="margin:0;" />
+                        <label for="@("chkItemBidForAdd_" + item.PKID)"></label>
+                    </td>
+                    <td class="align-center">@item.PKID</td>
+                    <td>@item.TEN_GOI_THAU</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

@@ -1,0 +1,142 @@
+﻿@model SMO.Service.EB.BidInternalQuestionService
+@using SMO.Core.Entities
+@{
+    var number = 1;
+    var frmCode = "frm_BidInternalQuestion_Index";
+
+}
+
+@if (Model.ObjList.Count() == 0)
+{
+    <div class="card m-t-10 border-grey">
+        <div class="body align-center" style="height: 300px;">
+            <h4>@LanguageUtilities.LangText("lblKhongTimThay", frmCode)!</h4>
+        </div>
+    </div>
+}
+
+@foreach (var question in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+{
+    number = 1;
+    <div class="card m-t-10 border-grey">
+        <div class="body">
+            <div class="conversation">
+                <div class="question">
+                    <div class="user">@question.CREATE_BY</div>
+                    <div class="time">
+                        @question.CREATE_DATE.ToString()
+                        @if (!question.IS_BID_CLOSE.Value)
+                        {
+                            <span>(@LanguageUtilities.LangText("lblGDMoThau2", frmCode))</span>
+                        }
+                        else
+                        {
+                            <span>(@LanguageUtilities.LangText("lblGDDongThau2", frmCode))</span>
+                        }
+                    </div>
+
+                    <div class="content">
+                        @Html.Raw(question.CONTENTS)
+                    </div>
+
+                    <div class="reply">
+                        <a href="#" onclick="AddAnswerInternal('@question.PKID', '@question.CREATE_BY', '@question.BID_ID', '', '@(question.IS_SEND_MAIL?"true":"false")');">@LanguageUtilities.LangText("lblTraLoi", frmCode)</a>
+                    </div>
+                    @if (question.ListFile.Count > 0)
+                    {
+                        <div class="file">
+                            @{Html.RenderPartial("ListFile", question.ListFile.Select(x => x.FileUpload).ToList());}
+                        </div>
+                    }
+
+                </div>
+                @if (question.ListAnswer.Count > 0)
+                {
+                    <div class="answer">
+                        @*@foreach (var answer in question.ListAnswer.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <div style="position: relative;">
+                                    @if (!string.IsNullOrEmpty(answer.USER_REPLY))
+                                    {
+                                        <div class="user">@answer.CREATE_BY ► @answer.USER_REPLY</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="user">@answer.CREATE_BY</div>
+                                    }
+                                    <div class="time">@answer.CREATE_DATE.ToString()</div>
+                                    <div class="content">
+                                        @Html.Raw(answer.CONTENTS)
+                                    </div>
+
+                                    <div class="reply" style="position: absolute; top: 5px; right:0;">
+                                        <a href="#" onclick="AddAnswerInternal('@question.PKID', '@answer.CREATE_BY', '@question.BID_ID', '@answer.PKID', '@(answer.IS_SEND_MAIL?"true":"false")');">@LanguageUtilities.LangText("lblTraLoi", frmCode)</a>
+                                    </div>
+                                    @if (answer.ListFile.Count > 0)
+                                    {
+                                        <div class="file">
+                                            @{Html.RenderPartial("ListFile", answer.ListFile.Select(x => x.FileUpload).ToList());}
+                                        </div>
+                                    }
+
+                                    @if (number < question.ListAnswer.Count() && question.ListAnswer.Count() > 1)
+                                    {
+                                        <hr />
+                                    }
+                                </div>
+                                number++;
+                            }*@
+
+                        @BuildListAnswer(question.ListAnswer.Where(x => x.PARENT_ID == null || x.PARENT_ID == "").OrderByDescending(x => x.CREATE_DATE).ToList(), question, number, frmCode)
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    </div>
+}
+
+@helper BuildListAnswer(List<T_EB_BID_INTERNAL_ANSWER> ListAnswer, T_EB_BID_INTERNAL_QUESTION question, int number, string frmCode)
+{
+    int numberChild = 1;
+    foreach (var answer in ListAnswer)
+    {
+        <div style="position: relative;">
+            @if (!string.IsNullOrEmpty(answer.USER_REPLY))
+            {
+                <div class="user">@answer.CREATE_BY ► @answer.USER_REPLY</div>
+            }
+            else
+            {
+                <div class="user">@answer.CREATE_BY</div>
+            }
+            <div class="time">@answer.CREATE_DATE.ToString()</div>
+            <div class="content">
+                @Html.Raw(answer.CONTENTS)
+            </div>
+
+            <div class="reply" style="position: absolute; top: 5px; right:0;">
+                <a href="#" onclick="AddAnswerInternal('@question.PKID', '@answer.CREATE_BY', '@question.BID_ID', '@answer.PKID', '@(answer.IS_SEND_MAIL?"true":"false")');">@LanguageUtilities.LangText("lblTraLoi", frmCode)</a>
+            </div>
+            @if (answer.ListFile.Count > 0)
+            {
+                <div class="file">
+                    @{Html.RenderPartial("ListFile", answer.ListFile.Select(x => x.FileUpload).ToList());}
+                </div>
+            }
+
+            @if (number < question.ListAnswer.Count() && question.ListAnswer.Count() > 1)
+            {
+                <hr />
+            }
+        </div>
+        if (question.ListAnswer.Count(x => x.PARENT_ID == answer.PKID) > 0)
+        {
+            <div class="answer">
+                @BuildListAnswer(question.ListAnswer.Where(x => x.PARENT_ID == answer.PKID).OrderByDescending(x => x.CREATE_DATE).ToList(), question, numberChild, frmCode)
+            </div>
+        }
+        number++;
+    }
+}

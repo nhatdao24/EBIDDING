@@ -1,0 +1,30 @@
+﻿@{ 
+    var listFile = ViewBag.ListFile as List<SMO.Areas.AD.Controllers.FileModel>;
+    var count = 1;
+}
+
+<table style="border-spacing: 15px; font-size: 13px; font-family:Arial">
+    @foreach (var item in listFile.OrderByDescending(x => x.FileAccessed))
+    {
+        <tr>
+            <td>@count</td>
+            <td>
+                <a href="/AD/Log/ViewLog?id=@item.FileName" target="_blank">
+                    @item.FileName
+                </a>
+            </td>
+            <td>
+                @item.FileSizeText
+            </td>
+            <td>
+                @item.FileAccessed.ToString("dd/MM/yyyy HH:mm:ss")
+            </td>
+            <td>
+                <a href="/AD/Log/Download?id=@item.FileName" target="_blank">
+                    Download
+                </a>
+            </td>
+        </tr>
+        count++;
+    }
+</table>

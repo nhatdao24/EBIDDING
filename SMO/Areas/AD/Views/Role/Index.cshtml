@@ -1,0 +1,138 @@
+﻿@model SMO.Service.AD.RoleService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.ORGANIZE_ID, new { @id = "ddlOrg" })
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH ROLE</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-b-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", "Thêm mới", "CreateRole();", "Alt+N", "add")
+                            @Html.MyButton("cmdEdit", "Chi tiết", string.Format("Forms.ViewDetail('{0}','chkItem');", @Url.Action("Edit")), "Alt+E", "menu")
+                            @Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { placeholder = "Tìm theo mã hoặc tên", @class = "align-center", @data_val = false })
+                            </div>
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            @*@Html.MyDropDownListFor(m => m.ObjDetail.ORGANIZE_ID, SelectListUtilities.GetCompany(false), new { @id = "ddlOrg", @data_live_search = "true", @class = "selectpicker show-tick", placeholder = "Tìm theo mã hoặc tên đơn vị", @data_val = false, @OnChange = "OnChangeDllOrg();" })*@
+
+                            <div id="divTreeOrg" class="border-grey" style="height: calc(100vh - 230px); overflow:auto; margin-top: 12px;">
+                                <input type="hidden" id="hddParent" value="" />
+                                <ul id="treeOrg" class="ztree"></ul>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div id="divResult">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+
+        function CreateRole() {
+            var param = {
+                url: '@Url.Action("Create")',
+                data: { orgId: $("#ddlOrg").val()}
+            }
+            Forms.LoadAjax(param);
+        }
+
+        function OnChangeDllOrg() {
+            SubmitListRole();
+            SearchOrg();
+        }
+
+        function SearchOrg() {
+            try {
+                var value = $("#ddlOrg").val();
+                var zTree = $.fn.zTree.getZTreeObj("treeOrg");
+                zTree.cancelSelectedNode();
+                var node = zTree.getNodeByParam("id", value, null);
+                if (node != null) {
+                    zTree.selectNode(node);
+                }
+            } catch (e) {
+
+            }
+        }
+
+        function ResetFormSearch() {
+            Forms.ResetForm('@Model.FormId');
+            var zTree = $.fn.zTree.getZTreeObj("treeOrg");
+            zTree.cancelSelectedNode();
+    }
+
+    var settingOrganize = {
+        view: {
+            selectedMulti: false,
+            nameIsHTML: true,
+            showTitle: false
+        },
+        edit: {
+            enable: false,
+            showRemoveBtn: false,
+            showRenameBtn: false
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            onClick: OnClickOrganize
+        }
+    };
+
+    function OnClickOrganize(event, treeId, treeNode) {
+        var id = treeNode.id;
+        $("#ddlOrg").val(id);
+        SubmitListRole();
+    };
+
+        function SubmitListRole() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+            var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNodeOrg)');
+            $.fn.zTree.init($("#treeOrg"), settingOrganize, zNodes);
+            OnChangeDllOrg();
+        });
+    </script>
+</div>
+
+

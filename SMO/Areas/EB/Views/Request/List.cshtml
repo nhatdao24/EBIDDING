@@ -1,0 +1,87 @@
+﻿@model SMO.Service.EB.RequestService
+@{
+    var frmCode = "frm_Request_Index";
+}
+@*@{ Html.RenderPartial("Paging", Model); }*@
+
+<div class="table-responsive font-13">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("lblMST", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTenCongTy", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblThongTin", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayYeuCau", frmCode)</th>
+                <th width="100px;" class="align-center">@LanguageUtilities.LangText("lblTrangThai", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.PKID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                //var vdbclickAction = "";
+
+                var scope = string.Join(" | ", item.ListScope.Where(x => x.Scope != null).Select(x => x.Scope.TEXT).ToList());
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        
+                        <a href="#" onclick="@vdbclickAction">@item.MA_SO_THUE</a>
+                        &nbsp;&nbsp;
+                        <a href="http://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp?mst=@item.MA_SO_THUE" target="_blank">
+                            <i class="material-icons" style="font-size:20px; float: right;" title="Tra cứu mã số thuế">search</i>
+                        </a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@item.TEN_NGAN</div>
+                        <div class="col-blue-grey">@item.TEN_DAI</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@LanguageUtilities.LangText("lblNguoiDaiDien", frmCode): @item.NGUOI_DAI_DIEN</div>
+                        <div>Email: @item.EMAIL</div>
+                        <div>@LanguageUtilities.LangText("lblDienThoai", frmCode): @item.PHONE</div>
+                        <div>@LanguageUtilities.LangText("lblDiaChi", frmCode): @item.DIA_CHI</div>
+                        <div>Website: @item.WEBSITE</div>
+                        <div>@LanguageUtilities.LangText("lblLinhVucChinh", frmCode): @scope</div>
+                        <div>@LanguageUtilities.LangText("lblSLNhanVien", frmCode): @item.SO_LUONG_NHAN_VIEN</div>
+                        <div>@LanguageUtilities.LangText("lblVonDieuLe", frmCode): @item.VON_DIEU_LE.ToStringVN() @item.VON_DIEU_LE_UNIT</div>
+                    </td>
+                    <td class="align-center">
+                        <span>@(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</span>
+                    </td>
+                    <td>
+                        @if (item.STATUS == EB_Status.DaPheDuyet)
+                        {
+                            <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaTaoTaiKhoan", frmCode)</span>
+                        }
+                        else if (item.STATUS == EB_Status.TuChoi)
+                        {
+                            <span class="badge bg-red">@LanguageUtilities.LangText("lblDaTuChoi", frmCode)</span>
+                            <div style="min-width: 150px" class="col-blue-grey m-t-5">
+                                @item.COMMENT
+                            </div>
+                        }
+                        else
+                        {
+                            if (AuthorizeUtilities.CheckUserRight("R502"))
+                            {
+                                <div>
+                                    @Html.MyButton("cmdTaoTaiKhoan", LanguageUtilities.LangText("cmdTaoTaiKhoan", frmCode), string.Format("Forms.LoadAjax('{0}');", @Url.Action("CreateUserContractor", "User", new { @area = "AD", requestId = item.PKID })), "", "person_add", "border")
+                                </div>
+                            }
+                            if (AuthorizeUtilities.CheckUserRight("R503"))
+                            {
+                                <div class="m-t-10">
+                                    @Html.MyButton("cmdTuChoi", LanguageUtilities.LangText("cmdTuChoi", frmCode), string.Format("RejectRequest('{0}','{1}');", item.PKID, item.TEN_NGAN), "", "cancel", "border")
+                                </div>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

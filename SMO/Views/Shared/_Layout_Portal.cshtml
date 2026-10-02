@@ -1,0 +1,1096 @@
+﻿﻿@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+<!DOCTYPE html>
+<html itemscope="" itemtype="http://schema.org/WebPage" lang="en-US" prefix="og: http://ogp.me/ns#"
+      class="js flexbox canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths wf-roboto-n7-active wf-roboto-i4-active wf-robotoslab-n7-active wf-roboto-n4-active wf-roboto-n3-active wf-roboto-i3-active wf-roboto-n5-active wf-roboto-i5-active wf-roboto-i7-active wf-robotoslab-n3-active wf-robotoslab-n4-active wf-active"
+      style="transform: none;">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>COTECCONS E-BIDDING</title>
+    <style id="woocommerce-inline-inline-css" type="text/css">
+        .woocommerce form .form-row .required {
+            visibility: visible;
+        }
+    </style>
+    <style id="rs-plugin-settings-inline-css" type="text/css">
+        #rs-demo-id {
+        }
+         .site-header {
+        transition: all 0.3s ease;
+    }
+
+    .thim-nav-wrapper.container {
+        transition: all 0.3s ease;
+    }
+
+        .navigation .width-navigation .navbar-nav > li > a {
+        color: #28272D !important;
+        }
+        .navigation .width-navigation .navbar-nav > li > span {
+            color: #28272D !important;
+        }
+        /* ================= NEW VTB FOOTER STYLES ================= */
+        .vtb-footer {
+            background-color: #005993 !important; /* Màu nền xanh */
+            color: #ffffff !important;
+            padding: 40px 0;
+            font-size: 14px;
+        }
+
+/* Sử dụng Flexbox để chia 3 cột ngang */
+.footer-flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Căn hàng trên cùng */
+    flex-wrap: wrap; /* Cho phép xuống dòng trên mobile */
+    gap: 30px;
+}
+
+/* Định dạng các cột */
+.footer-col-info {
+    flex: 2; /* Cột thông tin rộng hơn chút */
+    min-width: 300px;
+}
+
+.footer-col-social,
+.footer-col-app {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Định dạng các dòng thông tin liên hệ */
+        .contact-line,
+        .contact-line span,
+        .contact-line i,
+        .contact-line a {
+            color: #ffffff !important;
+            text-decoration: none !important; /* Bỏ gạch chân cho email/link */
+        }
+
+            /* Đảm bảo icon luôn trắng kể cả khi không có class contact-icon */
+            .contact-line i {
+                margin-right: 10px;
+                font-size: 16px;
+                display: inline-block;
+                vertical-align: middle;
+                color: #ffffff !important;
+            }
+
+        .contact-icon {
+            position: relative;
+            top: 1px;
+        }
+        .app-download-container {
+            display: flex !important;
+            align-items: flex-start;
+            gap: 15px; /* Khoảng cách giữa nút app và QR */
+            margin-top: 15px;
+        }
+
+        /* Cột chứa 2 nút tải app (xếp dọc) */
+        .app-buttons-stack {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px; /* Khoảng cách giữa 2 nút app */
+        }
+
+        /* Kích thước nút App (App Store/Google Play) */
+        .app-button-img {
+            width: 150px !important; /* Độ rộng nút app theo mẫu VietinBank */
+            height: auto;
+            border-radius: 6px;
+            display: block;
+            border: 1px solid rgba(255,255,255,0.1); /* Viền mờ cho chuyên nghiệp */
+        }
+/* Tiêu đề cột (Kết nối, Tải ứng dụng) */
+        .footer-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            margin-top: 0; /* Loại bỏ margin mặc định của thẻ H */
+            text-transform: uppercase;
+            color: #ffffff !important;
+        }
+        .vtb-footer a {
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+
+            .vtb-footer a:hover {
+                color: #ffffff; /* Hoặc màu nhẹ hơn khi di chuột vào */
+                text-decoration: underline;
+            }
+        .contact-icon {
+            margin-right: 10px;
+            font-size: 16px;
+            position: relative;
+            top: 3px;
+            color: #ffffff !important; /* Đảm bảo icon cũng màu trắng */
+        }
+/* ================= SOCIAL ICONS (Giống hệt Angular) ================= */
+.social-icons {
+    display: flex;
+    gap: 20px;
+}
+
+.icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.25s ease;
+    text-decoration: none !important;
+}
+
+.icon-wrapper:hover {
+    transform: translateY(-3px);
+}
+
+/* Sử dụng SVG trực tiếp để đảm bảo icon giống hệt mẫu */
+.icon-wrapper svg {
+    width: 28px;
+    height: 28px;
+    fill: #fff;
+}
+
+/* Màu nền cụ thể cho từng mạng xã hội */
+.bg-facebook { background-color: #1877f2; }
+.bg-youtube { background-color: #ff0000; }
+.bg-tiktok { background-color: #000000; }
+
+
+/* ================= APP DOWNLOAD SECTION ================= */
+        /* Container chung cho nút App Store và Google Play */
+        .app-button-complex {
+            position: relative;
+            display: block;
+            width: 156px;
+            height: 47px;
+            margin-bottom: 10px;
+            text-decoration: none !important;
+        }
+
+        /* Chữ "Tải ứng dụng tại" - Dùng chung cho cả 2 nút */
+        .app-label-top {
+            position: absolute;
+            left: 48px; /* Căn lề trái để tránh đè lên logo bên trái */
+            top: 5px; /* Khoảng cách từ đỉnh nút xuống */
+            font-size: 10px;
+            color: #fff;
+            white-space: nowrap;
+            font-family: Arial, sans-serif;
+            opacity: 0.9;
+            z-index: 3;
+            line-height: 1;
+        }
+
+        /* Điều chỉnh riêng cho Google Play nếu cần */
+        .gp-label {
+            left: 47px;
+            top: 5px;
+        }
+
+        /* Các thành phần logo và chữ của Google Play */
+        .gp-logo-icon {
+            position: absolute;
+            left: 11px;
+            top: 8px;
+            width: 30px;
+            height: 28px;
+            z-index: 2;
+        }
+
+        .gp-brand-text {
+            position: absolute;
+            left: 47px;
+            top: 19px;
+            width: 99px;
+            height: 21px;
+            z-index: 2;
+        }
+
+        /* Container chứa cả 2 nút và QR */
+        .app-download-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .app-buttons-stack {
+            display: flex;
+            flex-direction: column;
+        }
+/* ================= COPYRIGHT BAR ================= */
+.container-footer {
+    height: 45px;
+    color: #fff;
+    font-size: 13px;
+    background: linear-gradient(90deg, #0068b7 0%, #00a7ff 20%, #0093d3 35%, #1c4e88 50%, #7c2e55 65%, #b50e2b 80%, #e60012 100%);
+    display: flex;
+    align-items: center;
+}
+
+.copyright-flex {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.container-footer a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+@*@media (max-width: 768px) {
+    .container-footer {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .social-icons {
+        flex-wrap: wrap;
+    }
+}*@
+    /* Responsive header */
+    @*@media (max-width: 768px) {
+        .site-header {
+            padding: 16px;
+        }
+
+        .legal {
+            flex-direction: column;
+            height: auto;
+            padding: 15px;
+        }
+    }*@
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="~/Theme/plugins/bootstrap-3.4.1/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" id="thim-style-options-css" href="~/Education/custom.css?v=1" type="text/css" media="all">
+    @*<link
+        href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i%7CRoboto+Slab:300,400,700"
+        rel="stylesheet" />*@
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+
+
+    <link href="~/Education/google.fonts.css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link href="~/Theme/css/themes/theme-indigo.min.css" rel="stylesheet" />
+    <link href="~/Theme/plugins/multi-select/css/multi-select.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="~/Education/jquery-1.12.4.min.js"></script>
+
+    <script type="text/javascript">var userSettings = { "url": "\/", "uid": "0", "time": "1559984660", "secure": "1" };</script>
+    <script type="text/javascript">var lpGlobalSettings = { "url": "https:\/\/educationwp.thimpress.com\/blog\/", "siteurl": "https:\/\/educationwp.thimpress.com", "ajax": "https:\/\/educationwp.thimpress.com\/wp-admin\/admin-ajax.php", "theme": "eduma", "localize": { "button_ok": "OK", "button_cancel": "Cancel", "button_yes": "Yes", "button_no": "No" } };</script>
+    <noscript>
+        <style>
+            .woocommerce-product-gallery {
+                opacity: 1 !important;
+            }
+
+            .footer {
+                background-color: transparent !important;
+            }
+        </style>
+    </noscript>
+
+    <link rel="icon" href="~/Theme/images/icon.png" sizes="32x32">
+    <link href="~/Theme/plugins/jquery-dropdown/jquery.dropdown.css" rel="stylesheet" />
+</head>
+
+<body class="bp-legacy blog woocommerce-js group-blog bg-boxed-image thim-popup-feature js" id="thim-body"
+      style="transform: none;">
+    <div id="preload">
+        <div class="sk-folding-cube">
+            <div class="sk-cube1 sk-cube"></div>
+            <div class="sk-cube2 sk-cube"></div>
+            <div class="sk-cube4 sk-cube"></div>
+            <div class="sk-cube3 sk-cube"></div>
+        </div>
+    </div>
+    <div id="wrapper-container" class="wrapper-container" style="transform: none;">
+        @if (lang == "vi")
+        {
+            <div class="mobile-menu-wrapper" style="">
+                <div class="mobile-menu-close">✖</div>
+                <div class="mobile-menu-inner" style="margin-top: 20px;">
+                    <a href="/">
+                        <div>Nhà đầu tư</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner" id="mobile-menu-goithau">
+                    <a href="/">
+                        <div>Gói thầu</div>
+                    </a>
+                </div>
+
+                @if (Request.IsAuthenticated)
+                {
+                    <div class="mobile-menu-inner">
+                        <a href="/Admin/Index">
+                            <div>Trang của tôi</div>
+                        </a>
+                    </div>
+                    <div class="mobile-menu-inner">
+                        <a href="/DangNhap/Logout">
+                            <div>Đăng xuất</div>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="mobile-menu-inner" id="mobile-menu-dangnhap" style="color: #28272D; !important;">
+                        <a href="/DangNhap">
+                            <div>Đăng nhập</div>
+                        </a>
+                    </div>
+                    <div class="mobile-menu-inner" id="mobile-menu-dangky">
+                        <a href="/DangKy">
+                            <div>Đăng ký</div>
+                        </a>
+                    </div>
+                }
+                <div class="mobile-menu-inner">
+                    <a href="/" target="_blank"
+                       onclick="ChangeLanguage('en')">
+                        <div>Hướng dẫn sử dụng</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="/faq">
+                        <div>Câu hỏi thường gặp</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="#" class="active" onclick="ChangeLanguage('vi')">
+                        <div>Tiếng Việt</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="#" onclick="ChangeLanguage('en')">
+                        <div>Tiếng Anh</div>
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="mobile-menu-wrapper" style="">
+                <div class="mobile-menu-close">✖</div>
+                <div class="mobile-menu-inner" style="margin-top: 20px;">
+                    <a href="/">
+                        <div>INVESTORS</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner" id="mobile-menu-goithau">
+                    <a href="/">
+                        <div>
+                            BID PACKAGE
+                        </div>
+                    </a>
+                </div>
+
+                @if (Request.IsAuthenticated)
+                {
+                    <div class="mobile-menu-inner">
+                        <a href="/Admin/Index">
+                            <div>My page</div>
+                        </a>
+                    </div>
+                    <div class="mobile-menu-inner">
+                        <a href="/DangNhap/Logout">
+                            <div>Sign out</div>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="mobile-menu-inner" id="mobile-menu-dangnhap">
+                        <a href="/DangNhap">
+                            <div>Sign in</div>
+                        </a>
+                    </div>
+                    <div class="mobile-menu-inner" id="mobile-menu-dangky">
+                        <a href="/DangKy">
+                            <div>Sign up</div>
+                        </a>
+                    </div>
+                }
+                <div class="mobile-menu-inner">
+                    <a href="/" target="_blank"
+                       onclick="ChangeLanguage('en')">
+                        <div>Help</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="/faq">
+                        <div>FAQs</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="#" onclick="ChangeLanguage('vi')">
+                        <div>Vietnamese</div>
+                    </a>
+                </div>
+                <div class="mobile-menu-inner">
+                    <a href="#" class="active" onclick="ChangeLanguage('en')">
+                        <div>English</div>
+                    </a>
+                </div>
+            </div>
+        }
+
+    <div class="content-pusher" style="transform: none;">
+        <header style="background-image: url('/Theme/images/bg-header-portal.png');
+        background-position: center center; background-repeat: no-repeat; background-size: cover; height: 20vh;display:flex; padding:16px 0 0; justify-content:center"
+                id="masthead"
+                class="site-header bg-custom-sticky sticky-header header_overlay header_v1 affix-top">
+            <div class="thim-nav-wrapper container" style="background: linear-gradient(90deg, #92d2f3, #ffffffb8 60%, #ffffffc9); height:70px">
+                <div class="row">
+                    <div class="navigation col-sm-12">
+                        <div class="tm-table">
+                            <div class="width-logo table-cell sm-logo">
+                                <a href="/" class="no-sticky-logo">
+                                    <img style="width: 100%; margin-top: 14px;" src="~/Theme/images/logo.svg">
+                                </a>
+                                <a href="/" rel="home" class="sticky-logo">
+                                    <img style="width: 100%; margin-top: 14px;" src="~/Theme/images/logo.svg">
+                                </a>
+                            </div>
+                            <nav class="width-navigation table-cell table-right">
+                                @if (lang == "vi")
+                                {
+                                    <ul class="nav navbar-nav menu-main-menu">
+                                        <li id="menu-item-7679"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/" class="tc-menu-inner">NHÀ ĐẦU TƯ</a>
+                                        </li>
+                                        <li id="menu-item-goithau"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/" class="tc-menu-inner">GÓI THẦU</a>
+                                        </li>
+                                        @if (Request.IsAuthenticated)
+                                        {
+                                            <li id="menu-item-127"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/Admin/Index" class="tc-menu-inner">TRANG CỦA TÔI</a>
+                                            </li>
+                                            <li id="menu-item-99"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/DangNhap/Logout" class="tc-menu-inner">ĐĂNG XUẤT</a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li id="menu-item-dangnhap"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/DangNhap" class="tc-menu-inner">ĐĂNG NHẬP</a>
+                                            </li>
+
+                                        }
+                                        <li id="menu-item-hdsd"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/"
+                                               class="tc-menu-inner">HDSD</a>
+                                        </li>
+
+                                        <li id="menu-item-faq"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/faq" class="tc-menu-inner tc-megamenu-title">HỎI ĐÁP</a>
+                                        </li>
+                                        <li id="menu-item-95" style="cursor: pointer;"
+                                            class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-95 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <span class="tc-menu-inner">NGÔN NGỮ</span>
+                                            <span class="icon-toggle"><i class="fa fa-angle-down"></i></span>
+                                            <ul class="sub-menu" style="display: none; opacity: 1;">
+                                                <li id="menu-item-6550"
+                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6550 tc-menu-item tc-menu-depth-1 tc-menu-align-left">
+                                                    <a href="#" style="color: black !important;"
+                                                       class="tc-menu-inner tc-megamenu-title"
+                                                       onclick="ChangeLanguage('vi')">Tiếng Việt</a>
+                                                </li>
+                                                <li id="menu-item-4451"
+                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4451 tc-menu-item tc-menu-depth-1 tc-menu-align-left">
+                                                    <a href="#" class="tc-menu-inner tc-megamenu-title"
+                                                       onclick="ChangeLanguage('en')">Tiếng Anh</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                        @*<li id="menu-item-trogiup" style="cursor: pointer;" class="menu-item
+                                        menu-item-type-custom menu-item-object-custom menu-item-has-children
+                                        menu-item-95 tc-menu-item tc-menu-depth-0 tc-menu-align-left
+                                        tc-menu-layout-default">
+                                        <span class="tc-menu-inner">TRỢ GIÚP</span>
+                                        <span class="icon-toggle"><i class="fa fa-angle-down"></i></span>
+                                        <ul class="sub-menu" style="display: none; opacity: 1;">
+                                        <li id="menu-item-faq" class="menu-item menu-item-type-post_type
+                                        menu-item-object-page menu-item-6550 tc-menu-item tc-menu-depth-1
+                                        tc-menu-align-left">
+                                        <a href="/faq" class="tc-menu-inner tc-megamenu-title">Câu hỏi thường gặp</a>
+                                        </li>
+                                        <li id="menu-item-4451" class="menu-item menu-item-type-post_type
+                                        menu-item-object-page menu-item-4451 tc-menu-item tc-menu-depth-1
+                                        tc-menu-align-left">
+                                        <a target="_blank" href="/HDSD_NT/Hướng dẫn sử dụng hệ thống Ebidding.html"
+                                        class="tc-menu-inner tc-megamenu-title">Hướng dẫn sử dụng</a>
+                                        </li>
+                                        </ul>
+                                        </li>*@
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <ul class="nav navbar-nav menu-main-menu">
+                                        <li id="menu-item-7679"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/" class="tc-menu-inner">INVESTORS</a>
+                                        </li>
+                                        <li id="menu-item-goithau"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/" class="tc-menu-inner">
+                                                PACKAGES
+                                            </a>
+                                        </li>
+                                        @if (Request.IsAuthenticated)
+                                        {
+                                            <li id="menu-item-127"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/Admin/Index" class="tc-menu-inner">MY PAGE</a>
+                                            </li>
+                                            <li id="menu-item-99"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/DangNhap/Logout" class="tc-menu-inner">SIGN OUT</a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li id="menu-item-dangnhap"
+                                                class="menu-item menu-item-type-post_type menu-item-object-page menu-item-99 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                                <a href="/DangNhap" class="tc-menu-inner">SIGN IN</a>
+                                            </li>
+
+                                        }
+
+                                        <li id="menu-item-hdsd"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a  href="/"
+                                               class="tc-menu-inner">USER GUIDE</a>
+                                        </li>
+
+                                        <li id="menu-item-faq"
+                                            class="menu-item menu-item-type-post_type_archive menu-item-object-tp_event menu-item-7679 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <a href="/faq" class="tc-menu-inner tc-megamenu-title">FAQs</a>
+                                        </li>
+
+                                        <li id="menu-item-95" style="cursor: pointer;"
+                                            class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-95 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default">
+                                            <span class="tc-menu-inner">LANGUAGE</span>
+                                            <span class="icon-toggle"><i class="fa fa-angle-down"></i></span>
+                                            <ul class="sub-menu" style="display: none; opacity: 1;">
+                                                <li id="menu-item-6550"
+                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-6550 tc-menu-item tc-menu-depth-1 tc-menu-align-left">
+                                                    <a href="#" class="tc-menu-inner tc-megamenu-title"
+                                                       onclick="ChangeLanguage('vi')">Vietnamese</a>
+                                                </li>
+                                                <li id="menu-item-4451"
+                                                    class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4451 tc-menu-item tc-menu-depth-1 tc-menu-align-left">
+                                                    <a href="#" style="color: black !important;"
+                                                       class="tc-menu-inner tc-megamenu-title"
+                                                       onclick="ChangeLanguage('en')">English</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                        @*<li id="menu-item-trogiup" style="cursor: pointer;" class="menu-item
+                                        menu-item-type-custom menu-item-object-custom menu-item-has-children
+                                        menu-item-95 tc-menu-item tc-menu-depth-0 tc-menu-align-left
+                                        tc-menu-layout-default">
+                                        <span class="tc-menu-inner">HELP</span>
+                                        <span class="icon-toggle"><i class="fa fa-angle-down"></i></span>
+                                        <ul class="sub-menu" style="display: none; opacity: 1;">
+                                        <li id="menu-item-faq" class="menu-item menu-item-type-post_type
+                                        menu-item-object-page menu-item-6550 tc-menu-item tc-menu-depth-1
+                                        tc-menu-align-left">
+                                        <a href="/faq" class="tc-menu-inner tc-megamenu-title">FAQS</a>
+                                        </li>
+                                        <li id="menu-item-4451" class="menu-item menu-item-type-post_type
+                                        menu-item-object-page menu-item-4451 tc-menu-item tc-menu-depth-1
+                                        tc-menu-align-left">
+                                        <a target="_blank" href="/HDSD_NT/Hướng dẫn sử dụng hệ thống Ebidding.html"
+                                        class="tc-menu-inner tc-megamenu-title">User manual</a>
+                                        </li>
+                                        </ul>
+                                        </li>*@
+                                    </ul>
+                                }
+
+                            </nav>
+                            <div class="menu-mobile-effect navbar-toggle" data-effect="mobile-effect">
+                                <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div id="main-content" style="transform: none;">
+            <section class="content-area" style="transform: none; min-height: 155px;">
+                @RenderBody()
+            </section>
+
+
+        </div>
+        @if (lang == "vi")
+        {
+            <footer class="vtb-footer">
+                <div class="container">
+                    <div class="footer-flex-container ">
+                        <div class="footer-col-info">
+                            <img src="~/Theme/images/logo-footer.svg" alt="Logo" style="height: 90px; margin-bottom: 25px;" />
+
+                            <div class="contact-line">
+                                <i class="fa fa-map-marker contact-icon"></i>
+                                <span>108 Trần Hưng Đạo, phường Cửa Nam, TP. Hà Nội</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-phone contact-icon"></i>
+                                <span>Hotline: 1900 558 868 (trong nước) - (84) 24 3941 8868 (quốc tế)</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-phone contact-icon"></i>
+                                <span>Hotline dự phòng: 1900 6658</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-envelope contact-icon"></i>
+                                <span>Email: contact@vietinbank.vn</span>
+                            </div>
+                        </div>
+
+                        <div class="footer-col-social">
+                            <h4 class="footer-title">Kết nối với VietinBank</h4>
+                            <div class="social-icons">
+                                <a href="https://www.facebook.com/VietinBank" target="_blank" class="icon-wrapper bg-facebook">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z" /></svg>
+                                </a>
+                                <a href="https://www.youtube.com/channel/UCQUjskH3ypssYb4eJ01cCFA" target="_blank" class="icon-wrapper bg-youtube">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 42.195 48.284 48.597 42.691 11.486 213.371 11.486 213.371 11.486s170.78 0 213.371-11.486c23.497-6.402 42.003-24.947 48.284-48.597 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z" /></svg>
+                                </a>
+                                <a href="https://www.tiktok.com/%40vietinbank" target="_blank" class="icon-wrapper bg-tiktok">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" /></svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="footer-col-app">
+                            <h4 class="footer-title" style="color: #fff !important; margin-bottom: 15px;">
+                                Tải VietinBank iPay Mobile tại
+                            </h4>
+
+                            <div class="app-download-wrapper">
+                                <div class="app-buttons-stack">
+                                    <a href="https://apps.apple.com/vn/app/vietinbank-ipay/id689963454" target="_blank" class="app-button-complex">
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fapp_store_icon.svg&w=384&q=75"
+                                             style="width: 156px; height: 47px;" />
+                                        <div class="app-label-top">Tải ứng dụng tại</div>
+                                    </a>
+
+                                    <a href="https://play.google.com/store/apps/details?id=com.vietinbank.ipay" target="_blank" class="app-button-complex">
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_icon.svg&w=384&q=75"
+                                             style="width: 156px; height: 47px;" />
+                                        <div class="app-label-top gp-label">Tải ứng dụng tại</div>
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_logo.svg&w=64&q=75"
+                                             class="gp-logo-icon" />
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_text.svg&w=256&q=75"
+                                             class="gp-brand-text" />
+                                    </a>
+                                </div>
+
+                                <div class="qr-col">
+                                    <img src="https://www.vietinbank.vn/_next/image?url=https%3A%2F%2Fvietinbank.vn%2Fassets%2F121a4624-f9af-4919-8b79-ee4441396bb3&w=256&q=75"
+                                         alt="QR Code" class="img-qr-code" style="width: 105px; height: 105px; background: #fff; padding: 5px; border-radius: 8px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+            <!-- Thanh bản quyền -->
+            <div class="container-footer">
+                <div class="container">
+                    <div class="copyright-flex">
+                        <span>
+                            &copy; 2025 <a href="https://coteccons.vn/" target="_blank">– d2s.com.vn</a>
+                        </span>
+                        <span>
+                            Design By <a href="http://d2s.com.vn" target="_blank">d2s.com.vn</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <footer class="vtb-footer">
+                <div class="container">
+                    <div class="footer-flex-container ">
+                        <div class="footer-col-info">
+                            <img src="~/Theme/images/logo-footer.svg" alt="Logo" style="height: 90px; margin-bottom: 25px;" />
+
+                            <div class="contact-line">
+                                <i class="fa fa-map-marker contact-icon"></i>
+                                <span>108 Tran Hung Dao, Cua Nam Ward, Hanoi City</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-phone contact-icon"></i>
+                                <span>Hotline: 1900 558 868 (domestic) - (84) 24 3941 8868 (international)</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-phone contact-icon"></i>
+                                <span>Backup Hotline: 1900 6658</span>
+                            </div>
+                            <div class="contact-line">
+                                <i class="fa fa-envelope contact-icon"></i>
+                                <span>Email: contact@vietinbank.vn</span>
+                            </div>
+                        </div>
+
+                        <div class="footer-col-social">
+                            <h4 class="footer-title">Connect with ViettinBank</h4>
+                            <div class="social-icons">
+                                <a href="https://www.facebook.com/VietinBank" target="_blank" class="icon-wrapper bg-facebook">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z" /></svg>
+                                </a>
+                                <a href="https://www.youtube.com/channel/UCQUjskH3ypssYb4eJ01cCFA" target="_blank" class="icon-wrapper bg-youtube">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 42.195 48.284 48.597 42.691 11.486 213.371 11.486 213.371 11.486s170.78 0 213.371-11.486c23.497-6.402 42.003-24.947 48.284-48.597 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z" /></svg>
+                                </a>
+                                <a href="https://www.tiktok.com/%40vietinbank" target="_blank" class="icon-wrapper bg-tiktok">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z" /></svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="footer-col-app">
+                            <h4 class="footer-title" style="color: #fff !important; margin-bottom: 15px;">
+                                Download VietinBank iPay Mobile at
+                            </h4>
+
+                            <div class="app-download-wrapper">
+                                <div class="app-buttons-stack">
+                                    <a href="https://apps.apple.com/vn/app/vietinbank-ipay/id689963454" target="_blank" class="app-button-complex">
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fapp_store_icon.svg&w=384&q=75"
+                                             style="width: 156px; height: 47px;" />
+                                        <div class="app-label-top">Download at</div>
+                                    </a>
+
+                                    <a href="https://play.google.com/store/apps/details?id=com.vietinbank.ipay" target="_blank" class="app-button-complex">
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_icon.svg&w=384&q=75"
+                                             style="width: 156px; height: 47px;" />
+                                        <div class="app-label-top gp-label">Download at</div>
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_logo.svg&w=64&q=75"
+                                             class="gp-logo-icon" />
+                                        <img src="https://www.vietinbank.vn/_next/image?url=%2Ficons%2Fgoogle_play_text.svg&w=256&q=75"
+                                             class="gp-brand-text" />
+                                    </a>
+                                </div>
+
+                                <div class="qr-col">
+                                    <img src="https://www.vietinbank.vn/_next/image?url=https%3A%2F%2Fvietinbank.vn%2Fassets%2F121a4624-f9af-4919-8b79-ee4441396bb3&w=256&q=75"
+                                         alt="QR Code" class="img-qr-code" style="width: 105px; height: 105px; background: #fff; padding: 5px; border-radius: 8px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+            <!-- Copyright section -->
+            <div class="container-footer">
+                <div class="container">
+                    <div class="copyright-flex">
+                        <span>
+                            &copy; 2025 <a href="https://coteccons.vn/" target="_blank">– d2s.com.vn</a>
+                        </span>
+                        <span>
+                            Design By <a href="http://d2s.com.vn" target="_blank">d2s.com.vn</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+        <a href="https://educationwp.thimpress.com/blog/#" id="back-to-top" class="active">
+            <i class="fa fa-chevron-up"
+               aria-hidden="true"></i>
+        </a>
+    </div>
+
+
+    <div id="tp_chameleon_list_google_fonts"></div>
+    <div class="gallery-slider-content"></div>
+
+
+    <script data-cfasync="false" type="text/javascript">
+        window.onload = function () {
+            var thim_preload = document.getElementById('preload');
+            if (thim_preload) {
+                setTimeout(function () {
+                    var body = document.getElementById('thim-body'),
+                        len = body.childNodes.length,
+                        class_name = body.className.replace(/(?:^|\s)thim-body-preload(?!\S)/, '').
+                            replace(/(?:^|\s)thim-body-load-overlay(?!\S)/, '');
+
+                    body.className = class_name;
+                    if (typeof thim_preload !== 'undefined' && thim_preload !== null) {
+                        for (var i = 0; i < len; i++) {
+                            if (body.childNodes[i].id !== 'undefined' && body.childNodes[i].id == 'preload') {
+                                $(body.childNodes[i]).hide();
+                                break;
+                            }
+                        }
+                    }
+                }, 500);
+            }
+        };
+
+        function ChangeLanguage(lang) {
+            document.cookie = "lang=" + lang;
+            location.reload();
+        }
+    </script>
+    <script>
+        window.addEventListener('load', function () {
+            /**
+             * Fix issue there is an empty spacing between image and title of owl-carousel
+             */
+            setTimeout(function () {
+                var $ = jQuery;
+                var $carousel = $('.thim-owl-carousel-post').each(function () {
+                    $(this).find('.image').css('min-height', 0);
+                    $(window).trigger('resize');
+                });
+            }, 500);
+        });
+    </script>
+
+    <script>
+        document.getElementById('profile-download').addEventListener('click', function (event) {
+            console.log(124);
+            event.preventDefault();
+            const url = 'https://www.coteccons.vn/wp-content/uploads/2024/08/Profile-Coteccons-TV-050824.pdf';
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Profile-Coteccons.pdf'; 
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a); 
+        });
+
+        const menuItem = document.querySelector('.menu-ve-chung-toi');
+        const veChungToi = document.querySelector('.VeChungToi');
+
+        const projectItem = document.querySelector('.menu-project-ctd');
+        const projectCtd = document.querySelector('.project-ctd');
+
+        const esgItem = document.querySelector('.menu-esg-ctd');
+        const esg = document.querySelector('.esg');
+
+        function showMenu(menu) {
+            menu.style.display = 'block';
+        }
+
+        function hideMenu(menu) {
+            menu.style.display = 'none';
+        }
+
+        menuItem.parentElement.addEventListener('mouseenter', () => showMenu(veChungToi));
+        menuItem.parentElement.addEventListener('mouseleave', () => hideMenu(veChungToi));
+
+        veChungToi.addEventListener('mouseenter', () => showMenu(veChungToi));
+        veChungToi.addEventListener('mouseleave', () => hideMenu(veChungToi));
+
+        projectItem.parentElement.addEventListener('mouseenter', () => showMenu(projectCtd));
+        projectItem.parentElement.addEventListener('mouseleave', () => hideMenu(projectCtd));
+
+        projectCtd.addEventListener('mouseenter', () => showMenu(projectCtd));
+        projectCtd.addEventListener('mouseleave', () => hideMenu(projectCtd));
+
+        esgItem.parentElement.addEventListener('mouseenter', () => showMenu(esg));
+        esgItem.parentElement.addEventListener('mouseleave', () => hideMenu(esg));
+
+        esg.addEventListener('mouseenter', () => showMenu(esg));
+        esg.addEventListener('mouseleave', () => hideMenu(esg));
+    </script>
+
+    <script type="text/javascript">
+        var c = document.body.className;
+        c = c.replace(/woocommerce-no-js/, 'woocommerce-js');
+        document.body.className = c;
+
+
+
+    </script>
+    <style type="text/css" media="all" id="siteorigin-panels-layouts-footer">
+
+        /* Layout tc-megamenu-7682 */
+        #pgc-tc-megamenu-7682-0-0,
+        #pgc-tc-megamenu-7682-0-1 {
+            width: 31%;
+            width: calc(31% - (0.69 * 30px));
+        }
+
+        #pl-tc-megamenu-7682 #panel-tc-megamenu-7682-0-0-0,
+        #pl-tc-megamenu-7682 #panel-tc-megamenu-7682-0-1-0,
+        #pl-tc-megamenu-7682 #panel-tc-megamenu-7682-0-2-0 {
+        }
+
+        #pgc-tc-megamenu-7682-0-2 {
+            width: 38%;
+            width: calc(38% - (0.62 * 30px));
+        }
+
+        #pl-tc-megamenu-7682 .so-panel {
+            margin-bottom: 30px;
+        }
+
+            #pl-tc-megamenu-7682 .so-panel:last-child {
+                margin-bottom: 0px;
+            }
+
+        @@media (max-width:767px) {
+
+            #pg-tc-megamenu-7682-0.panel-no-style,
+            #pg-tc-megamenu-7682-0.panel-has-style > .panel-row-style {
+                -webkit-flex-direction: column;
+                -ms-flex-direction: column;
+                flex-direction: column;
+            }
+
+            #pg-tc-megamenu-7682-0 .panel-grid-cell {
+                margin-right: 0;
+            }
+
+            #pg-tc-megamenu-7682-0 .panel-grid-cell {
+                width: 100%;
+            }
+
+            #pgc-tc-megamenu-7682-0-0,
+            #pgc-tc-megamenu-7682-0-1 {
+                margin-bottom: 30px;
+            }
+
+            #pl-tc-megamenu-7682 .panel-grid-cell {
+                padding: 0;
+            }
+
+            #pl-tc-megamenu-7682 .panel-grid .panel-grid-cell-empty {
+                display: none;
+            }
+
+            #pl-tc-megamenu-7682 .panel-grid .panel-grid-cell-mobile-last {
+                margin-bottom: 0px;
+            }
+        }
+
+        /* Layout w5c88b86427f62 */
+        #pgc-w5c88b86427f62-0-0 {
+            width: 33.3%;
+            width: calc(33.3% - (0.667 * 30px));
+        }
+
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-0-0,
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-0-1,
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-1-0,
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-2-0,
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-3-0,
+        #pl-w5c88b86427f62 #panel-w5c88b86427f62-0-4-0 {
+        }
+
+        #pgc-w5c88b86427f62-0-1,
+        #pgc-w5c88b86427f62-0-2,
+        #pgc-w5c88b86427f62-0-3,
+        #pgc-w5c88b86427f62-0-4 {
+            width: 16.675%;
+            width: calc(16.675% - (0.83325 * 30px));
+        }
+
+        #pl-w5c88b86427f62 .so-panel {
+            margin-bottom: 30px;
+        }
+
+            #pl-w5c88b86427f62 .so-panel:last-child {
+                margin-bottom: 0px;
+            }
+
+        @@media (max-width:767px) {
+
+            #pg-w5c88b86427f62-0.panel-no-style,
+            #pg-w5c88b86427f62-0.panel-has-style > .panel-row-style {
+                -webkit-flex-direction: column;
+                -ms-flex-direction: column;
+                flex-direction: column;
+            }
+
+            #pg-w5c88b86427f62-0 .panel-grid-cell {
+                margin-right: 0;
+            }
+
+            #pg-w5c88b86427f62-0 .panel-grid-cell {
+                width: 100%;
+            }
+
+            #pgc-w5c88b86427f62-0-0,
+            #pgc-w5c88b86427f62-0-1,
+            #pgc-w5c88b86427f62-0-2,
+            #pgc-w5c88b86427f62-0-3 {
+                margin-bottom: 30px;
+            }
+
+            #pl-w5c88b86427f62 .panel-grid-cell {
+                padding: 0;
+            }
+
+            #pl-w5c88b86427f62 .panel-grid .panel-grid-cell-empty {
+                display: none;
+            }
+
+            #pl-w5c88b86427f62 .panel-grid .panel-grid-cell-mobile-last {
+                margin-bottom: 0px;
+            }
+        }
+    </style>
+    <script type="text/javascript" defer="" src="~/Education/autoptimize_772b82c234476806a08fa848237f1d08.js"></script>
+    <script src="~/Scripts/D2SCoreJS/D2SCoreJS.js?v=1"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    <!-- Custom Js -->
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="~/Theme/plugins/bootstrap-3.4.1/js/bootstrap.js"></script>
+    <script src="~/Theme/plugins/multi-select/js/jquery.multi-select.js"></script>
+    <script src="~/Theme/plugins/quicksearch/js/jquery.quicksearch.js"></script>
+    <script type="text/javascript" src="~/Theme/plugins/jquery-dropdown/jquery.dropdown.js"></script>
+</body>
+
+</html>

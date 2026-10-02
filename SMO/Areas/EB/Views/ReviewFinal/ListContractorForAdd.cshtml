@@ -1,0 +1,69 @@
+﻿@model SMO.Service.EB.ContractorService
+@using SMO.Repository.Implement.MD;
+@{
+    var frmCode = "frm_ReviewFinal_AddContractor";
+    var lstRate = Model.UnitOfWork.Repository<MdRatingRepo>().GetAll();
+
+    var lstReviewFinalContractor = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.ReviewFinalContractorRepo>().Queryable()
+        .Where(x => x.REVIEW_ID == Model.ObjDetail.REVIEW_FINAL_ID).Select(x => x.CONTRACTOR_ID).ToList();
+
+    Model.ObjList = Model.ObjList.Where(x => !lstReviewFinalContractor.Contains(x.PKID)).ToList();
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered font-13">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllCouncilForAdd_@Model.ViewId" onclick="Forms.CheckAll('chkItemCouncilForAdd_@Model.ViewId', '#chkAllCouncilForAdd_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllCouncilForAdd_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("thTaiKhoan", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thTenCongTy", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thDonViTao", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayTao", frmCode)</th>
+                <th class=" align-center">@LanguageUtilities.LangText("thBlackList", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var rate = lstRate.FirstOrDefault(x => x.RATING == item.XEP_HANG);
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemCouncilForAdd" name="chkItemCouncilForAdd_@Model.ViewId" id="@("chkItemCouncilForAdd_" + Model.ViewId + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItemCouncilForAdd_" + Model.ViewId + item.PKID)"></label>
+                    </td>
+                    <td>@item.USER_NAME</td>
+                    <td>
+                        <div>@item.TEN_NGAN</div>
+                        <div class="col-blue-grey">@item.TEN_DAI</div>
+                    </td>
+                    <td>
+                        @if (item.USER_CREATE != null)
+                        {
+                            <div>@item.USER_CREATE.FULL_NAME</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center">
+                        @if (rate != null && rate.IS_BLACK_LIST)
+                        {
+                            <i class="material-icons col-fecon" style="cursor:pointer">check</i>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>
+

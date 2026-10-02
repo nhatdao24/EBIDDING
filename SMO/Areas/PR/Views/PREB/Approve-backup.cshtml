@@ -1,0 +1,190 @@
+﻿@model SMO.Service.PO.HHKService
+@using SMO.Core.Entities
+@using Newtonsoft.Json
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmFormCode = "frmHHKApprove";
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_UNIT" });
+
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    List<T_MD_UNIT> lstUnit = UtilsCore.ConvertDataToListExtends<T_MD_UNIT>(dsResult.Tables["T_MD_UNIT"]);
+}
+<div id='@Model.ViewId'  class="container-fluid child-content">
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card">
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">content_copy</i> PHÊ DUYỆT ĐƠN HÀNG</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                                @Html.MyButton("cmdSave", "Lưu thông tin", "Submit();", "Lưu thông tin", "done_all")
+                                @Html.MyButton("cmdApprove", "Phê duyệt", string.Format("ChangeStatusHHK('{0}','{1}');", Model.ObjHeader.CODE, PO_Status.DaPheDuyet), "Phê duyệt đơn hàng", "done_all")
+                                @Html.MyButton("cmdReject", "Từ chối", string.Format("ChangeStatusHHK('{0}','{1}');", Model.ObjHeader.CODE, PO_Status.TuChoi), "Từ chối đơn hàng", "cancel")
+                            </div>
+                        </div>
+
+                        <div id="divDetail" class="m-t-20">
+                            <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                <table class="table table-condensed" style="margin-bottom:0px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 200px">Mặt hàng</th>
+                                            <th width="150px" class="align-center">Số lượng đặt</th>
+                                            <th width="10px"></th>
+                                            <th width="150px" class="align-center">Số lượng phê duyệt</th>
+                                            <th width="150px" class="align-center">Đơn vị tính</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="template: { name: 'RowDetailTemplate', foreach: ObjListDetail }"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 p-b-30">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> THÔNG TIN ĐƠN HÀNG</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <label>Mã đơn hàng</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.CODE, new { @readonly = "" })
+                            </div>
+                        </div>
+
+                        <label>Cửa hàng</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.SaleOffice.TEXT, new { @readonly = "" })
+                            </div>
+                        </div>
+
+                        <label>Ngày đặt hàng</label>
+                        <div class="input-group form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.DOC_DATE, new { @data_bind = "value: ObjHeader.DOC_DATE", @class = "datepicker" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjHeader.DOC_DATE)
+                            <span class="input-group-addon" style="padding-right: 0;">
+                                <i class="material-icons">date_range</i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card m-b-30 p-b-30">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <div id="divComment">
+                        @Html.Action("Index", "Comment", new { @Area = "", referenceId = Model.ObjHeader.COMMENT_ID })
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script type="text/html" id="RowDetailTemplate">
+        <tr>
+            <td style="vertical-align:middle;">
+                <span data-bind="text: MATERIAL_TEXT"></span>
+            </td>
+            <td style="vertical-align:middle;text-align: center;">
+                <span data-bind="text: QUANTITY"></span>
+            </td>
+            <td>
+                <i class="material-icons col-blue" data-bind="click: ClickAppove" style="cursor:pointer">arrow_forward</i>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input id="PheDuyetLuong" type="text" data-bind="value: APPROVE_QUANTITY, inputmask:{'alias': 'decimal', 'groupSeparator': ',', 'autoGroup': true}" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle; padding-top: 11px;">
+                <select data-virtual-scroll="false" data-container="body"
+                        data-bind="value: UNIT_CODE" data-live-search="true" data-show-subtext="false"
+                        class="selectpicker show-tick dropdown form-control">
+                    <option data-capacity="0" value="">-</option>
+                    @foreach (var unit in lstUnit)
+                    {
+                        <option value="@unit.CODE">
+                            @unit.TEXT
+                        </option>
+                    }
+                </select>
+            </td>
+        </tr>
+    </script>
+
+    <script src="~/Scripts/PO/ko.model.HHK.js"></script>
+    <script type="text/javascript">
+        function ChangeStatusHHK(code, status) {
+            if (IsChange) {
+                if(confirm("Thông tin đơn hàng đã bị chỉnh sửa. Bạn có muốn lưu lại thông tin đơn hàng không?")){
+                    Submit();
+                    return;
+                }
+            }
+            var ajaxParams = {
+                url: '@Url.Action("ChangeStatus", "HHK")',
+                type: 'POST',
+                dataType: 'JSON',
+                data: {code : code, status: status, viewId : '@Model.ViewId'}
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function Submit() {
+            if (model.ObjListDetail().length == 0) {
+                Message.func.AlertDanger({Message : {Code : "", Message : "Chưa có thông tin các mặt hàng !"}});
+                return;
+            }
+            IsChange = false; 
+
+            var ajaxParams = {
+                url: '@Url.Action("UpdateApprove")',
+                type: 'POST',
+                dataType: 'JSON',
+                data: ko.toJS(model)
+            };
+            Forms.Ajax(ajaxParams);
+        };
+
+        var Header = ko.mapping.fromJS(@Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader, serializerSetting )));
+        Header.DOC_DATE(ConvertDateInJson(Header.DOC_DATE()));
+        var number = 1;
+        var model = new Model();
+        model.ObjHeader = Header;
+        var lstDetail = @Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader.ListDetail, serializerSetting));
+
+        $.each(lstDetail, function() {
+            model.ObjListDetail.push(new Detail(number, this.MATERIAL_CODE, this.Material.TEXT, this.QUANTITY, this.APPROVE_QUANTITY, this.UNIT_CODE));
+            number = number + 1;
+        });
+        $(function () {
+            ko.applyBindings(model, document.getElementById('@Model.ViewId'));
+            CheckChange(model);
+            Forms.CompleteUI();
+            Forms.SubmitForm('@Model.ObjHeader.COMMENT_ID');
+        });
+    </script>
+</div>

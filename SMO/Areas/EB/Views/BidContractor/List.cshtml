@@ -1,0 +1,85 @@
+﻿@model SMO.Service.EB.BidContractorService
+@{
+    var number = 1;
+    var frmCode = "frm_BidContractor_Index";
+
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-bordered font-13">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllContractorOfBid_@Model.ViewId" onclick="Forms.CheckAll('chkItemContractorOfBid_@Model.ViewId', '#chkAllContractorOfBid_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllContractorOfBid_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("thTenNhaThau", frmCode)</th>
+
+                @*ConfigViettinBank: Ẩn trạng thái *@
+
+                @*<th>@LanguageUtilities.LangText("thTrangThai", frmCode)</th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td>
+                        @if (item.STATUS != "AP" && item.STATUS != "RJ")
+                        {
+                            <input type="checkbox" class="filled-in chkItemContractorOfBid" name="chkItemContractorOfBid_@Model.ViewId" id="chkItemContractorOfBid_@Model.ViewId@item.CONTRACTOR_ID" modelId="@item.PKID" style="margin:0;" />
+                            <label for="chkItemContractorOfBid_@Model.ViewId@item.CONTRACTOR_ID"></label>
+                        }
+                    </td>
+                    <td>
+                        <div>
+
+                            @try
+                            {
+                                @item.Contractor.TEN_NGAN
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        </div>
+                        <div class="col-blue-grey">
+
+                            @try
+                            {
+                                @item.Contractor.TEN_DAI
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        </div>
+                    </td>
+                    @*ConfigViettinBank: Ẩn trạng thái *@
+                    @*<td>
+                        @if (item.STATUS == "AP")
+                        {
+                            if (item.Contractor != null && !string.IsNullOrEmpty(item.Contractor.TEN_NGAN))
+                            {
+                                <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                        else if (item.STATUS == "RJ")
+                        {
+                            <span class="badge bg-red">@LanguageUtilities.LangText("lblTuChoi", frmCode)</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblChoXacNhan", frmCode)</span>
+                        }
+                    </td>*@
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

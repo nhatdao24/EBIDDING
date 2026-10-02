@@ -1,0 +1,82 @@
+﻿@model SMO.Service.EB.BidCouncilService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_DetailListCouncil";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    var lstVaiTro = SelectListUtilities.GetDictionary(Domain.VAI_TRO.ToString(), false, false, "", lang);
+}
+
+<div id='@Model.ViewId'>
+    <div class="card border-grey">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">people</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive">
+                    <table class="table table-condensed table-striped table-bordered font-13">
+                        <thead>
+                            <tr>
+                                <th>@LanguageUtilities.LangText("thTenNguoiCham", frmCode)</th>
+                                <th class="align-center">@LanguageUtilities.LangText("thNguoiQuyetDinh", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thVaiTro", frmCode)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ObjList)
+                            {
+                                var arrVaiTro = new List<string>();
+                                if (!string.IsNullOrEmpty(item.VAI_TRO))
+                                {
+                                    foreach (var vaiTro in item.VAI_TRO.Split(','))
+                                    {
+                                        var find = lstVaiTro.FirstOrDefault(x => x.Value == vaiTro);
+                                        if (find != null)
+                                        {
+                                            arrVaiTro.Add(find.Text);
+                                        }
+                                    }
+                                }
+                                <tr>
+                                    <td>
+                                        <div>@item.User.USER_NAME</div>
+                                        <div class="col-blue-grey">@item.User.FULL_NAME</div>
+                                    </td>
+                                    <td class="align-center">
+                                        @if (item.IS_QUYET_DINH == true)
+                                        {
+                                            <input type="checkbox" checked onclick="event.preventDefault();" id="chk_@Model.ViewId@item.PKID" class="filled-in" />
+                                            <label for="chk_@Model.ViewId@item.PKID"></label>
+                                        }
+                                    </td>
+                                    <td>
+                                        @foreach (var vaiTro in arrVaiTro)
+                                        {
+                                            <div>@vaiTro</div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+

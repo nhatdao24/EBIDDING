@@ -1,0 +1,53 @@
+﻿@model SMO.Service.EB.ContractorProjectService
+@{ 
+    var frmCode = "frm_ContractorProject_Index";
+
+}
+<div class="table-responsive font-13">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("lblTenDuAn", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblChuDauTu", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblGiaTri", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblThoiGian", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblLoaiVon", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblPhamVi", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.CREATE_DATE))
+            {
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'"+ item.PKID +"'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjaxModal({0});", param);
+                if (Model.IsViewOnly)
+                {
+                    vdbclickAction = "";
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.TEN_DU_AN</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.CHU_DAU_TU
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.GIA_TRI.ToStringVN() @item.GIA_TRI_CURRENCY
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@LanguageUtilities.LangText("lblBatDau", frmCode): @(item.BAT_DAU.HasValue ? item.BAT_DAU.Value.ToString(Global.DateToStringFormat) : "")</div>
+                        <div>@LanguageUtilities.LangText("lblKetThuc", frmCode): @(item.KET_THUC.HasValue ? item.KET_THUC.Value.ToString(Global.DateToStringFormat) : "")</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.LOAI_VON
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.MO_TA
+                    </td>
+                    
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

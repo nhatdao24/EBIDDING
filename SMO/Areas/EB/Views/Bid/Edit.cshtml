@@ -1,0 +1,633 @@
+﻿@model SMO.Service.EB.BidService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var frmCode = "frm_Bid_Edit";
+    var ObjBid = Model.ObjDetail;
+
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.PKID);
+
+    if (Model.ObjDetail.MO_TA != null)
+    {
+        var template = Model.ObjDetail.MO_TA
+            .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+
+            @*ConfigViettinBank: Xoá dự án*@
+
+            //.Replace("{DIA_DIEM}", serviceBid.ObjDetail.Project.DIA_DIEM)
+            .Replace("{THOI_GIAN_MO_THAU}", serviceBid.ObjDetail.NGAY_MO_THAU.ToString())
+            .Replace("{THOI_GIAN_DONG_THAU}", serviceBid.ObjDetail.NGAY_DONG_THAU.ToString())
+
+            @*ConfigViettinBank: Xoá dự án*@
+
+            //.Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+            .Replace("{NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.FULL_NAME)
+            .Replace("{SDT_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.PHONE)
+            .Replace("{EMAIL_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.EMAIL);
+
+        Model.ObjDetail.MO_TA = template;
+    }
+
+}
+<div id='@Model.ViewId'>
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.REQUIRED_CODE)
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+        @Html.HiddenFor(m => m.ObjDetail.ListFileDelete, new { id = "hddListFileDelete" })
+        @Html.HiddenFor(m => m.ObjDetail.STATUS)
+        @Html.HiddenFor(m => m.ObjDetail.COMMENT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.GIAI_DOAN)
+        @Html.HiddenFor(m => m.ObjDetail.IS_PUBLIC)
+        @Html.HiddenFor(m => m.ObjDetail.IS_BROADCAST_MAIL)
+        @Html.HiddenFor(m => m.ObjDetail.PARENT_BID)
+        @Html.HiddenFor(m => m.ObjDetail.IS_MULTIL_ROUND)
+        @Html.HiddenFor(m => m.ObjDetail.ROUND)
+        <div class="row">
+
+
+            <div class="col-xs-12 col-sm-8">
+                <div class="card border-grey">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                            </li>
+                        </ul>
+                        @if (ObjBid.STATUS == "01" || ObjBid.STATUS == "04")
+                        {
+                            <div class="tab-content">
+                                <div class="page-function">
+                                    <div class="page-function-button m-r-20">
+                                        @Html.MyButton("cmdSave", @LanguageUtilities.LangControl("cmdSave", frmCode), "SubmitForm();", "Alt+N", "done_all")
+                                    </div>
+                                </div>
+
+                                <div class="row m-t-20">
+                                    <div class="col-xs-12">
+                                        <label>@LanguageUtilities.LangText("lblPKID", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.PKID, new { @disabled = "true" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12">
+                                        @*ConfigViettinBank: Tên gói thầu -> Khoản mua sắm*@
+                                        <label>@LanguageUtilities.LangText("lblTEN_GOI_THAU_VTB", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12">
+                                        @*ConfigViettinBank: Tên gói thầu -> Khoản mua sắm*@
+                                        <label>@LanguageUtilities.LangText("lblTEN_GOI_THAU_EN_VTB", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU_EN)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU_EN)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNguoiQLHD", frmCode)</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.USER_MANAGE, SelectListUtilities.GetAllUserFecon(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.USER_MANAGE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.USER_APPROVE, SelectListUtilities.GetUserApproveProject("RP307", Model.ObjDetail.PROJECT_CODE), new { @data_bind = "value: ObjHeader.USER_APPROVE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.USER_APPROVE)
+                                        </div>
+                                    </div>
+
+                                    @*ConfigViettinBank: bỏ dụ án*@
+
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>Dự án</label>
+                                            <div class="form-group">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_CODE, SelectListUtilities.GetProjectOfUser(), new { @data_bind = "value: ObjHeader.PROJECT_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                                @Html.HiddenFor(m => m.ObjDetail.PROJECT_CODE, new { @data_bind = "value: ObjHeader.PROJECT_CODE", @id = "projectCodeHidden" })
+                                                @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_CODE)
+                                            </div>
+                                        </div>*@
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>Gói thầu</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.PACKAGE_CODE, SelectListUtilities.GetAllPackage(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.PACKAGE_CODE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>Phân loại HHDV</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.SCOPE_TYPE_CODE, SelectListUtilities.GetScopeType(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                        </div>
+                                    </div>
+
+                                    @*ConfigViettinBank: bỏ loại hình*@
+
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>Loại hình</label>
+                                            <div class="form-group">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetBidType(ProfileUtilities.User.LANGUAGE), new { @class = "selectpicker show-tick dropdown" })
+                                                @Html.ValidationMessageFor(m => m.ObjDetail.TYPE)
+                                            </div>
+                                        </div>*@
+
+                                    @*<div class="clearfix"></div>*@
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_MO_THAU, new { @class = "datetimepicker", @data_val = false })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_DONG_THAU, new { @class = "datetimepicker", @data_val = false })
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>@LanguageUtilities.LangText("lblNGAY_KET_THUC", frmCode)</label>
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_KT_CHAM_THAU, new { @class = "datetimepicker", @data_val = false })
+                                                </div>
+                                            </div>
+                                        </div>*@
+
+                                    @*<div class="col-xs-12">
+                                            <div>
+                                                <label>@LanguageUtilities.LangText("lblMO_TA", frmCode)</label>
+                                                <div class="form-group">
+                                                    <div class="form-line">
+                                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA, new { id = "txtMoTaEdit" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xs-12">
+                                            <div>
+                                                <label>@LanguageUtilities.LangText("lblMO_TA_EN", frmCode)</label>
+                                                <div class="form-group">
+                                                    <div class="form-line">
+                                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA_EN, new { id = "txtMoTaEdit_EN" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                </div>
+                            </div>
+
+                        }
+                        else
+                        {
+                            <div class="tab-content">
+                                <div class="page-function">
+                                    <div class="page-function-button m-r-20">
+                                        @Html.MyButton("cmdSave", @LanguageUtilities.LangControl("cmdSave", frmCode), "SubmitForm();", "Alt+N", "done_all")
+                                    </div>
+                                </div>
+
+                                <div class="row m-t-20">
+                                    <div class="col-xs-12">
+                                        <label>@LanguageUtilities.LangText("lblPKID", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.PKID, new { @disabled = "true" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12">
+
+                                        @*ConfigViettinBank: Tên gói thầu -> Khoản mua sắm(đổi tên)*@
+
+                                        <label>@LanguageUtilities.LangText("lblTEN_GOI_THAU_VTB", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU, new { @disabled = "true" })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12">
+
+
+                                        @*ConfigViettinBank: Tên gói thầu -> Khoản mua sắm(đổi tên)*@
+
+                                        <label>@LanguageUtilities.LangText("lblTEN_GOI_THAU_EN_VTB", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU_EN, new { @disabled = "true" })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU_EN)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNguoiQLHD", frmCode)</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.USER_MANAGE, SelectListUtilities.GetAllUserFecon(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.USER_MANAGE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.USER_APPROVE, SelectListUtilities.GetUserApproveProject("RP307", Model.ObjDetail.PROJECT_CODE), new { @data_bind = "value: ObjHeader.USER_APPROVE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.USER_APPROVE)
+                                        </div>
+                                    </div>
+
+                                    @*ConfigViettinBank: bỏ dụ án*@
+
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>Dự án</label>
+                                            <div class="form-group">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_CODE, SelectListUtilities.GetProjectOfUser(), new { @data_bind = "value: ObjHeader.PROJECT_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                                @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_CODE)
+                                            </div>
+                                        </div>*@
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>Gói thầu</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.PACKAGE_CODE, SelectListUtilities.GetAllPackage(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.PACKAGE_CODE)
+                                        </div>
+                                    </div>
+
+                                    @*ConfigViettinBank: Phạm vi công việc -> Phân loại HHDV*@
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>Phân loại HHDV</label>
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.SCOPE_TYPE_CODE, SelectListUtilities.GetScopeType(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @disabled = "true" })
+                                        </div>
+                                    </div>
+
+
+                                    @*ConfigViettinBank: bỏ loại hình*@
+
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>Loại hình</label>
+                                            <div class="form-group">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetBidType(ProfileUtilities.User.LANGUAGE), new { @class = "selectpicker show-tick dropdown", @disabled = "true" })
+                                                @Html.ValidationMessageFor(m => m.ObjDetail.TYPE)
+                                            </div>
+                                        </div>*@
+
+                                    @*<div class="clearfix"></div>*@
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_MO_THAU, new { @class = "datetimepicker", @data_val = false, @readonly = "readonly" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 col-md-6">
+                                        <label>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode)</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @*ConfigViettinBank: Cho phép gia hạn thời gian đóng thầu *@
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_DONG_THAU, new
+                                                {
+                                                    @class = "datetimepicker",
+                                                    @data_val = false@*, @readonly = "readonly"*@})
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    @*ConfigViettinBank: Xóa ngày kết thúc chấm th *@
+
+                                    @*@if (ObjBid.GIAI_DOAN == "03" || ObjBid.GIAI_DOAN == "04" || ObjBid.GIAI_DOAN == "05")
+                                        {*@
+                                    <!--<div class="col-xs-12 col-md-6">
+                                    <label>@LanguageUtilities.LangText("lblNGAY_KET_THUC", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">-->
+                                    @*ConfigViettinBank: Cho phép gia hạn thời gian đóng thầu *@
+
+                                    @*@Html.MyTextBoxFor(m => m.ObjDetail.NGAY_KT_CHAM_THAU, new { @class = "datetimepicker", @data_val = false, @readonly = "readonly" })*@
+                                    <!--@Html.MyTextBoxFor(m => m.ObjDetail.NGAY_KT_CHAM_THAU, new { @class = "datetimepicker", @data_val = false, @readonly = "readonly" })
+                                            </div>
+                                        </div>
+                                    </div>-->
+                                    @*}
+                                        else
+                                        {*@
+                                    @*<div class="col-xs-12 col-md-6">
+                                            <label>@LanguageUtilities.LangText("lblNGAY_KET_THUC", frmCode)</label>
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_KT_CHAM_THAU, new { @class = "datetimepicker", @data_val = false })
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    @*}*@
+
+
+                                    @*<div class="col-xs-12">
+                                            <div>
+                                                <label>@LanguageUtilities.LangText("lblMO_TA", frmCode)</label>
+                                                <div class="form-group">
+                                                    <div class="form-line">
+                                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA, new { id = "txtMoTaEdit", @disabled = "true" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xs-12">
+                                            <div>
+                                                <label>@LanguageUtilities.LangText("lblMO_TA_EN", frmCode)</label>
+                                                <div class="form-group">
+                                                    <div class="form-line">
+                                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA_EN, new { id = "txtMoTaEdit_EN", @disabled = "true" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                </div>
+                            </div>
+
+                        }
+
+
+                    </div>
+                </div>
+
+            </div>
+
+            @*ConfigViettinBank: Tách thành 2 loại hồ sơ *@
+
+
+            @*@if (ObjBid.STATUS == "01" || ObjBid.STATUS == "04")
+                {
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="card border-grey">
+
+                            <div class="body" style="padding-top: 0px;">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div>
+                                        @Html.MyButton("cmdFileHoSo", @LanguageUtilities.LangControl("cmdFileHoSo", frmCode), "UploadFile.InsertFile();", "Chọn file hồ sơ", "attach_file")
+                                    </div>
+
+                                    <div id="divPreviewFile" class="m-t-10">
+
+                                    </div>
+
+                                    <hr />
+
+                                    @{Html.RenderPartial("ListFile", Model.ObjDetail.ListFile.Select(x => x.FileUpload).ToList(), new ViewDataDictionary { new KeyValuePair<string, object>("isRemoveFile", true) });
+
+
+
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="card border-grey">
+
+                            <div class="body" style="padding-top: 0px;">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div>
+                                        @Html.MyButton("cmdFileHoSo", @LanguageUtilities.LangControl("cmdFileHoSo", frmCode), "UploadFile.InsertFile();", "Chọn file hồ sơ", "attach_file")
+                                    </div>
+
+                                    <div id="divPreviewFile" class="m-t-10">
+
+                                    </div>
+
+                                    <hr />
+
+                                    @{Html.RenderPartial("ListFile", Model.ObjDetail.ListFile.Select(x => x.FileUpload).ToList(), new ViewDataDictionary { new KeyValuePair<string, object>("isRemoveFile", true) });
+
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                }*@
+
+
+            <div class="col-xs-12 col-sm-4">
+                @* --- KHỐI HỒ SƠ YÊU CẦU (TYPE = YC) --- *@
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> HỒ SƠ YÊU CẦU</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            @if (ObjBid.STATUS == "01" || ObjBid.STATUS == "04")
+                            {
+                                <div class="align-center m-b-20">
+                                    @Html.MyButton("cmdFileYC", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_YC', 'YC');", "", "attach_file")
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="align-center m-b-20">
+                                    @Html.MyButton("cmdFileYC", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_YC', 'YC');", "", "attach_file")
+                                </div>
+                            }
+                            <div id="divPreviewFile_YC"></div>
+                            @{
+                                var listYC = Model.ObjDetail.ListFile.Where(x => x.TYPE == "YC").Select(x => x.FileUpload).ToList();
+                                Html.RenderPartial("ListFile", listYC, new ViewDataDictionary { { "isRemoveFile", (ObjBid.STATUS == "01" || ObjBid.STATUS == "04") } });
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+                @* --- KHỐI QUYẾT ĐỊNH PHÊ DUYỆT (TYPE = QD) --- *@
+                <div class="card border-grey m-t-20">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> QUYẾT ĐỊNH PHÊ DUYỆT</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            @if (ObjBid.STATUS == "01" || ObjBid.STATUS == "04")
+                            {
+                                <div class="align-center m-b-20">
+                                    @Html.MyButton("cmdFileQD", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_QD', 'QD');", "", "attach_file")
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="align-center m-b-20">
+                                    @Html.MyButton("cmdFileQD", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_QD', 'QD');", "", "attach_file")
+                                </div>
+                            }
+                            <div id="divPreviewFile_QD"></div>
+                            @{
+                                var listQD = Model.ObjDetail.ListFile.Where(x => x.TYPE == "QD").Select(x => x.FileUpload).ToList();
+                                Html.RenderPartial("ListFile", listQD, new ViewDataDictionary { { "isRemoveFile", (ObjBid.STATUS == "01" || ObjBid.STATUS == "04") } });
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    }
+
+    <script type="text/javascript">
+        UploadFile.ListFile = [];
+
+        function RemoveFile(obj, fileId) {
+            if (!confirm("Bạn có chắc chắn xóa file này?")) {
+                return;
+            }
+            $(obj).parent().parent().parent().parent().remove();
+            $("#hddListFileDelete").val($("#hddListFileDelete").val() + "|" + fileId);
+        }
+
+        function SubmitForm() {
+            if (!$('#@Model.FormId').valid()) {
+                return false;
+            }
+
+            //$("#txtMoTaEdit").val(CKEDITOR.instances.txtMoTaEdit.getData());
+            //$("#txtMoTaEdit_EN").val(CKEDITOR.instances.txtMoTaEdit_EN.getData());
+
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+
+
+            @* ConfigViettinBank: Tách thành 2 loại hồ sơ *@
+
+            //for (var i = 0; i < UploadFile.ListFile.length; i++) {
+            //    formData.append("files", UploadFile.ListFile[i].DataFile);
+            //}
+
+
+            if (UploadFile.ListFile && UploadFile.ListFile.length > 0) {
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    var fileObj = UploadFile.ListFile[i];
+                    formData.append("files", fileObj.DataFile);
+                    formData.append("fileGroups", fileObj.FileGroup);
+                }
+            }
+
+
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            console.log(percentComplete);
+
+                            if (percentComplete === 100) {
+                                //alert("kakalot");
+                            }
+                        }
+                    }, false);
+
+                    return xhr;
+                },
+                type: "POST",
+
+                @* ConfigViettinBank: Đổi chức năng Update thành UpdateVtb * @
+
+                @*url: "@Url.Action("Update")",*@
+
+                url: "@Url.Action("UpdateVtb")",
+
+
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                    setTimeout(function () {
+                        $("#mnuThongTin").click();
+                    }, 2500);
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        };
+
+        //$(function () {
+        //    CKEDITOR.replace('txtMoTaEdit', {
+        //        filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+        //    });
+
+        //    CKEDITOR.replace('txtMoTaEdit_EN', {
+        //        filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+        //    });
+
+            Forms.CompleteUI();
+        //});
+    </script>
+</div>

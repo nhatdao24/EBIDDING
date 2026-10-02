@@ -1,0 +1,34 @@
+﻿@model SMO.Service.EB.ContractorScopeService
+@using SMO.Repository.Implement.EB
+@{
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var contractorDetail = Model.UnitOfWork.Repository<ContractorRepo>().Get(Model.ObjDetail.CONTRACTOR_ID);
+}
+
+@foreach (var item in Model.ObjList.OrderBy(x => x.SCOPE_CODE))
+{
+    try
+    {
+        if (lang == "vi")
+        {
+            <span class="badge bg-blue">@item.Scope.TEXT</span>
+        }
+        else
+        {
+            <span class="badge bg-blue">@item.Scope.TEXT_EN</span>
+        }
+    }
+    catch (Exception)
+    {
+    }
+
+}
+@if (!string.IsNullOrEmpty(contractorDetail.LINH_VUC_CHINH_TEXT))
+{
+    <span class="badge bg-blue">@contractorDetail.LINH_VUC_CHINH_TEXT</span>
+}
+

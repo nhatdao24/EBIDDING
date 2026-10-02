@@ -1,0 +1,75 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Core.Entities
+@{
+    var number = 1;
+    var frmCode = "frm_Bid_IndexBidContractorClose";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var lstNewRound = new List<T_EB_BID>();
+    foreach (var item in Model.ObjList.Where(x => x.IS_MULTIL_ROUND == true).ToList())
+    {
+        if (Model.ObjList.Count(x => x.PARENT_BID == item.PARENT_BID) > 1)
+        {
+            var newRound = Model.ObjList.Where(x => x.PARENT_BID == item.PARENT_BID).OrderByDescending(x => x.ROUND).FirstOrDefault();
+            lstNewRound.Add(newRound);
+        }
+    }
+    Model.ObjList = Model.ObjList.Where(x => x.IS_MULTIL_ROUND == false).ToList();
+    Model.ObjList.AddRange(lstNewRound.Distinct());
+}
+
+<div class="table-responsive font-13  dashboard-task-infos">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("thTenGoiThau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thGiaiDoan", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayMoThau", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayDongThau", frmCode)</th>
+                <th width="120px" class="align-center">@LanguageUtilities.LangText("thTrangThai", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+            {
+                number++;
+                
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidContractor", new { id = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <div><a href="#" onclick="@vdbclickAction">@item.PARENT_BID</a></div>
+                        @if (lang == "vi")
+                        {
+                            <div>@item.TEN_GOI_THAU</div>
+                        }
+                        else
+                        {
+                            <div>@item.TEN_GOI_THAU_EN</div>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge @Phase_Status.GetStatusColor(item.GIAI_DOAN)">@Phase_Status.GetStatusText(item.GIAI_DOAN, lang)</span>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</div>
+                    </td>
+
+                    <td style="padding-top: 0px;" class="align-center">
+                        @if (item.ListContractor.Count(x => x.IS_WINNING && x.CONTRACTOR_ID == ProfileUtilities.User.CONTRACTOR_ID) == 1)
+                        {
+                            <span class="badge bg-red">@LanguageUtilities.LangText("lblTrungThau", frmCode)</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

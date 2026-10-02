@@ -1,0 +1,14 @@
+﻿
+<script type="text/javascript">
+    $(function () {
+        if ('@ViewBag.Link' != '') {
+            var ajaxParam = {
+                url: '@ViewBag.Link',
+                data: { isOpenFromPortal: "1", idMenu: "@ViewBag.IdMenu"}
+            };
+            Forms.LoadAjax(ajaxParam);
+        } else {
+            window.location.href = "/Admin/Index";
+        }
+    });
+</script>

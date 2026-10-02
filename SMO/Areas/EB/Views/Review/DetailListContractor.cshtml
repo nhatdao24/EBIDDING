@@ -1,0 +1,94 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Review_DetailListContractor";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div id='@Model.ViewId'>
+    <div class="card border-grey">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">people_outline</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive">
+                    <table class="table table-condensed table-striped table-bordered font-13">
+                        <thead>
+                            <tr>
+                                <th>@LanguageUtilities.LangText("thTenNhaThau", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thGoiThau", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thCongViec", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thGiaTri", frmCode)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ObjList)
+                            {
+                                <tr>
+                                    <td rowspan="@(item.ListDetail.Count()+1)">
+                                        @item.Contractor.TEN_DAI (@item.Contractor.TEN_NGAN)
+                                    </td>
+                                </tr>
+                                foreach (var detail in item.ListDetail)
+                                {
+                                    <tr>
+                                        <td class="align-center">
+                                            @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                            {
+                                                foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                                {
+                                                    var find = Model.UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                    if (find != null)
+                                                    {
+                                                        var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                        <div><a href="#" onclick="@action">@find.PKID</a> - @find.TEN_GOI_THAU</div>
+                                                        @*<div>@find.TEN_GOI_THAU</div>*@
+                                                    }
+                                                }
+                                            }
+
+                                        </td>
+                                        <td>
+                                            @detail.INFO_BID
+                                        </td>
+                                        <td>
+                                            @detail.GIA_TRI.ToStringVN()
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function ViewInfoContractor(id){
+            var params = {
+                url : "@Url.Action("ViewInfo", "Contractor", new { @area = "EB"})",
+                data: { id: id }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+    </script>
+</div>
+
+

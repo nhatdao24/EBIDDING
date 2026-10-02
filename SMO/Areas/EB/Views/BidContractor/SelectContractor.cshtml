@@ -1,0 +1,330 @@
+﻿@model SMO.Service.EB.BidContractorService
+@using Newtonsoft.Json
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidContractor_SelectContractor";
+    var bid = Model.UnitOfWork.Repository<BidRepo>().Queryable().FirstOrDefault(x => x.PKID == Model.ObjDetail.BID_ID);
+    var lstCouncil = Model.UnitOfWork.Repository<BidCouncilRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+    var lstComment = Model.UnitOfWork.Repository<BidLeadershipCommentsRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+
+    var serviceBidSubmit = new SMO.Service.EB.BidSubmitService();
+    serviceBidSubmit.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidSubmit.Search();
+
+    var lstHoSoTongHop = serviceBidSubmit.ObjList.Where(x => x.TYPE == FileGroupType.TongHop).ToList();
+    var randomNumber = new Random().Next(1, 1000);
+}
+<div id='@Model.ViewId'>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body">
+                    @Html.MyButton("cmdCreateRound", "Đấu thầu vòng tiếp theo", $"ContractorOfNewRound_{randomNumber}();", "", "redo")
+                    @Html.MyButton("cmdCancelBid", "Hủy gói thầu", $"CancelBid_{randomNumber}();", "", "cancel")
+                    @Html.MyButton("cmdCloseBid", "Kết thúc gói thầu", $"CloseBid_{randomNumber}();", "", "lock")
+                </div>
+            </div>
+
+            <div class="card border-grey m-t-10">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">people_outline</i> DANH SÁCH NHÀ THẦU | HỒ SƠ TỔNG HỢP </a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            @*@if (AuthorizeUtilities.CheckUserRight("R419"))
+                            {
+                                @Html.MyButton("cmdRechoice", @LanguageUtilities.LangControl("cmdRechoice", frmCode), "RechoiceContractor();", "", "clear_all")
+                            }*@
+                                                @*@if (AuthorizeUtilities.CheckUserRight("R415"))
+                            {
+                                @Html.MyButton("cmdThuongThaoLai", @LanguageUtilities.LangText("cmdThuongThaoLai", frmCode), "ThuongThaoLai();", "", "clear_all")
+                            }*@
+
+                            @Html.MyButton("cmdCompare", @LanguageUtilities.LangText("cmdCompare", frmCode), "CompareContractor();", "", "compare", "", true, new { @style = "float: right" })
+
+                            @*@Html.MyButton("cmdUpload", "Upload hồ sơ", "AddSubmit();", "Alt+N", "attach_file", "", true, new { @style = "float: right" })*@
+
+                            @if (lstCouncil.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_QUYET_DINH == true) > 0)
+                            {
+                                @Html.MyButton("cmdComment", "Thêm ý kiến", "AddComment();", "Alt+S", "question_answer", "", true, new { @style = "float: right" })
+                            }
+                            @Html.MyButton("cmdSave", "Lưu quyết định chọn thầu", "ChoiceContractorWin();", "", "done_all")
+                            @Html.MyButton("cmdSave", "Yêu cầu thương thảo lại", "ThuongThaoLai();", "", "done_all")
+                        </div>
+
+                        @using (Ajax.BeginForm("ListDebutContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId, "#divResultContractor"), new { @id = "frmDebutContractor" }))
+                        {
+                            @Html.AntiForgeryToken();
+                            @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+
+                            <div id="divResultContractor">
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="col-xs-12 col-sm-8 m-t-10">
+            @using (Ajax.BeginForm("ListManager", "BidSubmit", null, FormDataUtils.GetAjaxOptions(Model.ViewId, "#divResultSubmitFile"), new { @id = "frmSubmitFile" }))
+            {
+                @Html.AntiForgeryToken();
+                @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+                <input type="hidden" name="ObjDetail.TYPE" value="TH" />
+                <input type="hidden" name="IS_SHOW_ONLY_TONG_HOP" value="1" />
+                <div id="divResultSubmitFile">
+                </div>
+            }
+
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="card border-grey m-t-10">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">question_answer</i> Ý KIẾN LÃNH ĐẠO</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        @foreach (var comment in lstComment.OrderByDescending(x => x.CREATE_DATE))
+                        {
+                            <div class="card">
+                                <div class="body">
+                                    <div class="conversation">
+                                        <div class="question">
+                                            <div class="user">@comment.USER_NAME (@comment.User.FULL_NAME)</div>
+                                            <div class="time">
+                                                @comment.CREATE_DATE.ToString()
+                                            </div>
+
+                                            <div class="content">
+                                                @Html.Raw(comment.CONTENTS)
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+       
+  
+
+        function CancelBid_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn hủy không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Cancel", "Bid")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.BID_ID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function CloseBid_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn kết thúc gói thầu không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("KetThuc", "Bid")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.BID_ID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function ContractorOfNewRound_@(randomNumber)() {
+            var params = {
+                url: "@Url.Action("ContractorOfNewRound", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', viewId: "@Model.ViewId" }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddSubmit() {
+            UploadFile.ClearFile();
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var contractorId = '';
+            var params = {
+                url : "@Url.Action("CreateSubmit","BidSubmit")",
+                data: { bidId: bidId, contractorId: contractorId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function AddFile() {
+            UploadFile.ClearFile();
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var params = {
+                url : "@Url.Action("AddFileInSelectContractor")",
+                data: { bidId: bidId}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddComment() {
+            var params = {
+                url: "@Url.Action("Comment")",
+                data: { bidId: '@Model.ObjDetail.BID_ID' }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function SubmitListDebutContractor() {
+            Forms.SubmitForm('frmDebutContractor');
+        }
+
+        function SubmitListFile() {
+            Forms.SubmitForm('frmSubmitFile');
+        }
+
+        function ThuongThaoLai() {
+            if (confirm("Bạn có chắc chắn muốn thương thảo lại không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("ThuongThaoLai", "Bid")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.BID_ID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function RechoiceContractor() {
+            var params = {
+                url: "@Url.Action("DebutContractor", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', isSelect: true }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function CompareContractor() {
+            var params = {
+                url: "@Url.Action("DebutContractor", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', isSelect: false }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function ChoiceContractorWin() {
+            var nodeWinningChecked = $("input[name='chkItem_Winning']:checked");
+            if (nodeWinningChecked.length == 0) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Vui lòng chọn nhà thầu trúng thầu !" } });
+                return;
+            }
+            var arrWinning = [];
+            $.each(nodeWinningChecked, function (i, val) {
+                var idContractor = nodeWinningChecked[i].defaultValue;
+                var percent = $("#txtPercentWin_" + idContractor).val();
+                arrWinning.push({ CONTRACTOR_ID: idContractor, PERCENT_WINNING : percent});
+            });
+
+
+
+            var priceElements = document.querySelectorAll('.priceValue');
+
+            var maxPrice = null;
+
+            priceElements.forEach(function (element) {
+                var price = parseFloat(element.getAttribute('data-price'));
+
+                if (!isNaN(price)) {
+                    if (maxPrice === null || price > maxPrice) {
+                        maxPrice = price; 
+                    }
+                }
+            });
+            console.log(maxPrice);
+            var inputElements = document.querySelectorAll('.value_debut');
+
+            var totalPercent = 0;
+
+            inputElements.forEach(function (element) {
+                var percent = parseFloat(element.value);
+                if (!isNaN(percent)) {
+                    totalPercent += percent;
+                }
+            });
+            console.log(totalPercent)
+
+            if (totalPercent > maxPrice) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Tổng giá trị giao phải thấp hơn giá thầu cao nhất được đưa ra bởi các nhà thầu !" } });
+                return;
+            }
+
+            var contractorId = arrWinning.join("|");
+            var params = {
+                type : "POST",
+                url : "@Url.Action("ChoiceContractorWin", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', lstContractorWin: arrWinning },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.ShowLoading();
+            Forms.Ajax(params);
+        }
+
+        function CancelContractorWin(contractorId, contractorName) {
+            if (!confirm("Bạn có chắc chắn hủy kết quả trúng thầu của nhà thầu ["+contractorName+"] không?")) {
+                return;
+            }
+
+            var params = {
+                url : "@Url.Action("CancelContractorWin", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', contractorId: contractorId },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.ShowLoading();
+            Forms.Ajax(params);
+        }
+
+        $(function () {
+            SubmitListDebutContractor();
+            SubmitListFile();
+        })
+    </script>
+</div>

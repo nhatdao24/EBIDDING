@@ -1,0 +1,50 @@
+﻿@model SMO.Service.EB.ReviewFinalService
+@using SMO.Core.Entities
+
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">timeline</i> LỊCH SỬ XẾP HẠNG @Model.ObjDetail.CODE</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content po-info table-responsive">
+                    <table class="table table-condensed table-bordered table-striped" style="font-size: 13px">
+                        <tbody>
+                            @foreach (var item in Model.ObjDetail.ListHistory.OrderByDescending(x => x.STATUS_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <label>@item.USER_CREATE.FULL_NAME</label>
+                                    </td>
+                                    <td>
+                                        <span class="badge @Review_Final_Status.GetStatusColor(item.STATUS)">@Review_Final_Status.GetStatusText(item.STATUS)</span>
+                                    </td>
+                                    <td>
+                                        <span>@(item.STATUS_DATE.HasValue ? item.STATUS_DATE.Value.ToString(Global.DateTimeToStringFormat) : string.Empty)</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            @Html.Raw(item.NOTES)
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>
+

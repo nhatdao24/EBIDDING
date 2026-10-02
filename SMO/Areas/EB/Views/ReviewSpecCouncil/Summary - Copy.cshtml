@@ -1,0 +1,206 @@
+﻿@model SMO.Service.EB.ReviewSpecCouncilService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewSpecCouncil_Review";
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var numberRow = 0;
+    var numberSpec = 0;
+    decimal sumMax = Model.ObjListMdReviewSpec.Sum(x => x.MAX_SCORE);
+}
+<div id='@Model.ViewId'>
+    <div class="card border-grey m-b-10">
+        <div class="body">
+            @Html.MyButton("cmdExportExcel", LanguageUtilities.LangText("cmdExportExcel", frmCode), "ExportExcel();", " ", "cloud_download")
+            <div style="float: right;">
+                @Html.MyButton("cmdSave", "", "$('#"+ Model.ViewId +"').toggleClass('full-screen')", " ", "zoom_out_map")
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-grey m-b-10">
+        <div class="table-responsive font-14">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <td rowspan="3" class="align-center strong" style="min-width: 50px;"><b>@LanguageUtilities.LangText("lblSTT", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 200px;"><b>@LanguageUtilities.LangText("lblNhaThau", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 150px;"><b>@LanguageUtilities.LangText("lblLoaiHangHoa", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 150px;"><b>@LanguageUtilities.LangText("lblCongViecThucHien", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblGiaTri", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblTyLe", frmCode)</b></td>
+                        <td colspan="@Model.ObjListMdReviewSpec.Count" class="align-center"><b>@LanguageUtilities.LangText("lblCacChiTieuDanhGia", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblTDDatDuoc", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblTDDanhGia", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblTyLeDatDuoc", frmCode)</b></td>
+                        <td rowspan="3" class="align-center" style="min-width: 200px;"><b>@LanguageUtilities.LangText("lblGhiChu", frmCode)</b></td>
+                    </tr>
+                    <tr>
+                        @foreach (var spec in Model.ObjListMdReviewSpec)
+                        {
+                            numberSpec++;
+                            <td class="align-center" style="min-width: 100px;">
+                                <b>@numberSpec</b>
+                                <div>
+                                        <a href="#" title="@spec.DESCRIPTION">(T.Điểm: @spec.MAX_SCORE)</a>
+                                    </div>
+                                @*<div>(@spec.RATIO %)</div>*@
+                                @*<div>(T.Điểm: @spec.MAX_SCORE)</div>*@
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        @foreach (var spec in Model.ObjListMdReviewSpec)
+                        {
+                            <td class="align-center" style="min-width: 100px;"><b>@spec.NAME</b></td>
+                        }
+                    </tr>
+                    @foreach (var reviewContractor in Model.ObjListReviewContractor)
+                    {
+                        if (reviewContractor.ListDetail.Count > 0)
+                        {
+                            foreach (var detail in reviewContractor.ListDetail)
+                            {
+                                decimal sumScore = 0;
+                                numberRow++;
+                                <tr>
+                                    <td class="align-center">@numberRow</td>
+                                    <td>
+                                        @reviewContractor.Contractor.TEN_NGAN
+                                        <div>Xếp hạng: @reviewContractor.Contractor.XEP_HANG</div>
+                                    </td>
+                                        
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(detail.MATERIAL_TYPE))
+                                        {
+                                            foreach (var typeId in detail.MATERIAL_TYPE.Split(','))
+                                            {
+                                                var find = UnitOfWork.Repository<MaterialTypeRepo>().Get(typeId);
+                                                if (find != null)
+                                                {
+                                                    <div>@find.TEXT</div>
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@detail.INFO_BID</div>
+                                        @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                        {
+                                            foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                            {
+                                                var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                if (find != null)
+                                                {
+                                                    var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                    <div><a href="#" onclick="@action">@find.PKID</a></div>
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                    <td class="align-center">
+                                        @detail.GIA_TRI.ToStringVN()
+                                    </td>
+                                    <td class="align-center">
+                                        @if (Model.ObjProject != null && Model.ObjProject.GIA_TRI_THUC_HIEN > 0)
+                                        {
+                                            <span>@(((detail.GIA_TRI / Model.ObjProject.GIA_TRI_THUC_HIEN) * 100).ToStringVN()) %</span>
+                                        }
+                                        else
+                                        {
+                                            <span>0 %</span>
+                                        }
+                                    </td>
+
+                                    @foreach (var spec in Model.ObjListMdReviewSpec)
+                                    {
+                                        var findSpecCouncil = Model.ObjListReviewSpecScore.Where(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID).ToList();
+                                        decimal value = 0;
+                                        var newId = Guid.NewGuid().ToString();
+                                        if (findSpecCouncil.Count > 0)
+                                        {
+                                            //value = (findSpecCouncil.Sum(x => x.SCORE) / findSpecCouncil.Count) * ((decimal)spec.RATIO) / 100;
+                                            value = ((decimal)findSpecCouncil.Sum(x => x.SCORE) / (decimal)findSpecCouncil.Count);
+                                        }
+                                        sumScore += value;
+                                        <td class="align-center">
+                                            <a href="#" onclick="$('#div_@newId').toggle();" >@value.ToStringVN()</a>
+                                            <div id="div_@newId" style="display: none;">
+                                                @foreach (var item in findSpecCouncil)
+                                                {
+                                                    <div class="col-red">@item.USER_SCORE : @item.SCORE</div>
+                                                }
+                                            </div>
+                                        </td>
+                                    }
+
+                                    <td class="align-center">
+                                        @sumScore.ToStringVN()
+                                    </td>
+                                    <td class="align-center">
+                                        @sumMax.ToStringVN()
+                                    </td>
+                                    <td class="align-center">
+                                        @((sumScore / sumMax * 100).ToStringVN()) %
+                                    </td>
+                                    <td>
+                                        @foreach (var item in Model.ObjListReviewCouncilNote.Where(x => x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID))
+                                        {
+                                            <div><b>@item.USER_SCORE: </b> @item.NOTES</div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            numberRow++;
+                            <tr>
+                                <td class="align-center">@numberRow</td>
+                                <td>
+                                    @reviewContractor.Contractor.TEN_NGAN
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td class="align-center">
+                                </td>
+                                <td class="align-center">
+                                </td>
+
+                                @foreach (var spec in Model.ObjListMdReviewSpec)
+                                {
+                                    <td class="align-center">
+                                    </td>
+                                }
+                                <td>
+                                </td> 
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function ExportExcel() {
+            var url = "@Url.Action("ExportExcelSumary")" + "?reviewId=@ViewBag.ReviewId";
+            window.open(url, '_blank');
+        }
+    </script>
+</div>
+

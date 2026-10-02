@@ -1,0 +1,73 @@
+﻿@model SMO.Service.WF.WorkFlowService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("CreateSender", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjSender.FK_LEVEL)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <span class="page-header-icon" onclick="Forms.CloseRightContent();" style="float:right;">
+                    <i class="material-icons">arrow_forward</i>
+                </span>
+
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">add</i> TẠO MỚI NGƯỜI GỬI</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-20">
+                        <div class="col-xs-12">
+                            <label>Chọn người gửi</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjSender.USERNAMES)
+                                </div>
+                            </div>
+
+                            <label>Loại phê duyệt</label>
+                            <div class="form-group">
+                                <select name="@Html.NameFor(m => m.ObjSender.TYPE)"
+                                        data-virtual-scroll="false" data-live-search="true" data-show-subtext="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    <option value="@ApproveType.Approve.ToString()">@ApproveType.Approve.ToString()</option>
+                                    <option value="@ApproveType.Reject.ToString()">@ApproveType.Reject.ToString()</option>
+                                </select>
+                            </div>
+
+                            <label>Mô tả</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjSender.NOTES)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjSender.NOTES)
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+
+

@@ -1,0 +1,54 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Repository.Implement.MD;
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered font-13">
+        <thead>
+            <tr>
+                <th>Tên đăng nhập</th>
+                <th>Họ tên</th>
+                <th>Chức danh</th>
+                <th>Đơn vị</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.USER_NAME))
+            {
+                var url = Url.Action("Edit");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.USER_NAME + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.USER_NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.FULL_NAME</td>
+                    <td ondblclick="@vdbclickAction">@item.Title.NAME</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.ORGANIZE_ID) && item.Organize != null)
+                        {
+                            <span>[@item.Organize.COMPANY_CODE] @item.Organize.NAME</span> <br />
+                        }
+                    </td>
+                    <td>
+                        @if (item.ACTIVE)
+                        {
+                            <span class="badge bg-blue">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-grey">Khóa tài khoản</span>
+                        }
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+

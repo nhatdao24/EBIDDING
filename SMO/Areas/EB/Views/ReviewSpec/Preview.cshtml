@@ -1,0 +1,92 @@
+﻿@model SMO.Service.EB.ReviewSpecService
+@using SMO.Core.Entities
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_EbReviewSpec_Preview";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        <div class="card">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">search</i> </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    @BuildSpec(Model.ObjList.Where(x => x.PARENT_ID == "" || x.PARENT_ID == null).OrderBy(x => x.C_ORDER).ToList(), lang)
+                </div>
+            </div>
+        </div>
+
+
+
+        <script type="text/javascript">
+            $(function () {
+                @*@foreach (var item in Model.ObjList.Where(x => x.IS_NOT_SHOW_CONTRACTOR == false))
+                {
+                    if (item.TYPE == "TEXT")
+                    {
+                        @: CKEDITOR.replace('@item.PKID',
+                        @: {toolbar: 'Basic', height: '100px'});
+                    }
+                }*@
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+
+@helper BuildSpec(List<T_EB_REVIEW_SPEC> ListSpec, string lang)
+{
+    foreach (var item in ListSpec)
+    {
+        if (lang == "vi")
+        {
+            <div>@item.NAME</div>
+            <div class="col-grey font-12 m-b-10">@item.DESCRIPTION</div>
+        }
+        else
+        {
+            <div>@item.NAME_EN</div>
+            <div class="col-grey font-12 m-b-10">@item.DESCRIPTION_EN</div>
+        }
+
+
+        <div class="form-group">
+            <select class="selectpicker show-tick dropdown form-control">
+                @foreach (var detail in item.ListDetail)
+                {
+                    if (lang == "vi")
+                    {
+                        <option value="@detail.PKID">@detail.VALUE</option>
+                    }
+                    else
+                    {
+                        <option value="@detail.PKID">@detail.VALUE_EN</option>
+                    }
+                }
+            </select>
+        </div>
+
+    }
+}

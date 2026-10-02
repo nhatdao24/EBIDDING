@@ -1,0 +1,136 @@
+﻿@model SMO.Service.AD.MenuService
+@using SMO.Core.Entities
+
+@{ 
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<script type="text/javascript">
+    function OnChangeUserOrg(obj) {
+        var org = $(obj).val();
+        var url = "/Admin/ChangeOrg?orgId=" + org; 
+        window.location.replace(url);
+    }
+
+</script>
+
+<div class="menu menu-home">
+    <ul class="list list-home">
+        @if (ProfileUtilities.UserOrg.Count > 0)
+        {
+            <div class="user-org m-l-15 m-t-5 m-r-10">
+                <label class="col-fecon">Chọn đơn vị</label>
+                <select class="form-control selectpicker show-tick" data-container="body" data-live-search="true" data-val="False" onchange="OnChangeUserOrg(this);" tabindex="-98">
+                    @foreach (var item in ProfileUtilities.UserOrg)
+                    {
+                        if (item.Organize.COMPANY_CODE == ProfileUtilities.User.Organize.COMPANY_CODE)
+                        {
+                            <option value="@item.ORGANIZE_ID" selected>@item.Organize.NAME</option>
+                        }
+                        else
+                        {
+                            <option value="@item.ORGANIZE_ID">@item.Organize.NAME</option>
+                        }
+                    }
+                </select>
+            </div>
+        }
+
+
+        @if (true)
+        {
+            <li>
+                <a href="/HDSD_NT/Hướng dẫn sử dụng hệ thống Ebidding.html" target="_blank">
+                    <i class="material-icons">description</i>
+                    @if (lang == "vi")
+                    {
+                        <span>Hướng dẫn sử dụng</span>
+                    }
+                    else
+                    {
+                        <span>Instructions For Use</span>
+                    }
+                </a>
+            </li>
+        }
+        else
+        {
+            
+        }
+        <li>
+            <a href="/Admin/Index">
+                <i class="material-icons">home</i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        @ShowTree(Model.ListMenuRole.Where(x => x.PARENT == "" || x.PARENT == null).ToList())
+
+    </ul>
+</div>
+@helper ShowTree(List<T_AD_MENU> ListMenu)
+{
+    foreach (var item in ListMenu)
+    {
+        if (ProfileUtilities.User.USER_TYPE == UserType.NhaThau
+            && (item.CODE == "MNU_INFO_CONTRACTOR"
+            || item.CODE == "MNU_CONTRACTOR_BID_INDEX"
+            || item.CODE == "MNU_CONTRACTOR_BID_INVITE"
+            || item.CODE == "MNU_CONTRACTOR_BID_OPEN"
+            || item.CODE == "MNU_CONTRACTOR_BID_CLOSE"
+            ))
+        {
+            <li>
+                @{
+                    var onclick = string.IsNullOrWhiteSpace(item.LINK) ? "" : "Forms.LoadFormMenu(this)";
+                    var clsParent = Model.ListMenuRole.Count(x => x.PARENT == item.CODE) > 0 ? "menu-toggle" : "";
+                }
+
+                <a href="javascript:void(0);" class="@clsParent" onclick="@onclick" url="@item.LINK">
+                    <i class="material-icons">@item.ICON</i>
+                    <span>@item.LANGUAGE_VALUE</span>
+                </a>
+            </li>
+        }
+        else if (item.CODE != "MNU_INFO_CONTRACTOR"
+                && item.CODE != "MNU_CONTRACTOR_BID_INDEX"
+                && item.CODE != "MNU_CONTRACTOR_BID_INVITE"
+                && item.CODE != "MNU_CONTRACTOR_BID_OPEN"
+                && item.CODE != "MNU_CONTRACTOR_BID_CLOSE"
+                )
+        {
+            <li>
+                @{
+                    var onclick = string.IsNullOrWhiteSpace(item.LINK) ? "" : "Forms.LoadFormMenu(this)";
+                    var clsParent = Model.ListMenuRole.Count(x => x.PARENT == item.CODE) > 0 ? "menu-toggle" : "";
+                }
+
+                <a href="javascript:void(0);" class="@clsParent" onclick="@onclick" url="@item.LINK">
+                    <i class="material-icons">@item.ICON</i>
+                    <span>@item.LANGUAGE_VALUE</span>
+                    @if (ViewBag.CountRequest > 0 && item.CODE == "MNU_REQUEST")
+                    {
+                        <span class="badge bg-blue col-white" style="position: absolute;right: 10px;font-size: 12px !important;font-weight: bold !important;color: white !important; ">@ViewBag.CountRequest</span>
+                    }
+
+                    @if (ViewBag.CountFeeback > 0 && item.CODE == "MNU_FEEDBACK")
+                    {
+                        <span class="badge bg-blue col-white" style="position: absolute;right: 10px;font-size: 12px !important;font-weight: bold !important;color: white !important; ">@ViewBag.CountFeeback</span>
+                    }
+                </a>
+
+                @if (Model.ListMenuRole.Count(x => x.PARENT == item.CODE) > 0)
+                {
+                    <ul class="ml-menu">
+                        @ShowTree(Model.ListMenuRole.Where(x => x.PARENT == item.CODE).ToList())
+                    </ul>
+                }
+            </li>
+        }
+
+    }
+}

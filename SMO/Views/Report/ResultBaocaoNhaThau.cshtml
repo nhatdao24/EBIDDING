@@ -1,0 +1,277 @@
+﻿@model SMO.Service.ReportService
+@using SMO.Service
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.AD
+@{
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+
+    var queryBidContractor = UnitOfWork.Repository<BidContractorRepo>().Queryable();
+    var queryBidContractorPrice = UnitOfWork.Repository<BidContractorPriceRepo>().Queryable();
+    var queryContractor = UnitOfWork.Repository<ContractorRepo>().Queryable();
+    var queryBid = UnitOfWork.Repository<BidRepo>().Queryable();
+    var queryOrg = UnitOfWork.Repository<OrganizeRepo>().Queryable();
+    var lstUserOrg = UnitOfWork.Repository<UserOrgRepo>().Queryable().Where(x => x.USER_NAME == ProfileUtilities.User.USER_NAME).Select(x => x.ORGANIZE_ID).ToList();
+    lstUserOrg.Add(ProfileUtilities.User.ORGANIZE_ID);
+    var isQueryContractor = false;
+    var isQueryBid = false;
+    if (!string.IsNullOrWhiteSpace(Model.MaNhaThau))
+    {
+        queryContractor = queryContractor.Where(
+            x => x.MA_SO_THUE.Contains(Model.MaNhaThau) ||
+            x.TEN_DAI.Contains(Model.MaNhaThau) ||
+            x.TEN_NGAN.Contains(Model.MaNhaThau) ||
+            x.EMAIL.Contains(Model.MaNhaThau)
+            );
+        isQueryContractor = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.LinhVucChinh))
+    {
+        queryContractor = queryContractor.Where(
+            x => x.LINH_VUC_CHINH.Contains(Model.LinhVucChinh));
+        isQueryContractor = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.TenGoiThau))
+    {
+        queryBid = queryBid.Where(
+            x => x.TEN_GOI_THAU.Contains(Model.TenGoiThau) ||
+            x.TEN_GOI_THAU_EN.Contains(Model.TenGoiThau) ||
+            x.PKID.Contains(Model.TenGoiThau)
+            );
+        isQueryBid = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.LoaiGoiThau))
+    {
+        queryBid = queryBid.Where(
+            x => x.TYPE == Model.LoaiGoiThau);
+        isQueryBid = true;
+    }
+
+    if (Model.NgayMoThau_TuNgay.HasValue)
+    {
+        queryBid = queryBid.Where(x => x.NGAY_MO_THAU >= Model.NgayMoThau_TuNgay.Value);
+        isQueryBid = true;
+    }
+
+    if (Model.NgayMoThau_DenNgay.HasValue)
+    {
+        queryBid = queryBid.Where(x => x.NGAY_MO_THAU < Model.NgayMoThau_DenNgay.Value.AddDays(1));
+        isQueryBid = true;
+    }
+
+    if (Model.NgayDongThau_TuNgay.HasValue)
+    {
+        queryBid = queryBid.Where(x => x.NGAY_DONG_THAU >= Model.NgayDongThau_TuNgay.Value);
+        isQueryBid = true;
+    }
+
+    if (Model.NgayDongThau_DenNgay.HasValue)
+    {
+        queryBid = queryBid.Where(x => x.NGAY_DONG_THAU < Model.NgayDongThau_DenNgay.Value.AddDays(1));
+        isQueryBid = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.DuAn))
+    {
+        queryBid = queryBid.Where(x => x.PROJECT_CODE == Model.DuAn);
+        isQueryBid = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.CompanyCode))
+    {
+        queryBid = queryBid.Where(x => x.COMPANY_CODE == Model.CompanyCode);
+        isQueryBid = true;
+    }
+    else
+    {
+        var lstCompanyCode = queryOrg.Where(x => lstUserOrg.Contains(x.PKID)).Select(x => x.COMPANY_CODE).ToList();
+        queryBid = queryBid.Where(x => lstCompanyCode.Contains(x.COMPANY_CODE));
+        isQueryBid = true;
+    }
+
+    if (isQueryContractor)
+    {
+        var lstContractorId = queryContractor.Select(x => x.PKID).ToList();
+        queryBidContractor = queryBidContractor.Where(x => lstContractorId.Contains(x.CONTRACTOR_ID));
+    }
+
+    if (isQueryBid)
+    {
+        var lstBidId = queryBid.Select(x => x.PKID).ToList();
+        queryBidContractor = queryBidContractor.Where(x => lstBidId.Contains(x.BID_ID));
+        queryBidContractorPrice = queryBidContractorPrice.Where(x => lstBidId.Contains(x.BID_ID));
+    }
+
+    if (Model.KetQua == "Y")
+    {
+        queryBidContractor = queryBidContractor.Where(x => x.IS_WINNING == true);
+    }
+
+    if (Model.KetQua == "N")
+    {
+        queryBidContractor = queryBidContractor.Where(x => x.IS_WINNING == false);
+    }
+
+    var lstBidContractor = queryBidContractor.OrderBy(x => x.CONTRACTOR_ID).ToList();
+    var lstPrice = queryBidContractorPrice.OrderBy(x => x.CONTRACTOR_ID).ToList();
+    var stt = 0;
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="align-center">STT</th>
+                <th class="align-center" style="min-width: 150px">Đơn vị</th>
+                <th class="align-center" style="min-width: 150px">Tài khoản nhà thầu</th>
+                <th style="min-width: 350px">Thông tin nhà thầu</th>
+                <th style="min-width: 350px">Thông tin gói thầu</th>
+                <th class="align-center" style="min-width: 200px">Dự án</th>
+                <th class="align-center" style="min-width: 150px">Mã gói thầu</th>
+                <th style="min-width: 150px">Giá chào thầu</th>
+                <th style="min-width: 150px">Giá trị giao thầu</th>
+                <th style="min-width: 150px">Giai đoạn</th>
+                <th class="align-center" style="min-width: 150px">Kết quả thầu</th>
+                <th class="align-center" style="min-width: 150px">Ngày mời thầu</th>
+                <th class="align-center" style="min-width: 150px">Ngày kết thúc chấm thầu</th>
+                <th class="align-center" style="min-width: 150px">Ngày đóng thầu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lstBidContractor)
+            {
+                stt++;
+                var Org = queryOrg.Where(x => x.COMPANY_CODE == item.Bid.COMPANY_CODE).FirstOrDefault();
+                var parentOrg = queryOrg.Where(x => x.PKID == Org.PARENT).FirstOrDefault();
+                var isChuyenDoi = false;
+                var strGiaChaoThau = "";
+                decimal giaChaoThau = 0;
+                var specGiaTriOfBid = UnitOfWork.Repository<BidSpecRepo>().Queryable().Where(
+                    x => x.BID_ID == item.BID_ID && x.MD_PKID == Global.IdSpecPrice).FirstOrDefault();
+                if (specGiaTriOfBid != null)
+                {
+                    var specGiaTri = UnitOfWork.Repository<BidSpecContractorRepo>().Queryable().Where(
+                            x => x.BID_ID == item.BID_ID &&
+                            x.CONTRACTOR_ID == item.CONTRACTOR_ID &&
+                            x.SPEC_ID == specGiaTriOfBid.PKID
+                        ).FirstOrDefault();
+
+                    if (specGiaTri != null)
+                    {
+                        strGiaChaoThau = specGiaTri.VALUE;
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(strGiaChaoThau))
+                {
+                    isChuyenDoi = Decimal.TryParse(strGiaChaoThau, out giaChaoThau);
+                }
+
+                decimal giaTrungThau = 0;
+                var findGiaTrungThau = lstPrice.OrderByDescending(x => x.CREATE_DATE).FirstOrDefault(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID && x.TYPE == "3");
+                if (findGiaTrungThau != null)
+                {
+                    giaTrungThau = findGiaTrungThau.PRICE;
+                }
+
+                var urlContractor = Url.Action("Detail", "Contractor", new { area = "EB" });
+                string paramContractor = "{" + $"url:'{urlContractor}', data:" + "{id:'" + item.CONTRACTOR_ID + "'}}";
+                var vdbclickActionContractor = string.Format("Forms.LoadAjax({0});", paramContractor);
+
+                var urlBid = Url.Action("MenuDetailBidManager", "Bid", new { area = "EB" });
+                string paramBid = "{" + $"url:'{urlBid}', data:" + "{id:'" + item.BID_ID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", paramBid);
+
+                <tr>
+                    <td class="align-center">@stt</td>
+                    <td class="align-center">
+                        @if (parentOrg != null)
+                        {
+                            <div>
+                                @parentOrg.NAME
+                            </div>
+                        }
+                        @*<div>
+                @Org.NAME
+            </div>*@
+                    </td>
+                    <td ondblclick="@vdbclickActionContractor" class="align-center">
+                        <a href="#" onclick="@vdbclickActionContractor">@item.Contractor.USER_NAME</a>
+                    </td>
+                    <td>
+                        <div>@item.Contractor.TEN_NGAN (@item.Contractor.TEN_DAI)</div>
+                        <div><b>MST: </b>@item.Contractor.MA_SO_THUE</div>
+                        <div><b>Email: </b>@item.Contractor.EMAIL</div>
+                        <div><b>Số điện thoại: </b>@item.Contractor.PHONE</div>
+                        <div><b>Lĩnh vực chính: </b>@item.Contractor.LINH_VUC_CHINH</div>
+                    </td>
+                    <td>
+                        <div><b>Tên gói thầu: </b>@item.Bid.TEN_GOI_THAU</div>
+                        <div><b>Loại gói thầu: </b>@item.Bid.BidType.TEXT</div>
+                        <div><b>Ngày mở thầu: </b>@item.Bid.NGAY_MO_THAU.ToString(Global.DateToStringFormat)</div>
+                        <div><b>Ngày đóng thầu: </b>@item.Bid.NGAY_DONG_THAU.ToString(Global.DateToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        @if (item.Bid != null && item.Bid.Project != null)
+                        {
+                            <div>@item.Bid.Project.NAME</div>
+                        }
+                    </td>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.BID_ID</a>
+                    </td>
+                    <td>
+                        @if (isChuyenDoi)
+                        {
+                            <span>@giaChaoThau.ToStringVN()</span>
+                        }
+                        else
+                        {
+                            <span>@strGiaChaoThau</span>
+                        }
+                    </td>
+                    <td>
+                        <span>
+                            @(item.PERCENT_WINNING.HasValue ? item.PERCENT_WINNING.Value.ToStringVN() : "")
+                        </span>
+                    </td>
+                    <td>
+                        <span>
+                            <span class="badge @Phase_Status.GetStatusColor(item.Bid.GIAI_DOAN)">@Phase_Status.GetStatusText(item.Bid.GIAI_DOAN)</span>
+                        </span>
+                    </td>
+                    <td class="align-center">
+                        @if (item.IS_WINNING == true && (item.Bid.GIAI_DOAN == "04" || item.Bid.GIAI_DOAN == "05"))
+                        {
+                            <b class="col-green">Trúng</b>
+                        }
+                        else if (item.IS_WINNING == false && (item.Bid.GIAI_DOAN == "04" || item.Bid.GIAI_DOAN == "05"))
+                        {
+                            <span class="col-red">Không trúng</span>
+                        }
+                        else 
+                        {
+                            <span class="col-blue">Đang chọn</span>
+                        }
+                    </td>
+                    <td class="align-center">
+                        <div>@item.Bid.NGAY_MO_THAU.ToString(Global.DateToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        @if (item.Bid.NGAY_KT_CHAM_THAU.HasValue)
+                        {
+                            <div>@item.Bid.NGAY_KT_CHAM_THAU.Value.ToString(Global.DateToStringFormat)</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        <div>@item.Bid.NGAY_DONG_THAU.ToString(Global.DateToStringFormat)</div>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

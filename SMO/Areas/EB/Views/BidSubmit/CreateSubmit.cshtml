@@ -1,0 +1,291 @@
+﻿@model SMO.Service.EB.BidSubmitService
+@using SMO.Service.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidSubmit_CreateSubmit";
+
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        <div class="card">
+            <div class="body">
+                @Html.MyButton("cmdCreateSubmit", "Upload hồ sơ lên hệ thống", "CreateSubmit();", "Alt+N", "done_all")
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> CHỌN NHÀ THẦU</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div>
+                                <input checked name="radioSubmit" id="radio_TongHop_@Model.ViewId" onclick="ChangeContractorSubmit(this, 'TONGHOP');" type="radio" class="radio-col-blue-grey">
+                                <label for="radio_TongHop_@Model.ViewId" style="font-size: 13px;" class="col-red font-bold">HỒ SƠ TỔNG HỢP</label>
+                            </div>
+
+                            @foreach (var item in serviceBidContractor.ObjList)
+                            {
+                                <div>
+                                    <input name="radioSubmit" id="radio_@Model.ViewId@item.CONTRACTOR_ID" onclick="ChangeContractorSubmit(this,'@item.CONTRACTOR_ID');" type="radio" class="radio-col-blue-grey">
+                                    <label for="radio_@Model.ViewId@item.CONTRACTOR_ID" style="font-size: 13px;">@item.Contractor.TEN_NGAN</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-8">
+                @using (Ajax.BeginForm("CreateSubmit", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+                    @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID, new {@id="hddContractorId"})
+                    <div class="card border-grey">
+                        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                        {
+                            <div class="divLanguage">
+                                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                            </div>
+                        }
+                        <div class="body" style="padding-top: 0px;">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> CHỌN FILE HỒ SƠ</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="row" style="margin: 10px;">
+                                    <div class="col-md-6 col-xs-12 clsTongHop">
+                                        <div class="m-b-10 align-center">
+                                            @Html.MyButton("cmdFileTongHop", "Bấm chọn file tổng hợp", "UploadFile.InsertFile('#divPreviewFileSubmit_TongHop','fileSubmitTongHop');", "Chọn file", "attach_file")
+                                        </div>
+                                        <div id="divPreviewFileSubmit_TongHop">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-xs-12 clsTongHop">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <textarea id="txtDescriptionTongHop" name="moTaTongHop"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 clsTongHop" style="border-bottom: 1px solid #D7D7D7;"></div>
+
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <div class="m-b-10 align-center">
+                                            @Html.MyButton("cmdFileGia", LanguageUtilities.LangText("cmdFileGia", frmCode), "UploadFile.InsertFile('#divPreviewFileSubmit_Gia','fileSubmitGia');", "Chọn file", "attach_file")
+                                        </div>
+                                        <div id="divPreviewFileSubmit_Gia">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <textarea id="txtDescriptionGia" name="moTaGia"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xs-12 clsContractor" style="border-bottom: 1px solid #D7D7D7;"></div>
+
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <div class="m-b-10 align-center">
+                                            @Html.MyButton("cmdFilePhapLy", LanguageUtilities.LangText("cmdFilePhapLy", frmCode), "UploadFile.InsertFile('#divPreviewFileSubmit_PhapLy','fileSubmitPhapLy');", "Chọn file", "attach_file")
+                                        </div>
+                                        <div id="divPreviewFileSubmit_PhapLy">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <textarea id="txtDescriptionPhapLy" name="moTaPhapLy"></textarea>
+                                    </div>
+
+                                    <div class="col-xs-12 clsContractor" style="border-bottom: 1px solid #D7D7D7;"></div>
+
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <div class="m-b-10 align-center">
+                                            @Html.MyButton("cmdFileKyThuat", LanguageUtilities.LangText("cmdFileKyThuat", frmCode), "UploadFile.InsertFile('#divPreviewFileSubmit_KyThuat','fileSubmitKyThuat');", "Chọn file", "attach_file")
+                                        </div>
+                                        <div id="divPreviewFileSubmit_KyThuat">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <textarea id="txtDescriptionKyThuat" name="moTaKyThuat"></textarea>
+                                    </div>
+
+                                    <div class="col-xs-12 clsContractor" style="border-bottom: 1px solid #D7D7D7;"></div>
+
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <div class="m-b-10 align-center">
+                                            @Html.MyButton("cmdFileNangLuc", LanguageUtilities.LangText("cmdFileNangLuc", frmCode), "UploadFile.InsertFile('#divPreviewFileSubmit_NangLuc','fileSubmitNangLuc');", "Chọn file", "attach_file")
+                                        </div>
+                                        <div id="divPreviewFileSubmit_NangLuc">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-xs-12 clsContractor">
+                                        <textarea id="txtDescriptionNangLuc" name="moTaNangLuc"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+
+
+        <script type="text/javascript">
+            function ChangeContractorSubmit(obj, contractorId) {
+                UploadFile.ClearFile();
+                $("#divPreviewFileSubmit_NangLuc").html("");
+                $("#divPreviewFileSubmit_KyThuat").html("");
+                $("#divPreviewFileSubmit_Gia").html("");
+                $("#divPreviewFileSubmit_TongHop").html("");
+                $(".clsContractor").hide();
+                $(".clsTongHop").hide();
+                if (contractorId == "TONGHOP") {
+                    $(".clsTongHop").show();
+                    $("#hddContractorId").val("");
+                } else {
+                    $(".clsContractor").show();
+                    $("#hddContractorId").val(contractorId);
+                }
+            }
+            function CreateSubmit() {
+                if (UploadFile.ListFile.length == 0) {
+                    alert("Bạn chưa chọn hồ sơ!");
+                    return;
+                }
+
+                $("#txtDescriptionNangLuc").val(CKEDITOR.instances.txtDescriptionNangLuc.getData());
+                $("#txtDescriptionPhapLy").val(CKEDITOR.instances.txtDescriptionPhapLy.getData());
+                $("#txtDescriptionKyThuat").val(CKEDITOR.instances.txtDescriptionKyThuat.getData());
+                $("#txtDescriptionGia").val(CKEDITOR.instances.txtDescriptionGia.getData());
+                $("#txtDescriptionTongHop").val(CKEDITOR.instances.txtDescriptionTongHop.getData());
+
+                var formData = new FormData($('#@Model.FormId')[0]);
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileSubmitGia") {
+                        formData.append("filesGia", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileSubmitPhapLy") {
+                        formData.append("filesPhapLy", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileSubmitKyThuat") {
+                        formData.append("filesKyThuat", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileSubmitNangLuc") {
+                        formData.append("filesNangLuc", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileSubmitTongHop") {
+                        formData.append("filesTongHop", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                Forms.ShowLoading();
+
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    type: "POST",
+                    url: "@Url.Action("CreateSubmit")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        UploadFile.ClearFile("fileSubmit");
+                        Message.execute(response);
+                        $("#btnClose").click();
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            $(function () {
+                $(".clsContractor").hide();
+
+                CKEDITOR.replace('txtDescriptionNangLuc', {
+                    toolbar: 'Basic',
+                    height: '60px'
+                });
+
+                CKEDITOR.replace('txtDescriptionPhapLy', {
+                    toolbar: 'Basic',
+                    height: '60px'
+                });
+
+                CKEDITOR.replace('txtDescriptionKyThuat', {
+                    toolbar: 'Basic',
+                    height: '60px'
+                });
+
+                CKEDITOR.replace('txtDescriptionGia', {
+                    toolbar: 'Basic',
+                    height: '60px'
+                });
+
+                CKEDITOR.replace('txtDescriptionTongHop', {
+                    toolbar: 'Basic',
+                    height: '60px'
+                });
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

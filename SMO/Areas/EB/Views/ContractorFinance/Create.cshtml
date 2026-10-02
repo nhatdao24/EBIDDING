@@ -1,0 +1,212 @@
+﻿@model SMO.Service.EB.ContractorFinanceService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ContractorFinance_Create";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+                    <div style="display:none">
+                        <input type="file" id="fileFinance" onchange="OnChangeFileFinance(this)" />
+                    </div>
+
+                    <div class="tab-content">
+                        <div class="page-function m-t-10">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "CreateFinance();", "Alt+N", "done_all")
+                                @Html.MyButton("cmdFile", LanguageUtilities.LangText("cmdFile", frmCode), "$('#fileFinance').click();", "Chọn file", "attach_file")
+                            </div>
+                        </div>
+
+                        <div id="divPreviewFileFinance">
+
+                        </div>
+
+                        <div class="m-t-20">
+                            <div class="col-xs-12 col-md-4">
+                                <label>@LanguageUtilities.LangText("lblNamTaiChinh", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-md-8">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.YEAR)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.YEAR)
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12 col-md-4">
+                                <label>@LanguageUtilities.LangText("lblDoanhThu", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-md-8">
+                                <div class="form-group">
+                                    <div class="form-line" style="width: 70%; float:left;">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.DOANH_THU, new { @class = "inputMask", @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true" })
+                                    </div>
+                                    <div style="width: 29%; float: right; padding-top: 1px;">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.DOANH_THU_CURRENCY, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.DOANH_THU)
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12 col-md-4">
+                                <label>@LanguageUtilities.LangText("lblLoiNhuanGop", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-md-8">
+                                <div class="form-group">
+                                    <div class="form-line" style="width: 70%; float:left;">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.LOI_NHUAN_GOP, new { @class = "inputMask", @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true" })
+                                    </div>
+                                    <div style="width: 29%; float: right; padding-top: 1px;">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.LOI_NHUAN_GOP_CURRENCY, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.LOI_NHUAN_GOP)
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12 col-md-4">
+                                <label>@LanguageUtilities.LangText("lblLoiNhuanRong", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-md-8">
+                                <div class="form-group">
+                                    <div class="form-line" style="width: 70%; float:left;">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.LOI_NHUAN_RONG, new { @class = "inputMask", @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true" })
+                                    </div>
+                                    <div style="width: 29%; float: right; padding-top: 1px;">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.LOI_NHUAN_RONG_CURRENCY, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.LOI_NHUAN_RONG)
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+
+
+                            <div class="col-xs-12 col-md-4">
+                                <label>@LanguageUtilities.LangText("lblVonChuSH", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-md-8">
+                                <div class="form-group">
+                                    <div class="form-line" style="width: 70%; float:left;">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.VON_CSH, new { @class = "inputMask", @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true" })
+                                    </div>
+                                    <div style="width: 29%; float: right; padding-top: 1px;">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.VON_CSH_CURRENCY, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.VON_CSH)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        }
+
+        <script type="text/javascript">
+            function OnChangeFileFinance(obj) {
+                $("#divPreviewFileFinance").html('');
+                try {
+                    if (obj.files && obj.files.length > 0) {
+                        $.each(obj.files, function (i, v) {
+                            var file = obj.files[i];
+                            var fileExt = file.name.split('.').pop();
+                            var fileIcon = UploadFile.GetIcon(fileExt);
+                            var fileId = Math.floor((Math.random() * 1000) + 1);
+                            var preview = '<div class="preview-file">'
+                            preview += '<img src = "\\Content\\IconFileType\\' + fileIcon + '" />'
+                            preview += '<div class="file-info">';
+                            preview += '<div class="file-name">' + file.name + "</div>"
+                            preview += '<div class="file-size">' + UploadFile.FormatByte(file.size, 2) + "</div>"
+                            preview += '</div>';
+                            preview += '</div>';
+                            $("#divPreviewFileFinance").append(preview);
+                        });
+                    }
+                } catch (e) {
+                    alert("Quá trình thêm file bị lỗi!" + e);
+                }
+            }
+
+            function CreateFinance() {
+                $(".inputMask").inputmask('remove');
+                var formData = new FormData($('#@Model.FormId')[0]);
+                var filesFinance = $('#fileFinance')[0].files;
+                for (var i = 0; i < filesFinance.length; i++) {
+                    formData.append("fileFinance", filesFinance[i]);
+                }
+
+                Forms.ShowLoading();
+
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    type: "POST",
+                    url: "@Url.Action("Create")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        SubmitIndexFinance();
+                        Message.execute(response);
+                        $("#btnClose").click();
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            $(function () {
+                $(".inputMask").inputmask();
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

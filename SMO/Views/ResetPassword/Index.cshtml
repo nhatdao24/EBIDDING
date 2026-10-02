@@ -1,0 +1,106 @@
+﻿@model SMO.Service.AD.ResetPasswordService
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>QUÊN MẬT KHẨU</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>FORGOT PASSWORD</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<div id='@Model.ViewId'>
+    <div class="container site-content sidebar-right" style="transform: none;">
+        <div class="row" style="transform: none;">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <div style="margin-top: 30px;">
+                    @using (Ajax.BeginForm("Index", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = "frmResetPassword", @class = "form-horizontal" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        if (lang == "vi")
+                        {
+                            <div>
+                                <input type="text" name="@Html.NameFor(m => m.ObjDetail.USER_NAME)" placeholder="Tên đăng nhập" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                            </div>
+                            <button style="width: 100%; color: white !important;" type="submit" class="submit">GỬI YÊU CẦU</button>
+                        }
+                        else
+                        {
+                            <div>
+                                <input type="text" name="@Html.NameFor(m => m.ObjDetail.USER_NAME)" placeholder="User name" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                            </div>
+                            <button style="width: 100%; color: white !important;" type="submit" class="submit">SEND REQUEST</button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SendMailSuccess() {
+        @if(lang == "vi")
+        {
+            @:alert("Gửi yêu cầu thành công, vui lòng kiểm tra hòm thư!");
+        }
+        else
+        {
+            @:alert("Send request successful, please check your mail!");
+        }
+    }
+    function EmailSendingFail() {
+        @if(lang == "vi")
+        {
+            @:alert("User name hoặc email không tồn tại, vui lòng kiểm tra lại!");
+        }
+        else
+        {
+            @:alert("User name or email does not exist, please check again!");
+        }
+    }
+    function AlreadyRequested() {
+        @if(lang == "vi")
+        {
+            @:alert("Yêu cầu reset password đã được tiếp nhận, hãy kiểm tra hòm thư!");
+        }
+        else
+        {
+            @:alert("The request has been created, please check your email!");
+        }
+    }
+</script>

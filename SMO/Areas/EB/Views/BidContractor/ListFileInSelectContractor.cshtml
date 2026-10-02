@@ -1,0 +1,7 @@
+﻿@model SMO.Service.EB.BidPhaseFileService
+@{ 
+    var frmCode = "frm_BidContractor_ListFileInSelectContractor";
+
+}
+
+@{Html.RenderPartial("ListFile", Model.ObjList.Where(x => x.PHASE == Phase_Status.ChonNhaThau).Select(x => x.FileUpload).ToList());}

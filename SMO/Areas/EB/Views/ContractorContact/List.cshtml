@@ -1,0 +1,54 @@
+﻿@model SMO.Service.EB.ContractorContactService
+@{
+    var frmCode = "frm_ContractorContact_Index";
+
+}
+<div class="table-responsive font-13">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("lblQuocGia", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTenNguoiLL", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblEmail", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblPhone", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblNotes", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblIs_Default", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.COUNTRY_CODE))
+            {
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.PKID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjaxModal({0});", param);
+                if (Model.IsViewOnly)
+                {
+                    vdbclickAction = "";
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @item.COUNTRY_CODE
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.FULL_NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.EMAIL
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.PHONE
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.NOTES
+                    </td>
+                    <td class="align-center">
+                        @if (item.IS_DEFAULT)
+                        {
+                            <i class="material-icons col-fecon">check</i>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

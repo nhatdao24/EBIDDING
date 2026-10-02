@@ -1,0 +1,741 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Service.EB
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_DetailBidManager";
+    var frmCodeBidRequired = "frm_BidRequire_Detail";
+
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    var serviceBidContractor = new BidContractorService();
+    if (Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau || Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+    {
+        serviceBidContractor.GetWinContractorOfBid(Model.ObjDetail.PKID);
+    }
+
+    dynamic param = new System.Dynamic.ExpandoObject();
+    param.IsFetch = true;
+    var serviceBidRequired = new SMO.Service.EB.BidRequireService();
+    serviceBidRequired.Get(Model.ObjDetail.REQUIRED_CODE, param);
+
+    var lstComment = Model.UnitOfWork.Repository<BidLeadershipCommentsRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+    var lstPrice = Model.UnitOfWork.Repository<BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+    var lstPriceFile = Model.UnitOfWork.Repository<BidContractorPriceFileRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.PKID);
+
+    if (Model.ObjDetail.MO_TA != null)
+    {
+        var template = Model.ObjDetail.MO_TA
+            .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+
+
+            @*ConfigViettinBank: Xóa dự án*@
+
+            //.Replace("{DIA_DIEM}", serviceBid.ObjDetail.Project.DIA_DIEM)
+            .Replace("{THOI_GIAN_MO_THAU}", serviceBid.ObjDetail.NGAY_MO_THAU.ToString())
+            .Replace("{THOI_GIAN_DONG_THAU}", serviceBid.ObjDetail.NGAY_DONG_THAU.ToString())
+
+            @*ConfigViettinBank: Xóa dự án*@
+
+            //.Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+            .Replace("{NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.FULL_NAME)
+            .Replace("{SDT_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.PHONE)
+            .Replace("{EMAIL_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.EMAIL);
+
+        Model.ObjDetail.MO_TA = template;
+    }
+
+    var randomNumber = new Random().Next(1, 1000);
+}
+<div id='@Model.ViewId'>
+    <div class="row">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey m-b-10">
+                <div class="body multi_step_form">
+                    <form id="msform">
+                        <ul id="progressbar" style="padding-left: 0; margin-bottom: 0">
+                            @if (Model.ObjDetail.GIAI_DOAN == Phase_Status.KhoiTao)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChamThau)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ThuongThaoLai)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau || Model.ObjDetail.GIAI_DOAN == Phase_Status.VongTiepTheo)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.HuyGoiThau)
+                            {
+                                <div style="text-align: center;margin-top: 10px;">
+                                    <span style="color: red; font-size: 20px; text-transform: uppercase;">@LanguageUtilities.LangText("lblAlert", frmCode)</span>
+                                </div>
+                            }
+                        </ul>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body">
+                    @if ((Model.ObjDetail.STATUS == EB_Status.KhoiTao || Model.ObjDetail.STATUS == EB_Status.ChoCapNhat) && (ProfileUtilities.User.USER_NAME == Model.ObjDetail.CREATE_BY || ProfileUtilities.User.USER_NAME == Model.ObjDetail.USER_MANAGE))
+                    {
+
+                        @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                        @*if (AuthorizeUtilities.CheckUserRightProject("RP305", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdSent", @LanguageUtilities.LangControl("cmdSent", frmCode), $"Send_{randomNumber}();", "Trình duyệt", "send")
+                            }
+                            <text> </text>
+                            if (AuthorizeUtilities.CheckUserRightProject("RP306", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdCancel", @LanguageUtilities.LangControl("cmdCancel", frmCode), $"Cancel_{randomNumber}();", "", "delete")
+                            }*@
+
+
+                        @Html.MyButton("cmdSent", @LanguageUtilities.LangControl("cmdSent", frmCode), $"Send_{randomNumber}();", "Trình duyệt", "send")
+
+                        <text> </text>
+
+                        @Html.MyButton("cmdCancel", @LanguageUtilities.LangControl("cmdCancel", frmCode), $"Cancel_{randomNumber}();", "", "delete")
+
+                    }
+                    @*Chời phê duyệt*@
+
+                    @if (Model.ObjDetail.STATUS == EB_Status.ChoPheDuyet && Model.ObjDetail.USER_APPROVE == ProfileUtilities.User.USER_NAME)
+                    {
+
+                        @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                        @*if (AuthorizeUtilities.CheckUserRightProject("RP307", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdApprove", @LanguageUtilities.LangControl("cmdApprove", frmCode), "Approve()", "", "done_all")
+                            }
+                            <text> </text>
+                            if (AuthorizeUtilities.CheckUserRightProject("RP308", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdCapNhat", @LanguageUtilities.LangControl("cmdCapNhat", frmCode), "RequireUpdate()", "", "backspace")
+                            }
+                            <text> </text>
+                            if (AuthorizeUtilities.CheckUserRightProject("RP312", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdReject", @LanguageUtilities.LangControl("cmdReject", frmCode), "Reject()", "", "cancel")
+                            }*@
+
+
+                        @Html.MyButton("cmdApprove", @LanguageUtilities.LangControl("cmdApprove", frmCode), "Approve()", "", "done_all")
+
+                        <text> </text>
+
+                        @Html.MyButton("cmdCapNhat", @LanguageUtilities.LangControl("cmdCapNhat", frmCode), "RequireUpdate()", "", "backspace")
+
+                        <text> </text>
+
+                        @Html.MyButton("cmdReject", @LanguageUtilities.LangControl("cmdReject", frmCode), "Reject()", "", "cancel")
+
+                    }
+
+                    @if (Model.ObjDetail.STATUS == EB_Status.DaPheDuyet || (Model.ObjDetail.STATUS == EB_Status.Huy && Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau))
+                    {
+
+                        @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                        <!--if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            if (AuthorizeUtilities.CheckUserRightProject("RP309", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdScoredBid", "Chuyển sang giai đoạn chấm thầu", $"ScoreBid_{randomNumber}();", "", "done_all")
+                            }
+                        }
+
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChamThau)
+                        {
+                            if (AuthorizeUtilities.CheckUserRightProject("RP319", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdDebut", @LanguageUtilities.LangControl("cmdDebut", frmCode), $"DebutContractor_{randomNumber}();", "", "done_all")
+                            }
+                            <text> </text>
+                            if (AuthorizeUtilities.CheckUserRightProject("RP310", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdEndScored", @LanguageUtilities.LangControl("cmdEndScored", frmCode), $"EndScoreBid_{randomNumber}();", "", "done_all")
+                            }
+                        }
+
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                        {
+                            if (AuthorizeUtilities.CheckUserRightProject("RP319", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdDebut", @LanguageUtilities.LangControl("cmdDebut", frmCode), $"DebutContractor_{randomNumber}();", "", "done_all")
+                            }
+                            <text> </text>
+
+                            if (AuthorizeUtilities.CheckUserRightProject("RP319", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {-->
+                        @*@Html.MyButton("cmdCreateRound", @LanguageUtilities.LangControl("cmdCreateRound", frmCode), $"ContractorOfNewRound_{randomNumber}();", "", "redo")*@
+                        <!--}
+                            <text> </text>
+                            if (AuthorizeUtilities.CheckUserRightProject("RP311", Model.ObjDetail.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdCancelBid", @LanguageUtilities.LangControl("cmdCancelBid", frmCode), $"CancelBid_{randomNumber}();", "", "cancel")
+                                <text> </text>
+                                @Html.MyButton("cmdCloseBid", @LanguageUtilities.LangControl("cmdCloseBid", frmCode), $"CloseBid_{randomNumber}();", "", "lock")
+                            }
+                        }-->
+
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+
+                            @Html.MyButton("cmdScoredBid", "Chuyển sang giai đoạn chấm thầu", $"ScoreBid_{randomNumber}();", "", "done_all")
+
+                        }
+
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChamThau)
+                        {
+
+                            @Html.MyButton("cmdDebut", @LanguageUtilities.LangControl("cmdDebut", frmCode), $"DebutContractor_{randomNumber}();", "", "done_all")
+
+                            <text> </text>
+
+                            @Html.MyButton("cmdEndScored", @LanguageUtilities.LangControl("cmdEndScored", frmCode), $"EndScoreBid_{randomNumber}();", "", "done_all")
+
+                        }
+
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                        {
+
+                            @Html.MyButton("cmdDebut", @LanguageUtilities.LangControl("cmdDebut", frmCode), $"DebutContractor_{randomNumber}();", "", "done_all")
+
+                            <text> </text>
+
+
+                            @*@Html.MyButton("cmdCreateRound", @LanguageUtilities.LangControl("cmdCreateRound", frmCode), $"ContractorOfNewRound_{randomNumber}();", "", "redo")*@
+
+                            <text> </text>
+
+                            @Html.MyButton("cmdCancelBid", @LanguageUtilities.LangControl("cmdCancelBid", frmCode), $"CancelBid_{randomNumber}();", "", "cancel")
+                            <text> </text>
+                            @Html.MyButton("cmdCloseBid", @LanguageUtilities.LangControl("cmdCloseBid", frmCode), $"CloseBid_{randomNumber}();", "", "lock")
+
+                        }
+
+
+
+                        if (serviceBidContractor.ObjList.Count > 0)
+                        {
+                            <div class="m-l-20 m-t-20 m-b-10">
+                                <b>@LanguageUtilities.LangText("lblWin", frmCode)</b>
+                            </div>
+
+                            foreach (var item in serviceBidContractor.ObjList)
+                            {
+                                <div class="m-l-20 m-t-10 m-b-10">
+
+                                    @if (item.Contractor != null)
+                                    {
+                                        <div style="color: rgba(22, 49, 94,1);">
+                                            <b> - @item.Contractor.TEN_NGAN (<span class="">@item.Contractor.TEN_DAI</span>) </b>
+                                            <br>
+                                            <b>Giá trị giao: @(item.PERCENT_WINNING.HasValue ? item.PERCENT_WINNING.Value.ToStringVN() + " " + "VNĐ" : "")</b>
+                                            <hr />
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+                        if (Model.ObjDetail.GIAI_DOAN == Phase_Status.HuyGoiThau && ProfileUtilities.User.USER_TYPE == UserType.NB)
+                        {
+                            <div class="m-l-20 m-t-20 m-b-10">
+                                <b>@LanguageUtilities.LangText("lblREASON", frmCode) </b>
+
+                                <div class="m-l-20 m-t-10 m-b-10">
+                                    <div>
+                                        - @Model.ObjDetail.REASON
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        if (ProfileUtilities.User?.USER_NAME == serviceBid.ObjDetail.UserSent?.USER_NAME && Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau)
+                        {
+                            @Html.MyButton("cmdAddEmail", "Thông báo trúng thầu", "AddEmailBidWin();", "Alt+S", "email")
+                            @Html.MyButton("cmdAddEmail", "Thông báo cảm ơn", "AddEmailBidThanks();", "Alt+S", "email")
+                            @Html.MyButton("cmdViewEmail", "Lịch sử gửi Mail", "ViewListEmailBid();", "Alt+T", "history")
+
+                        }
+                        if (ProfileUtilities.User?.USER_NAME == "admin")
+                        {
+                            @Html.MyButton("cmdCancel", @LanguageUtilities.LangControl("cmdCancel", frmCode), $"Cancel_{randomNumber}();", "", "delete")
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card border-grey">
+                <div class="body">
+                    <div class="tab-content">
+                        <div style="overflow-x: auto">
+                            <div class="col-blue-grey font-13 row p-l-20 p-r-20 m-l-0 m-r-0 m-b-20" style="border-bottom: 1px solid #D7D7D7;">
+
+                                @*ConfigViettinBank: Xóa dự án*@
+
+                                @*<div class="col-md-6 col-xs-6">
+                                        <b>@LanguageUtilities.LangText("lblDU_AN", frmCode): </b> @(Model.ObjDetail.PROJECT_CODE == null ? "" : Model.ObjDetail.Project.NAME)
+                                    </div>*@
+                                <div class="col-md-6 col-xs-6">
+                                    <b>Loại đấu thầu :</b> @(Model.ObjDetail.IS_PUBLIC == true ? "Rộng rãi" : "Nội bộ")
+                                </div>
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode): </b> @Model.ObjDetail.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)
+                                </div>
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode): </b> @Model.ObjDetail.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)
+                                </div>
+
+                                @*ConfigViettinBank: Xóa ngày kết thúc chấm thầu*@
+
+                                @*<div class="col-md-6 col-xs-12">
+                                        <b>@LanguageUtilities.LangText("lblNgayKetThuc", frmCode): </b> @(Model.ObjDetail.NGAY_KT_CHAM_THAU.HasValue ? Model.ObjDetail.NGAY_KT_CHAM_THAU.Value.ToString(Global.DateTimeToStringFormat) : "")
+                                    </div>*@
+
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNguoiTrinhDuyet", frmCode): </b> @(Model.ObjDetail.UserSent == null ? "" : Model.ObjDetail.UserSent.FULL_NAME) - @((Model.ObjDetail.UserSent.Title.NAME == null ? "Chưa có chức danh" : Model.ObjDetail.UserSent.Title.NAME))
+                                </div>
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode): </b> @(Model.ObjDetail.UserApprove?.FULL_NAME ?? "") - @(Model.ObjDetail.UserApprove?.Title?.NAME ?? "Chưa có chức danh")
+                                </div>
+
+                            </div>
+
+                            @*ConfigViettinBank: Thay đổi công việc sang HHDV*@
+
+                            @*<table class="table table-condensed font-13">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 200px">@LanguageUtilities.LangText("thMatHang", frmCodeBidRequired)</th>
+                                            <th style="min-width: 200px">@LanguageUtilities.LangText("thCongViec", frmCodeBidRequired)</th>
+                                            <th width="150px" class="align-right">@LanguageUtilities.LangText("thSoLuong", frmCodeBidRequired)</th>
+                                            @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                            {
+                                                <th width="150px" class="align-right">@LanguageUtilities.LangText("thTimeRent", frmCodeBidRequired)</th>
+                                            }
+                                            <th width="100px" class="align-center">@LanguageUtilities.LangText("thDonViTinh", frmCodeBidRequired)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in serviceBidRequired.ObjHeader.ListDetail.OrderBy(x => x.ITEM_NUMBER == null ? 1 : 0).ThenBy(x => x.ITEM_NUMBER))
+                                        {
+                                            <tr>
+                                                <td>@item.Material.TEXT</td>
+                                                <td>[@(item.Scope?.CODE ?? "")] @(item.Scope?.TEXT ?? "")</td>
+                                                <td class="align-right">@item.QUANTITY.ToStringVN()</td>
+                                                @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                                {
+                                                    <td class="align-center">
+                                                        @(item.TIME_RENT != null ? item.TIME_RENT.ToString() : "")
+                                                        @(item.RentUnit != null ? (item.RentUnit.TEXT != null ? item.RentUnit.TEXT : " ") : "")
+                                                    </td>
+                                                }
+                                                <td class="align-center">@(item.Unit != null ? item.Unit.TEXT : "")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>*@
+
+                            @*ConfigViettinBank: Xóa mô tả*@
+
+                            @*@if (lang == "vi")
+                            {
+                                <div>
+                                    @Html.Raw(Model.ObjDetail.MO_TA)
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @Html.Raw(Model.ObjDetail.MO_TA_EN)
+                                </div>
+                            }*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="card border-grey m-t-10">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">history</i> LỊCH SỬ HOẠT ĐỘNG</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <table class="table table-condensed font-13">
+                            <thead>
+                                <tr>
+                                    <th>Người thực hiện</th>
+                                    <th class="align-center">Thời gian</th>
+                                    <th>Hành động</th>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ObjDetail.ListHistory.OrderByDescending(x => x.CREATE_DATE).ToList())
+                                {
+                                    <tr>
+                                        <td>@item.ActionUser.FULL_NAME</td>
+                                        <td class="align-center">@item.ACTION_DATE.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <span class="badge @SMO.Action.GetActionColor(item.ACTION)">@SMO.Action.GetActionText(item.ACTION)</span>
+                                        </td>
+                                        <td>@Html.Raw(item.NOTES)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+
+
+            @*ConfigViettinBank: Tách thành nộp 2 hồ sơ*@
+
+            @*<div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            @{Html.RenderPartial("ListFile", Model.ObjDetail.ListFile.Select(x => x.FileUpload).ToList());}
+                        </div>
+                    </div>
+                </div>*@
+
+            @* --- KHỐI 1: HỒ SƠ YÊU CẦU (TYPE = YC) --- *@
+            <div class="card border-grey">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> HỒ SƠ YÊU CẦU</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        @{
+                            // Lọc danh sách file có TYPE là 'YC'
+                            var listYC = Model.ObjDetail.ListFile
+                                              .Where(x => x.TYPE == "YC")
+                                              .Select(x => x.FileUpload)
+                                              .ToList();
+                            Html.RenderPartial("ListFile", listYC);
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* --- KHỐI 2: QUYẾT ĐỊNH PHÊ DUYỆT (TYPE = QD) --- *@
+            <div class="card border-grey m-t-10">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">assignment</i> QUYẾT ĐỊNH PHÊ DUYỆT</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        @{
+                            // Lọc danh sách file có TYPE là 'QD'
+                            var listQD = Model.ObjDetail.ListFile
+                                              .Where(x => x.TYPE == "QD")
+                                              .Select(x => x.FileUpload)
+                                              .ToList();
+                            Html.RenderPartial("ListFile", listQD);
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card border-grey m-t-10">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">question_answer</i> Ý KIẾN LÃNH ĐẠO</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        @foreach (var comment in lstComment.OrderByDescending(x => x.CREATE_DATE))
+                        {
+                            <div class="card">
+                                <div class="body">
+                                    <div class="conversation">
+                                        <div class="question">
+                                            <div class="user">@comment.USER_NAME (@comment.User.FULL_NAME)</div>
+                                            <div class="time">
+                                                @comment.CREATE_DATE.ToString()
+                                            </div>
+
+                                            <div class="content">
+                                                @Html.Raw(comment.CONTENTS)
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @*<div class="card border-grey m-t-10">
+                    <div class="body" style="padding-top: 0px;">
+                        <div class="tab-content">
+                            <div id="divComment">
+                                @Html.Action("Index", "Comment", new { @Area = "", referenceId = Model.ObjDetail.COMMENT_ID })
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+        </div>
+    </div>
+    <script type="text/javascript">
+        function Send_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn trình duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Send")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+        function AddEmailBidWin(type) {
+            console.log(type);
+            var params = {
+                url : "@Url.Action("CreateEmailBidWin", "BidContractorQuestion")",
+                data: { bidId: '@Model.ObjDetail.PKID'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function AddEmailBidThanks(type) {
+            console.log(type);
+            var params = {
+                url : "@Url.Action("CreateEmailThanks", "BidContractorQuestion")",
+                data: { bidId: '@Model.ObjDetail.PKID'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function ViewListEmailBid() {
+            var params = {
+                url: "@Url.Action("ViewListEmail", "BidContractorQuestion")",
+                data: { bidId: '@Model.ObjDetail.PKID', typeEmail: null }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function RequireUpdate() {
+               var params = {
+                  url: "@Url.Action("RequireUpdate")",
+                  data: { id: '@Model.ObjDetail.PKID' }
+              };
+              Forms.ShowLoading();
+              Forms.LoadAjaxModal(params);
+         }
+
+        function Cancel_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn hủy không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Cancel")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+
+        function Reject() {
+                var params = {
+                   url: "@Url.Action("Reject")",
+                   data: { id: '@Model.ObjDetail.PKID' }
+               };
+               Forms.ShowLoading();
+               Forms.LoadAjaxModal(params);
+          }
+
+         function Approve() {
+              var params = {
+                 url: "@Url.Action("Approve")",
+                 data: { id: '@Model.ObjDetail.PKID' }
+             };
+             Forms.ShowLoading();
+             Forms.LoadAjaxModal(params);
+        }
+
+        function ScoreBid_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn chuyển sang giai đoạn chấm thầu?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("ScoreBid")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function ContractorOfNewRound_@(randomNumber)() {
+            var params = {
+                url: "@Url.Action("ContractorOfNewRound", "Bid")",
+                data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function CancelBid_@(randomNumber)() {
+            var params = {
+                url: "@Url.Action("CancelBid")",
+                data: { id: '@Model.ObjDetail.PKID' }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function CloseBid_@(randomNumber)() {
+            @*var params = {
+                url: "@Url.Action("CloseBid", "Bid")",
+                data: { id: '@Model.ObjDetail.PKID' }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);*@
+
+            if (confirm("Bạn có chắc chắn kết thúc gói thầu không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("KetThuc")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+        }
+
+        function DebutContractor_@(randomNumber)() {
+            var params = {
+                url: "@Url.Action("DebutContractor", "Bid")",
+                data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId", isSelect: true }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function EndScoreBid_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn kết thúc chấm thầu, chuyển sang giai đoạn chọn nhà thầu?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("EndScoreBid")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function KetThucThuongThao_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn kết thúc quá trình thương thảo không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("KetThucThuongThao")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.PKID', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

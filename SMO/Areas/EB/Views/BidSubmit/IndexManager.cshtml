@@ -1,0 +1,106 @@
+﻿@model SMO.Service.EB.BidSubmitService
+@using SMO.Service.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+    var frmCode = "frm_BidSubmit_IndexManager";
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("ListManager", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+        @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID, new { @id = "hddSubmitContractorId" })
+
+        <div class="card border-grey m-b-10">
+            <div class="body">
+                @Html.MyButton("cmdSave", "Cập nhật thêm hồ sơ", "AddSubmit();", "Alt+N", "attach_file")
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-8">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div id="divResult">
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div>
+                                <input name="radioContractor" checked="checked" id="radio_ContractorAll_@Model.ViewId" onclick="ChangeContractorManager(this, '');" type="radio" class="radio-col-blue-grey">
+                                <label for="radio_ContractorAll_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa", frmCode)</label>
+                            </div>
+
+                            <div>
+                                <input name="radioContractor" id="radio_ContractorAllNew_@Model.ViewId" onclick="ChangeContractorManager(this, 'NEW');" type="radio" class="radio-col-blue-grey">
+                                <label for="radio_ContractorAllNew_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa2", frmCode)</label>
+                            </div>
+
+                            @foreach (var item in serviceBidContractor.ObjList)
+                            {
+                                <div>
+                                    @try
+                                    {
+                                        var contractorName = item.Contractor != null ? item.Contractor.TEN_NGAN : "Chưa có nhà thầu";
+                                        <input name="radioContractor" id="radio_@Model.ViewId@item.CONTRACTOR_ID" onclick="ChangeContractorManager(this,'@item.CONTRACTOR_ID');" type="radio" class="radio-col-blue-grey">
+                                        <label for="radio_@Model.ViewId@item.CONTRACTOR_ID" style="font-size: 13px;">@contractorName</label>
+                                    }
+                                    catch (NHibernate.ObjectNotFoundException)
+                                    {
+                                        <input type="radio" disabled>
+                                        <label style="font-size: 13px; color: gray;">Nhà thầu không tồn tại</label>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+<script type="text/javascript">
+        function ChangeContractorManager(obj, contractorId) {
+            $("#@Model.ViewId #hddSubmitContractorId").val(contractorId);
+            SubmitIndexSubmit();
+        }
+
+        function AddSubmit() {
+            UploadFile.ClearFile();
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var contractorId = '@ProfileUtilities.User.CONTRACTOR_ID';
+            var params = {
+                url : "@Url.Action("CreateSubmit")",
+                data: { bidId: bidId, contractorId: contractorId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function SubmitIndexSubmit() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+</script>
+</div>

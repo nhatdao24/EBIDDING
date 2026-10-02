@@ -1,0 +1,77 @@
+﻿@model SMO.Service.EB.ReviewSpecService
+@using SMO.Core.Entities
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Review_DetailListSpec";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div id='@Model.ViewId' class="content m-b-50">
+    <div class="row">
+        <div class="col-xs-12 ">
+            <div>
+                @BuildSpec(Model.ObjList.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList(), lang)
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            @*@foreach (var item in Model.ObjList)
+            {
+                if (item.TYPE == "TEXT")
+                {
+                    @: CKEDITOR.replace('txt_@Model.ObjList.IndexOf(item)',
+                    @: {toolbar: 'Basic', height: '100px'});
+                }
+            }*@
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+
+@helper BuildSpec(List<T_EB_REVIEW_SPEC> ListSpec, string lang)
+{
+    foreach (var item in ListSpec)
+    {
+        var index = Model.ObjList.IndexOf(item);
+
+        <div class="card border-grey m-t-5">
+            <div class="body">
+                @if (lang == "vi")
+                {
+                    <div>@item.NAME <span class="col-red">(Trọng số: @item.RATIO%)</span></div>
+                    <div class="col-grey font-12 m-b-10">@item.DESCRIPTION</div>
+                }
+                else
+                {
+                    <div>@item.NAME_EN</div>
+                    <div class="col-grey font-12 m-b-10">@item.DESCRIPTION_EN</div>
+                }
+
+
+                <div class="form-group">
+                    <select name="ObjList[@index].VALUE_OF_SPEC" class="selectpicker show-tick dropdown form-control">
+                        @foreach (var detail in item.ListDetail.OrderBy(x => x.C_ORDER))
+                        {
+                            if (lang == "vi")
+                            {
+                                <option value="@detail.PKID">@detail.VALUE</option>
+                            }
+                            else
+                            {
+                                <option value="@detail.PKID">@detail.VALUE_EN</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    }
+}

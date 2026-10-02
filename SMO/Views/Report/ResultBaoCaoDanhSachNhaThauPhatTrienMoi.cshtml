@@ -1,0 +1,136 @@
+﻿@model SMO.Service.ReportService
+@using SMO.Service
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@using SMO.Repository.Common
+@{
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+
+    var queryContractor = UnitOfWork.Repository<ContractorRepo>().Queryable();
+    var queryContractorScope = UnitOfWork.Repository<ContractorScopeRepo>().Queryable();
+    var lstActiveArea = UnitOfWork.Repository<ActiveAreaRepo>().GetAll();
+    if (Model.NCC_TuNgay.HasValue)
+    {
+        queryContractor = queryContractor.Where(x => x.CREATE_DATE.Value.Date >= Model.NCC_TuNgay.Value.Date);
+    }
+
+    if (Model.NCC_DenNgay.HasValue)
+    {
+        queryContractor = queryContractor.Where(x => x.CREATE_DATE.Value.Date <= Model.NCC_DenNgay.Value.Date);
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.LinhVucChinh))
+    {
+        queryContractorScope = queryContractorScope.Where(x => Model.LinhVucChinh.Contains(x.SCOPE_CODE));
+        var lstContractorId = queryContractorScope.Select(x => x.CONTRACTOR_ID).ToList();
+        queryContractor = queryContractor.Where(x => lstContractorId.Contains(x.PKID));
+    }
+
+    var lstContractor = queryContractor.OrderByDescending(x => x.CREATE_DATE).ToList();
+    var lstUserName = lstContractor.Select(x => x.USER_NAME).ToList();
+    var lstRequest = UnitOfWork.Repository<RequestRepo>().Queryable().Where(x => lstUserName.Contains(x.MA_SO_THUE)).ToList();
+    var stt = 0;
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th rowspan="2" class="align-center">STT</th>
+                @*<th rowspan="2" style="min-width: 300px;">Lĩnh vực kinh doanh</th>*@
+                <th rowspan="2" class="align-center" style="min-width: 100px;">Tài khoản NTP</th>
+                <th rowspan="2" class="align-center" style="min-width: 200px;">Tên NTP</th>
+                <th rowspan="2" class="align-center" style="min-width: 200px;">Địa chỉ theo ĐKKD</th>
+                <th rowspan="2" style="min-width: 150px;">Khu vực hoạt động</th>
+                <th rowspan="2" class="align-center" style="min-width: 150px;">Tên người nhận thông báo</th>
+                <th rowspan="2" class="align-center" style="min-width: 150px;">Email</th>
+                <th rowspan="2" class="align-center" style="min-width: 150px;">Số điện thoại</th>
+                <th class="align-center" colspan="3">Thông tin đánh giá năng lực</th>
+
+                <th rowspan="2" class="align-center">Ngày cấp tài khoản</th>
+                <th rowspan="2" class="align-center" style="min-width: 200px;">Nguồn giới thiệu</th>
+                <th rowspan="2" class="align-center" style="min-width: 200px;">Ghi chú</th>
+            </tr>
+            <tr>
+                <th class="align-center">Điểm đánh giá</th>
+                <th class="align-center">Xếp hạng NTP</th>
+                <th class="align-center">Ngày đánh giá</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lstContractor)
+            {
+                stt++;
+                var request = lstRequest.FirstOrDefault(x => x.MA_SO_THUE == item.USER_NAME);
+                var lstContractorScope = queryContractorScope.Where(x => x.CONTRACTOR_ID == item.PKID).ToList();
+                //var lstContractorActiveArea = lstActiveArea.Where(x => item.ACTIVE_AREA.Contains(x.CODE)).ToList();
+                var url = Url.Action("Detail", "Contractor", new { area = "EB" });
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.PKID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">@stt</td>
+                    @*<td ondblclick="@vdbclickAction">
+                        @foreach (var scope in item.ListScope)
+                        {
+                            <div>- @scope.Scope.TEXT</div>
+                        }
+                    </td>*@
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.USER_NAME</a>
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.TEN_NGAN
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.DIA_CHI
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @if (!string.IsNullOrEmpty(item.ACTIVE_AREA))
+                        {
+                            foreach (var area in lstActiveArea.Where(x => item.ACTIVE_AREA.Contains(x.CODE)).ToList())
+                            {
+                                <div>- @area.TEXT</div>
+                            }
+                        }
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.NGUOI_NHAN_THONG_BAO
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.EMAIL
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.PHONE
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.DIEM_DANH_GIA
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.XEP_HANG
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @(item.NGAY_DANH_GIA.HasValue ? item.NGAY_DANH_GIA.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @if (request != null && request.Option != null)
+                        {
+                            <div>@request.Option.TEXT</div>
+                            if (!string.IsNullOrEmpty(request.TUY_CHON_TEXT))
+                            {
+                                <div>@request.TUY_CHON_TEXT</div>
+                            }
+                        }
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @item.GHI_CHU
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+

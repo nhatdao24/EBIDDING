@@ -1,0 +1,1083 @@
+﻿@model SMO.Service.EB.RequestService
+@using SMO.Repository.Implement.EB
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+
+    var serviceScopeType = new SMO.Service.MD.ScopeTypeService();
+    serviceScopeType.GetAll();
+    var serviceScope = new SMO.Service.MD.ScopeService();
+    serviceScope.GetAll();
+    var serviceNumberOfProject = new SMO.Service.MD.NumberOfProjectService();
+    serviceNumberOfProject.GetAll();
+    var serviceOption = new SMO.Service.MD.OptionService();
+    serviceOption.GetAll();
+    var serviceBidType = new SMO.Service.MD.BidTypeService();
+    serviceBidType.GetAll();
+    var ListBidPublic = Model.UnitOfWork.Repository<BidRepo>().Queryable().Where(x => x.IS_PUBLIC == true && (x.GIAI_DOAN != Phase_Status.DongThau || x.GIAI_DOAN != Phase_Status.HuyGoiThau));
+}
+
+<style>
+    #list_address li {
+        list-style-type: none;
+    }
+
+    .error {
+        color: red;
+    }
+
+    .field-required .dropdown-display-label {
+        border: 1px solid rgba(22, 49, 94,1);
+    }
+</style>
+
+@*<script src="https://www.google.com/recaptcha/api.js?hl=vi" async defer></script>*@
+
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>ĐĂNG KÝ</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>SIGN UP</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<div class="container site-content" style="transform: none;">
+    <div class="row" style="transform: none;">
+        <div class="col-md-8">
+            <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+            @if (lang == "vi")
+            {
+                using (Ajax.BeginForm("DangKy", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId, @class = "contact-form" }))
+                {
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.TEN_NGAN)" placeholder="Tên công ty" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+                        <div class="col-md-8">
+                            <input name="@Html.NameFor(m => m.ObjDetail.TEN_DAI)" placeholder="Tên đầy đủ" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        @*<div class="col-md-3">
+                                <input name="@Html.NameFor(m => m.ObjDetail.DMS)" placeholder="DMS" style="width: 100%; margin-bottom: 20px;">
+                            </div>*@
+
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.MA_SO_THUE)" placeholder="Mã số thuế" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+
+                        <div class="col-md-8">
+                            <select name="@Html.NameFor(m => m.ObjDetail.LOAI_HINH_DOANH_NGHIEP)" style="height: 37px; width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                                <option value="">Loại hình doanh nghiệp</option>
+                                @foreach (var item in SelectListUtilities.GetDictionary(Domain.LOAI_HINH_DOANH_NGHIEP.ToString(), false, false))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div style="margin-bottom: 20px;" class="col-md-12 dropdown-mul-1 field-required">
+                            <label>Quốc gia</label>
+
+                            <select name="@Html.NameFor(m => m.ObjDetail.QUOC_GIA)" multiple="multiple" required title="Trường này bắt buộc nhập">
+                                @foreach (var item in SelectListUtilities.GetCountry())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.NGUOI_DAI_DIEN)" placeholder="Người đại diện" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.SO_LUONG_NHAN_VIEN)" placeholder="Số lượng nhân viên" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input id="txtVonDieuLe" onkeyup="formatNumber(id);" name="@Html.NameFor(m => m.ObjDetail.VON_DIEU_LE)" placeholder="Vốn điều lệ" style="width: 65%;  margin-bottom: 20px;">
+                            <select name="@Html.NameFor(m => m.ObjDetail.VON_DIEU_LE_UNIT)" style="height: 37px; width: 35%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        <div class="col-md-12">
+                            <input name="@Html.NameFor(m => m.ObjDetail.DIA_CHI)" placeholder="Địa chỉ công ty" style="width: 100%; margin-bottom: 10px;" @*required title="Trường này bắt buộc nhập"*@>
+                            @*<input type="button" onclick="AddDiaChi()" value="THÊM ĐỊA CHỈ" style="color: #fff; background-color: rgba(22, 49, 94,1); padding: 5px 25px; font-size: 13px; font-weight: 700; border: 1px solid rgb(246, 117, 60);" />*@
+                            <span data-toggle="tooltip" data-placement="top" class="ui-icon" style="width: max-content;">
+                                <a href="javascript:void(0)" onclick="AddDiaChi();" style="text-decoration: underline"> Thêm địa chỉ</a>
+                            </span>
+                        </div>
+                        <div class="col-md-12" id="list_address">
+
+                        </div>
+                    </div>
+
+                    @*<div class="row">
+                            <div class="col-md-12">
+                                <input type="text" name="@Html.NameFor(m => m.ObjDetail.LINH_VUC_CHINH)" placeholder="Lĩnh vực chính" required style="width: 100%; margin-bottom: 20px;">
+                            </div>
+                        </div>*@
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.NGUOI_NHAN_THONG_BAO)" placeholder="Người nhận thông báo" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.EMAIL)" placeholder="Email đại diện Công ty" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.PHONE)" placeholder="Điện thoại" style="width: 100%; margin-bottom: 20px;" required title="Trường này bắt buộc nhập">
+                        </div>
+                        <div class="col-md-12">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.WEBSITE)" placeholder="Website" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <select name="@Html.NameFor(m => m.ObjDetail.SO_LUONG_DU_AN)" id="so_luong_du_an" onchange="ShowText()" style="height: 37px; width: 100%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                                <option value="">--- Đã làm việc với Vietinbank ---</option>
+                                @foreach (var item in serviceNumberOfProject.ObjList)
+                                {
+                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                }
+                            </select>
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.SO_LUONG_DU_AN_TEXT)" id="show_textarea" placeholder="Tên các dự án đã làm việc với Coteccons" style="width: 100%; margin-bottom: 20px; border: 1px solid rgba(22, 49, 94,1);"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Doanh thu 3 năm gần nhất</label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[0].YEAR" placeholder="Năm" value="@DateTime.Now.Year" style="width: 100%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input id="txtDoanhThu1" onkeyup="formatNumber(id);" type="text" name="ObjDetail.ListRevenue[0].VALUE" placeholder="Doanh thu" style="width: 85%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                            <select name="ObjDetail.ListRevenue[0].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[1].YEAR" placeholder="Năm" value="@DateTime.Now.AddYears(-1).Year" style="width: 100%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input id="txtDoanhThu2" onkeyup="formatNumber(id);" type="text" name="ObjDetail.ListRevenue[1].VALUE" placeholder="Doanh thu" style="width: 85%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                            <select name="ObjDetail.ListRevenue[1].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[2].YEAR" placeholder="Năm" value="@DateTime.Now.AddYears(-2).Year" style="width: 100%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input id="txtDoanhThu3" onkeyup="formatNumber(id);" type="text" name="ObjDetail.ListRevenue[2].VALUE" placeholder="Doanh thu" style="width: 85%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                            <select name="ObjDetail.ListRevenue[2].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <script>
+                        function addCommas(str) {
+                            return str.replace(/^0+/, '').replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        }
+
+                        function formatNumber(id) {
+                            var val = document.getElementById(id).value;
+                            document.getElementById(id).value = addCommas(val);
+                        }
+                    </script>
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        @*<div class="col-md-12">
+                                <label>Khu vực hoạt động</label>
+                            </div>
+                            @foreach (var item in SelectListUtilities.GetActiveArea(lang, false))
+                            {
+                                <div class="col-md-2">
+                                    <label>@item.Text</label>
+                                    <input type="checkbox" name="@Html.NameFor(m => m.ObjDetail.ACTIVE_AREA)" value="@item.Value" required />
+                                </div>
+                            }*@
+
+                        <div class="col-xs-12 dropdown-mul-1 @*field-required*@" id="kvhd">
+                            <label>Khu vực hoạt động</label>
+                            <select name="@Html.NameFor(m => m.ObjDetail.ACTIVE_AREA)" id="dllKVHD"
+                                    multiple="multiple">
+                                @foreach (var item in SelectListUtilities.GetActiveArea(lang, false))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-xs-12 err-mess">
+                            <label for="dllKVHD" class="error" id="err-kvhd">Trường này bắt buộc nhập</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Gói thầu đang quan tâm</label>
+                        </div>
+                        <div class="col-md-12">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.BID_ID)" placeholder="Gói thầu đang quan tâm" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+                    </div>
+
+
+                    <div class="row" style=" margin-bottom: 20px;">
+                        <div class="col-xs-12 dropdown-mul-1 field-required" id="linhVucChinh">
+                            <label>Lĩnh vực chính</label>
+                            <select name="@Html.NameFor(m => m.ObjDetail.LINH_VUC_CHINH)" id="dllScope"
+                                    multiple="multiple" required title="Trường này bắt buộc nhập">
+                                @* @foreach (var item in serviceScopeType.ObjList.OrderBy(x => x.TEXT))
+                                    {
+                                        var lstScope = serviceScope.ObjList.Where(x => x.TYPE_CODE == item.CODE).ToList();
+                                        <optgroup label="@item.TEXT" data-group-id="@item.CODE">
+                                            @foreach (var scope in lstScope.OrderBy(x => x.TEXT))
+                                            {
+                                                <option value="@scope.CODE">@scope.TEXT</option>
+                                            }
+                                        </optgroup>
+                                    } *@
+                                @foreach (var item in SelectListUtilities.GetScopeType())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+
+
+                            </select>
+                            @*<textarea name="@Html.NameFor(x => x.ObjDetail.LINH_VUC_CHINH_TEXT)" id="show_textarea3" placeholder="Nhập lĩnh vực chính" style="width: 100%; margin-bottom: 20px; margin-top: 10px; border: 1px solid rgba(22, 49, 94,1);"></textarea>*@
+                        </div>
+                        <div class="col-xs-12 err-mess">
+                            <label for="dllScope" class="error" id="err-lvc">Trường này bắt buộc nhập</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <select name="@Html.NameFor(m => m.ObjDetail.TUY_CHON)" id="tuy_chon" onchange="ShowText2()" style="height: 37px; width: 100%; margin-bottom: 20px;" @*required title="Trường này bắt buộc nhập"*@>
+                                <option value="">--- Bạn biết tới Vietinbank từ đâu? ---</option>
+                                @foreach (var item in serviceOption.ObjList)
+                                {
+                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                }
+                            </select>
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.TUY_CHON_TEXT)" id="show_textarea2" placeholder="Tên người giới thiệu" style="width: 100%; margin-bottom: 20px; border: 1px solid rgba(22, 49, 94,1);"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.NOTES)" placeholder="Ghi chú" style="width: 100%; margin-bottom: 20px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row tab-content">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="body">
+                                    <span>HỒ SƠ NĂNG LỰC</span>
+
+                                    <div>
+                                        <button type="button" class="submit" onclick="$('#fileHoSoNL').click();" style="color: white !important;">Chọn File</button>
+                                    </div>
+                                    <div style="display:none">
+                                        <input type="file" id="fileHoSoNL" onchange="OnChangeFileHoSoNL(this)" />
+                                    </div>
+
+                                    <div id="divFileHoSoNL">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 30px;">
+                        @*<div style="margin-left: 15px; margin-bottom: 20px;" class="g-recaptcha" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["RecaptchaPublicKey"]"></div>*@
+                        <div class="col-md-12">
+                            <div style="font-size: 12px; font-style: italic; margin-bottom: 10px">
+                                Bằng cách nhấp vào ĐĂNG KÝ, bạn đồng ý với <a href="/DieuKhoanSuDung" target="_blank">Điều khoản và điều kiện sử dụng</a>, <a href="/ChinhSachBaoMat" target="_blank">Chính sách bảo mật dữ liệu</a> của chúng tôi.
+                            </div>
+                            @*<button type="button" class="submit" onclick="SubmitForm()" style="color: white !important;">ĐĂNG KÝ</button>*@
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                using (Ajax.BeginForm("DangKy", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId, @class = "contact-form" }))
+                {
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.TEN_NGAN)" placeholder="Short name" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+                        <div class="col-md-8">
+                            <input name="@Html.NameFor(m => m.ObjDetail.TEN_DAI)" placeholder="Full name" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.MA_SO_THUE)" placeholder="Tax code" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-8">
+                            <select name="@Html.NameFor(m => m.ObjDetail.LOAI_HINH_DOANH_NGHIEP)" style="height: 37px; width: 100%; margin-bottom: 20px;" required>
+                                <option value="">Business Type</option>
+                                @foreach (var item in SelectListUtilities.GetDictionary(Domain.LOAI_HINH_DOANH_NGHIEP.ToString(), false, false, "", lang))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div style="margin-bottom: 20px;" class="col-md-12 dropdown-mul-1 field-required">
+                            <label>Country</label>
+
+                            <select name="@Html.NameFor(m => m.ObjDetail.QUOC_GIA)" multiple="multiple" required title="Trường này bắt buộc nhập">
+                                @foreach (var item in SelectListUtilities.GetCountry())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.NGUOI_DAI_DIEN)" placeholder="Representation" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.SO_LUONG_NHAN_VIEN)" placeholder="Number of employees" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+
+                        <div class="col-md-4">
+                            <input id="txtVonDieuLe" onkeyup="formatNumber(id);" name="@Html.NameFor(m => m.ObjDetail.VON_DIEU_LE)" placeholder="Equity Capital" style="width: 65%;  margin-bottom: 20px;">
+                            <select name="@Html.NameFor(m => m.ObjDetail.VON_DIEU_LE_UNIT)" style="height: 37px; width: 35%; float: right; margin-bottom: 20px;">
+                                <option value="value">VNĐ</option>
+                                <option value="value">USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        <div class="col-md-12">
+                            <input name="@Html.NameFor(m => m.ObjDetail.DIA_CHI)" placeholder="Address" style="width: 100%; margin-bottom: 10px;" required>
+                            @*<input type="button" onclick="AddDiaChi()" value="THÊM ĐỊA CHỈ" style="color: #fff; background-color: rgba(22, 49, 94,1); padding: 5px 25px; font-size: 13px; font-weight: 700; border: 1px solid rgb(246, 117, 60);" />*@
+                            <span data-toggle="tooltip" data-placement="top" class="ui-icon" style="width: max-content;">
+                                <a href="javascript:void(0)" onclick="AddDiaChi();" style="text-decoration: underline"> Add more</a>
+                            </span>
+                        </div>
+                        <div class="col-md-12" id="list_address">
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input name="@Html.NameFor(m => m.ObjDetail.NGUOI_NHAN_THONG_BAO)" placeholder="Notification recipient" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.EMAIL)" placeholder="Company representative email" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.PHONE)" placeholder="Phone" style="width: 100%; margin-bottom: 20px;" required title="Allows entering multiple phone numbers, phone numbers separated by semicolons">
+                        </div>
+
+                        <div class="col-md-12">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.WEBSITE)" placeholder="Website" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <select name="@Html.NameFor(m => m.ObjDetail.SO_LUONG_DU_AN)" id="so_luong_du_an" onchange="ShowText()" style="height: 37px; width: 100%; margin-bottom: 20px;" required>
+                                <option value="">--- Choose the number of projects to work with Fecon ---</option>
+                                @foreach (var item in serviceNumberOfProject.ObjList)
+                                {
+                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT_EN</option>
+                                }
+                            </select>
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.SO_LUONG_DU_AN_TEXT)" id="show_textarea" placeholder="Names of projects that have worked with FECON" style="width: 100%; margin-bottom: 20px; border: 1px solid rgba(22, 49, 94,1);"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Revenue for the last 3 years</label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[0].YEAR" value="@DateTime.Now.Year" placeholder="Year" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input type="text" name="ObjDetail.ListRevenue[0].VALUE" placeholder="Revenue" style="width: 85%; margin-bottom: 20px;" required>
+                            <select name="ObjDetail.ListRevenue[0].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[1].YEAR" value="@DateTime.Now.AddYears(-1).Year" placeholder="Year" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input type="text" name="ObjDetail.ListRevenue[1].VALUE" placeholder="Revenue" style="width: 85%; margin-bottom: 20px;" required>
+                            <select name="ObjDetail.ListRevenue[1].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <input type="text" name="ObjDetail.ListRevenue[2].YEAR" value="@DateTime.Now.AddYears(-2).Year" placeholder="Year" style="width: 100%; margin-bottom: 20px;" required>
+                        </div>
+
+                        <div class="col-md-9">
+                            <input type="text" name="ObjDetail.ListRevenue[2].VALUE" placeholder="Revenue" style="width: 85%; margin-bottom: 20px;" required>
+                            <select name="ObjDetail.ListRevenue[2].UNIT_CODE" style="height: 37px; width: 15%; float: right; margin-bottom: 20px;">
+                                <option value="VND">VNĐ</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-bottom: 20px;">
+                        @*<div class="col-md-12">
+                                <label>Construction area</label>
+                            </div>
+                            @foreach (var item in SelectListUtilities.GetActiveArea(lang, false))
+                            {
+                                <div class="col-md-3">
+                                    <label>@item.Text</label>
+                                    <input type="checkbox" name="@Html.NameFor(m => m.ObjDetail.ACTIVE_AREA)" value="@item.Value" required />
+                                </div>
+                            }*@
+
+                        <div class="col-xs-12 dropdown-mul-1 field-required" id="kvhd">
+                            <label>Construction area</label>
+                            <select name="@Html.NameFor(m => m.ObjDetail.ACTIVE_AREA)" id="dllScope"
+                                    multiple="multiple">
+                                @foreach (var item in SelectListUtilities.GetActiveArea(lang, false))
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-xs-12 err-mess">
+                            <label for="dllKVHD" class="error" id="err-kvhd">This field is required.</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Bidding packages are interested</label>
+                        </div>
+                        <div class="col-md-12">
+                            <input type="text" name="@Html.NameFor(m => m.ObjDetail.BID_ID)" placeholder="Bidding packages are interested" style="width: 100%; margin-bottom: 20px;">
+                        </div>
+                    </div>
+
+                    @*<div class="row" style=" margin-bottom: 20px;">
+                            <div class="col-xs-12">
+                                <label>Main area</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.LINH_VUC_CHINH)" class="label ui selection fluid dropdown"
+                                        multiple="multiple">
+                                    @foreach (var scope in serviceScope.ObjList.OrderBy(x => x.TEXT))
+                                    {
+                                        <option value="@scope.CODE" class="@(scope.ACTIVE_TEXT?"show-text":"")">@scope.TEXT</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>*@
+
+                    <div class="row" style=" margin-bottom: 20px;">
+                        <div class="col-xs-12 dropdown-mul-1 field-required" id="linhVucChinh">
+                            <label>Main area</label>
+                            <select name="@Html.NameFor(m => m.ObjDetail.LINH_VUC_CHINH)" id="dllScope"
+                                    multiple="multiple" required>
+                                @* @foreach (var item in serviceScopeType.ObjList.OrderBy(x => x.TEXT))
+                                    {
+                                        var lstScope = serviceScope.ObjList.Where(x => x.TYPE_CODE == item.CODE).ToList();
+                                        <optgroup label="@item.TEXT" data-group-id="@item.CODE">
+                                            @foreach (var scope in lstScope.OrderBy(x => x.TEXT))
+                                            {
+                                                <option value="@scope.CODE">@scope.TEXT</option>
+                                            }
+                                        </optgroup>
+                                    } *@
+                                @foreach (var item in SelectListUtilities.GetScopeType())
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+
+                            </select>
+                            @*<textarea name="@Html.NameFor(x => x.ObjDetail.LINH_VUC_CHINH_TEXT)" id="show_textarea3" placeholder="Nhập lĩnh vực chính" style="width: 100%; margin-bottom: 20px; margin-top: 10px; border: 1px solid rgba(22, 49, 94,1);"></textarea>*@
+                        </div>
+                        <div class="col-xs-12 err-mess">
+                            <label for="dllScope" class="error" id="err-lvc">This field is required.</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <select name="@Html.NameFor(m => m.ObjDetail.TUY_CHON)" id="tuy_chon" onchange="ShowText2()" style="height: 37px; width: 100%; margin-bottom: 20px;" required>
+                                <option value="">--- Where did you know Coteccons from? ---</option>
+                                @foreach (var item in serviceOption.ObjList)
+                                {
+                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT_EN</option>
+                                }
+                            </select>
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.TUY_CHON_TEXT)" id="show_textarea2" placeholder="Referrer's name" style="width: 100%; margin-bottom: 20px; border: 1px solid rgba(22, 49, 94,1);"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <textarea name="@Html.NameFor(x => x.ObjDetail.NOTES)" placeholder="Notes" style="width: 100%; margin-bottom: 20px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row tab-content">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="body">
+                                    <span>CAPACITY PROFILE</span>
+
+                                    <div>
+                                        <button type="button" class="submit" onclick="$('#fileHoSoNL').click();" style="color: white !important;">Select File</button>
+                                    </div>
+                                    <div style="display:none">
+                                        <input type="file" id="fileHoSoNL" onchange="OnChangeFileHoSoNL(this)" />
+                                    </div>
+
+                                    <div id="divFileHoSoNL">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 30px;">
+                        @*<div style="margin-left: 15px; margin-bottom: 20px;" class="g-recaptcha" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["RecaptchaPublicKey"]"></div>*@
+                        <div class="col-md-12">
+                            <div style="font-size: 12px; font-style: italic; margin-bottom: 10px">
+                                By clicking SIGN UP, you agree to our <a href="/DieuKhoanSuDung" target="_blank">Terms</a>, <a href="/ChinhSachBaoMat" target="_blank">Data Policy</a>.
+                            </div>
+                            @*<button type="button" class="submit" onclick="SubmitForm()" style="color: white !important;">SIGN UP</button>*@
+                        </div>
+                    </div>
+                }
+            }
+
+
+            <!-- End form holder -->
+        </div>
+        <div id="sidebar" class="widget-area col-sm-3 sticky-sidebar" role="complementary" style="position: relative; overflow: visible; box-sizing: border-box; min-height: 1px; z-index: 9999">
+            <div class="theiaStickySidebar" style="padding-top: 0px; padding-bottom: 1px; position: static; top: 160px; left: 989.5px;">
+                <button style="width: 100%;" type="button" onclick="SubmitForm()" class="submit">
+                    @if (lang == "vi")
+                    {
+                        <span style="color:white !important;">ĐĂNG KÝ</span>
+                    }
+                    else
+                    {
+                        <span style="color:white !important;">REGISTER</span>
+                    }
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4">
+
+            <div class="contact-info">
+                @if (lang == "vi")
+                {
+                    <h4>THÔNG TIN LIÊN HỆ</h4>
+                    <p>Nếu quý khách gặp vấn đề trong việc đăng ký tài khoản. Hãy liên hệ với chúng tôi qua những thông tin dưới đây. Cảm ơn quý khách!</p>
+                    <p>Hà Nội</p>
+                    <ul>
+                        <li>
+                            <i class="icon-map-marker"></i>Trụ sở chính: Số 108 Trần Hưng Đạo, Phường Cửa Nam, Quận Hoàn Kiếm, Hà Nội
+                        </li>
+                        <li><i class="icomoon-icon-phone"></i>Tel: (84-24) 3942 1030</li>
+                        @*<li><i class="icomoon-icon-phone"></i>Fax: 84.28-35142277</li>*@
+                        <li><i class="icomoon-icon-clock"></i>Email: contact@vietinbank.vn</li>
+                    </ul>
+                    <p>Thành phố Hồ Chí Minh</p>
+                    <ul>
+                        <li>
+                            <i class="icon-map-marker"></i>Văn phòng đại diện / Chi nhánh chính: Số 79A Hàm Nghi, Phường Nguyễn Thái Bình, Quận 1, TP. HCM
+                        </li>
+                        <li><i class="icomoon-icon-phone"></i>Hotline: 1900 558 868</li>
+                        @*<li><i class="icomoon-icon-clock"></i>Email: contacthn@coteccons.vn</li>*@
+                    </ul>
+
+                    <h4>LƯU Ý</h4>
+                    <ul>
+                        <li><i class="icon-map-marker"></i>Nhập nhiều số điện thoại cách nhau bởi dấu chấm phẩy (;)</li>
+                        <li><i class="icomoon-icon-phone"></i>Nhập nhiều email cách nhau bởi dấu chấm phẩy (;)</li>
+                    </ul>
+                }
+                else
+                {
+                    <h4>CONTACT INFORMATION</h4>
+                    <p>If you encounter issues while registering an account, please contact us using the information below. Thank you!</p>
+                    <p>Ho Chi Minh City</p>
+                    <ul>
+                        <li>
+                            <i class="icon-map-marker"></i>Head Office: Coteccons Building, 236/6 Dien Bien Phu Street, Ward 17, Binh Thanh District, Ho Chi Minh City
+                        </li>
+                        <li><i class="icomoon-icon-phone"></i>Tel: 84.28-35142255/66</li>
+                        <li><i class="icomoon-icon-phone"></i>Fax: 84.28-35142277</li>
+                        <li><i class="icomoon-icon-clock"></i>Email: contact@coteccons.vn</li>
+                    </ul>
+                    <p>Hanoi</p>
+                    <ul>
+                        <li>
+                            <i class="icon-map-marker"></i>Representative Office: 5th Floor, Starcity Building, 23 Le Van Luong Street, Nhan Chinh Ward, Thanh Xuan District, Hanoi
+                        </li>
+                        <li><i class="icomoon-icon-phone"></i>Tel: 84.24-73016216</li>
+                        <li><i class="icomoon-icon-clock"></i>Email: contacthn@coteccons.vn</li>
+                    </ul>
+
+                    <h4>NOTES</h4>
+                    <ul>
+                        <li><i class="icon-map-marker"></i>Enter multiple phone numbers separated by a semicolon (;)</li>
+                        <li><i class="icomoon-icon-phone"></i>Enter multiple emails separated by a semicolon (;)</li>
+                    </ul>
+
+                }
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('.dropdown-display-label .dropdown-chose-list .dropdown-search input[placeholder="Search..."]').attr('placeholder', 'Chọn quốc gia');
+});
+
+    var numberCurrent = 0;
+    function ShowText() {
+        var showText = $('#so_luong_du_an option:selected').attr("data-act");
+        if (showText == "True") {
+            $("#show_textarea").show();
+            $("#show_textarea").prop('required', true);
+        } else {
+            $("#show_textarea").removeAttr('required');
+            $("#show_textarea").hide();
+        }
+    }
+
+    function ShowText2() {
+        var showText = $('#tuy_chon option:selected').attr("data-act");
+        if (showText == "True") {
+            $("#show_textarea2").show();
+            $("#show_textarea2").prop('required', true);
+        } else {
+            $("#show_textarea2").removeAttr('required');
+            $("#show_textarea2").hide();
+        }
+    }
+
+    function ShowText3() {
+        debugger;
+        var showText = $('#dllScope option.show-text:selected').hasClass("show-text");
+        if (showText) {
+            $("#show_textarea3").show();
+            $("#show_textarea3").prop('required', true);
+        } else {
+            $("#show_textarea3").removeAttr('required');
+            $("#show_textarea3").hide();
+        }
+    }
+
+    function AddDiaChi() {
+        var lang = '@lang';
+        var html = "";
+        html += '<div class="item">';
+        if (lang == 'vi') {
+            html += '<input type="text" name="ObjListAddress[' + numberCurrent + '].Address" placeholder="Địa chỉ trụ sở, văn phòng" style="width: 100%; margin-bottom: 10px;">';
+        } else {
+            html += '<input type="text" name="ObjListAddress[' + numberCurrent + '].Address" placeholder="Head office address, office" style="width: 100%; margin-bottom: 10px;">';
+        }
+        html += '<input type="hidden" class="is_remove_' + numberCurrent + '" name="ObjListAddress[' + numberCurrent + '].Is_Remove" >';
+        if (lang == 'vi') {
+            html += '<input type="button" onclick="removeAddress(this,' + numberCurrent + ')" value="XÓA" style="color: #fff; background-color: rgba(22, 49, 94,1); position: absolute; right: 0; margin-right: 15px; padding: 5px 25px; font-size: 13px; font-weight: 700; border: 1px solid rgba(22, 49, 94,1);" />'
+        } else {
+            html += '<input type="button" onclick="removeAddress(this,' + numberCurrent +')" value="DELETE" style="color: #fff; background-color: rgba(22, 49, 94,1); position: absolute; right: 0; margin-right: 15px; padding: 5px 25px; font-size: 13px; font-weight: 700; border: 1px solid rgba(22, 49, 94,1);" />'
+        }
+        html += '</div>';
+        $('#list_address').append(html);
+        numberCurrent++;
+    }
+
+    function removeAddress(obj, index) {
+        debugger;
+        $('.is_remove_' + index).val('true');
+        $(obj).parent().hide();
+    }
+
+    function OnChangeFileHoSoNL(obj) {
+        $("#divFileHoSoNL").html('');
+        try {
+            if (obj.files && obj.files.length > 0) {
+                $.each(obj.files, function (i, v) {
+                    var file = obj.files[i];
+                    var fileExt = file.name.split('.').pop();
+                    var fileIcon = UploadFile.GetIcon(fileExt);
+                    var fileId = Math.floor((Math.random() * 1000) + 1);
+                    var preview = '<div class="preview-file">'
+                    preview += '<img src = "\\Content\\IconFileType\\' + fileIcon + '" />'
+                    preview += '<div class="file-info">';
+                    preview += '<div class="file-name">' + file.name + "</div>"
+                    preview += '<div class="file-size">' + UploadFile.FormatByte(file.size, 2) + "</div>"
+                    preview += '</div>';
+                    preview += '</div>';
+                    $("#divFileHoSoNL").append(preview);
+                });
+            }
+        } catch (e) {
+            alert("Quá trình thêm file bị lỗi!" + e);
+        }
+    }
+    var isSubmitting = false;
+    function SubmitForm() {
+
+        //var thim_preload = document.getElementById('preload');
+        //thim_preload.style.display = 'block';
+
+        //if (isSubmitting) {
+        //    return;
+        //}
+        //isSubmitting = true;
+        $('.dropdown-search input[placeholder="Search..."]').val('');
+        if(!$('#@Model.FormId').valid()){
+            @if(lang == "vi")
+            {
+                @:alert("BẠN CHƯA NHẬP HẾT THÔNG TIN!");
+            }else
+            {
+                @:alert("PLEASE ENTER FULL!");
+            }
+
+            if ($('#linhVucChinh .dropdown-chose-list').find('.dropdown-selected').length == 0) {
+                $('#err-lvc').show();
+            } else {
+                $('#err-lvc').hide();
+            }
+
+            //if ($('#kvhd .dropdown-chose-list').find('.dropdown-selected').length == 0) {
+            //    $('#err-kvhd').show();
+            //} else {
+            //    $('#err-kvhd').hide();
+            //}
+            //var firstError = $('.input-validation-error:first').get(0);
+            //if (firstError != null) {
+            //    firstError.focus();
+            //    $(firstError).parent().next().show();
+            //}
+            //thim_preload.style.display = 'none';
+
+            //isSubmitting = false;
+            return;
+        }
+
+        var val = document.getElementById('txtVonDieuLe').value;
+        document.getElementById('txtVonDieuLe').value = addCommas(val).replace(/,/g, "");
+        var val = document.getElementById('txtDoanhThu1').value;
+        document.getElementById('txtDoanhThu1').value = addCommas(val).replace(/,/g, "");
+        var val = document.getElementById('txtDoanhThu2').value;
+        document.getElementById('txtDoanhThu2').value = addCommas(val).replace(/,/g, "");
+        var val = document.getElementById('txtDoanhThu3').value;
+        document.getElementById('txtDoanhThu3').value = addCommas(val).replace(/,/g, "");
+
+        var formData = new FormData($('#@Model.FormId')[0]);
+        var filesHoSoNL = $('#fileHoSoNL')[0].files;
+        for (var i = 0; i < filesHoSoNL.length; i++) {
+            formData.append("fileHoSoNL", filesHoSoNL[i]);
+        }
+
+        if (filesHoSoNL.length == 0) {
+            @if(lang == "vi")
+            {
+                @:alert("BẠN CHƯA NHẬP FILE HỒ SƠ NĂNG LỰC!");
+            }else
+            {
+                @:alert("PLEASE UPLOAD PROFILE!");
+            }
+            //thim_preload.style.display = 'none';
+
+            //isSubmitting = false;
+            return;
+        }
+
+        Forms.ShowLoading();
+
+
+        var headers = {
+            'RequestVerificationToken': $('#antiForgeryToken').val(),
+        };
+        $.ajax({
+            //xhr: function () {
+            //    var xhr = new window.XMLHttpRequest();
+
+            //    xhr.upload.addEventListener("progress", function (evt) {
+            //        if (evt.lengthComputable) {
+            //            var percentComplete = evt.loaded / evt.total;
+            //            percentComplete = parseInt(percentComplete * 100);
+            //            console.log(percentComplete);
+
+            //            if (percentComplete === 100) {
+            //                //alert("kakalot");
+            //            }
+            //        }
+            //    }, false);
+
+            //    return xhr;
+            //},
+                type: "POST",
+                url: "@Url.Action("DangKy")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                    //isSubmitting = false;
+                },
+                error: function (xhr, status, error) {
+                    alert("Có lỗi xảy ra");
+                    //thim_preload.style.display = 'none';
+                    Forms.HideLoading(); // Ẩn loading
+                    //isSubmitting = false;
+                }
+            });
+    }
+
+    $(function () {
+        $("#show_textarea").hide();
+        $("#show_textarea2").hide();
+        $("#show_textarea3").hide();
+        $('#err-lvc').hide();
+        $('#err-kvhd').hide();
+        //$('#dllBidPublic').multiSelect({
+        //    selectableHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+        //    selectionHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+        //    afterInit: function (ms) {
+        //        var that = this,
+        //            $selectableSearch = that.$selectableUl.prev(),
+        //            $selectionSearch = that.$selectionUl.prev(),
+        //            selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
+        //            selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
+
+        //        that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+        //            .on('keydown', function (e) {
+        //                if (e.which === 40) {
+        //                    that.$selectableUl.focus();
+        //                    return false;
+        //                }
+        //            });
+
+        //        that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+        //            .on('keydown', function (e) {
+        //                if (e.which == 40) {
+        //                    that.$selectionUl.focus();
+        //                    return false;
+        //                }
+        //            });
+        //    },
+        //    afterSelect: function () {
+        //        this.qs1.cache();
+        //        this.qs2.cache();
+        //    },
+        //    afterDeselect: function () {
+        //        this.qs1.cache();
+        //        this.qs2.cache();
+        //    }
+        //});
+        //$('#dllScope').multiSelect({
+        //    selectableHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+        //    selectionHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+        //    afterInit: function (ms) {
+        //        var that = this,
+        //            $selectableSearch = that.$selectableUl.prev(),
+        //            $selectionSearch = that.$selectionUl.prev(),
+        //            selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
+        //            selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
+
+        //        that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+        //            .on('keydown', function (e) {
+        //                if (e.which === 40) {
+        //                    that.$selectableUl.focus();
+        //                    return false;
+        //                }
+        //            });
+
+        //        that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+        //            .on('keydown', function (e) {
+        //                if (e.which == 40) {
+        //                    that.$selectionUl.focus();
+        //                    return false;
+        //                }
+        //            });
+        //    },
+        //    afterSelect: function () {
+        //        this.qs1.cache();
+        //        this.qs2.cache();
+        //    },
+        //    afterDeselect: function () {
+        //        this.qs1.cache();
+        //        this.qs2.cache();
+        //    }
+        //});
+        //Forms.CompleteUI();
+        //$('.my-select').selectpicker();
+    });
+    function DangKyThanhCong() {
+        //debugger;
+        alert("ĐĂNG KÝ THÀNH CÔNG. COTECCONS ĐÃ TIẾP NHẬN YÊU CẦU VÀ LIÊN HỆ KHI CẦN THIẾT");
+        $("#@Model.FormId").trigger("reset");
+        location.reload();
+    }
+
+    function DangKyKhongThanhCong(message) {
+        showPopup(message)
+    }
+
+    function showPopup(message) {
+        // Đánh dấu rằng trình chặn quảng cáo đã được phát hiện
+
+
+        // Tạo overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        overlay.style.zIndex = '1000';
+
+        // Tạo popup
+        const popup = document.createElement('div');
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.backgroundColor = 'white';
+        popup.style.borderRadius = '8px';
+        popup.style.padding = '20px';
+        popup.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
+        popup.style.zIndex = '1001';
+        popup.style.textAlign = 'center'; // Căn giữa nội dung
+
+        // Tạo tiêu đề
+        const title = document.createElement('h2');
+        title.innerText = 'Thông báo';
+
+        // Tạo nội dung
+        const mg = document.createElement('p');
+        mg.innerHTML = message;
+
+        // Tạo nút đóng
+        const closeBtn = document.createElement('button');
+        closeBtn.innerText = 'Đóng';
+        closeBtn.style.backgroundColor = '#007bff';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = 'none';
+        closeBtn.style.padding = '10px 15px';
+        closeBtn.style.borderRadius = '5px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.marginTop = '20px'; // Khoảng cách giữa nội dung và nút
+
+        // Thêm sự kiện cho nút đóng
+        closeBtn.addEventListener('click', function () {
+            document.body.removeChild(overlay); // Xóa overlay
+        });
+
+        // Thêm tiêu đề, nội dung và nút vào popup
+        popup.appendChild(title);
+        popup.appendChild(mg);
+        popup.appendChild(closeBtn);
+
+        // Thêm popup vào overlay
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay); // Thêm overlay vào body
+    }
+
+    $(function () {
+        $("#menu-item-dangky").attr("class", "menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-125 current_page_item current_page_parent menu-item-127 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default");
+        $("#mobile-menu-dangky a").attr("class", "active");
+        $('.dropdown-mul-1').dropdownselect({
+            multipleMode: 'label'
+        });
+    });
+
+
+</script>

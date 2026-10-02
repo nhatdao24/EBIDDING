@@ -1,0 +1,173 @@
+﻿@model SMO.Service.EB.ReviewSpecCouncilService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var sttTieuChi = 1;
+    var stt = 0;
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="card border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> TỔNG HỢP BÁO CÁO KẾT QUẢ ĐÁNH GIÁ NCC / THẦU PHỤ</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                    </div>
+                </div>
+                <div id="divResult">
+                    <div class="table-responsive">
+                        <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+                        <table class="table table-condensed table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th rowspan="3" class="align-center">STT</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 200px;">Nhà thầu phụ / NCC</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 150px;">Công việc thực hiện</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 100px;">Giá trị thực hiện</th>
+                                    <th colspan="@Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).ToList().Count" class="align-center">Điểm đánh giá trung bình: các tiêu chí đánh giá</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 50px;">Tổng điểm</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 50px;">Điểm trung bình</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 50px;">Xếp loại</th>
+                                    <th rowspan="3" class="align-center" style="min-width: 150px;">Ghi chú</th>
+                                </tr>
+                                <tr>
+                                    @foreach (var item in Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList())
+                                    {
+                                        <th class="align-center">@sttTieuChi</th>
+                                        sttTieuChi++;
+                                    }
+                                </tr>
+                                <tr>
+                                    @foreach (var item in Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList())
+                                    {
+                                        <th class="align-center">
+                                            @item.NAME
+                                        </th>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    @foreach (var item in Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList())
+                                    {
+                                        <th class="align-center">
+                                            <span>Hệ số: @item.RATIO</span>
+                                        </th>
+                                    }
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var reviewContractor in Model.ObjListReviewContractor)
+                                {
+                                    stt++;
+                                    <tr>
+                                        <td rowspan="@(reviewContractor.ListDetail.Count + 1)" class="align-center">@stt</td>
+                                        <td rowspan="@(reviewContractor.ListDetail.Count + 1)">
+                                            @reviewContractor.Contractor.TEN_NGAN
+                                        </td>
+                                    </tr>
+                                    if (reviewContractor.ListDetail.Count > 0)
+                                    {
+                                        foreach (var detail in reviewContractor.ListDetail)
+                                        {
+                                            decimal score = 0;
+                                            <tr>
+                                                <td>
+                                                    @detail.INFO_BID
+                                                </td>
+                                                <td>
+                                                    @detail.GIA_TRI.ToStringVN()
+                                                </td>
+                                                @foreach (var spec in Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList())
+                                                {
+                                                    var findSpecCouncil = Model.ObjListReviewSpecScore.Where(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID).OrderBy(x => x.USER_SCORE).ToList();
+                                                    decimal value = 0;
+                                                    if (findSpecCouncil.Count > 0)
+                                                    {
+                                                        value = ((decimal)findSpecCouncil.Sum(x => x.SCORE) / (decimal)findSpecCouncil.Count);
+                                                    }
+                                                    score = value * spec.RATIO;
+                                                    <td class="align-center">
+                                                        @score.ToStringVN()
+                                                    </td>
+                                                }
+                                                <td class="align-center">
+                                                    @detail.TOTAL_SCORE.ToStringVN()
+                                                </td>
+                                                <td class="align-center">
+                                                    @((detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)).ToStringVN())
+                                                </td>
+                                                <td class="align-center">
+                                                    @if (Model.ObjListRating.FirstOrDefault(m => m.FROM_VALUE <= (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) && (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) <= m.TO_VALUE) != null)
+                                                    {
+                                                        @Model.ObjListRating.FirstOrDefault(m => m.FROM_VALUE <= (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) && (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) <= m.TO_VALUE).RATING;
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        @foreach (var spec in Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList())
+                                                        {
+                                                            var findSpecCouncil = Model.ObjListReviewSpecScore.Where(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID).OrderBy(x => x.USER_SCORE).ToList();
+                                                            foreach (var item in findSpecCouncil)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(item.NOTES))
+                                                                {
+                                                                    <div class="col-red">@item.USER_SCORE : @item.NOTES</div>
+                                                                }
+                                                            }
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+        $(function () {
+            SubmitIndex();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+
+            $('.input-daterange').datepicker({
+                format: "dd/mm/yyyy",
+                maxViewMode: 2,
+                autoclose: true,
+                keyboardNavigation: false,
+                todayBtn: "linked",
+                clearBtn: true,
+                todayHighlight: true,
+                language: "vi"
+            });
+        });
+    </script>
+</div>
+
+
+
+
+
+

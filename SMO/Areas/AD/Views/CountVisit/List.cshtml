@@ -1,0 +1,48 @@
+﻿@model SMO.Service.AD.CountVisitService
+@{
+    var frmCode = "frm_CountVisit_Index";
+    var number = 0;
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped" style="font-size: 13px;">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Trình duyệt</th>
+                <th>Màn hình truy cập</th>
+                <th>Ngày xem</th>
+                <th>Người xem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+
+                <tr>
+                    <td>@number</td>
+                    <td>
+                        @(item.ACCESS_TYPE == null ? "" : item.ACCESS_TYPE)
+                    </td>
+                    <td>
+                        @(item.VIEW_TYPE == null ? "" : (item.VIEW_TYPE == "PK" ? "Màn hình gói thầu": "Màn hình quản trị") )
+                    </td>
+                    <td>
+                        @item.CREATE_DATE.Value.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+                    <td>
+                        @(item.CREATE_BY == null ? "Không xác định" : item.CREATE_BY)
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>

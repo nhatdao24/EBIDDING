@@ -1,0 +1,392 @@
+﻿@model SMO.Service.EB.BidService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_MenuDetailBidManager";
+
+    var serviceBidCouncil = new SMO.Service.EB.BidCouncilService();
+    serviceBidCouncil.ObjDetail.BID_ID = Model.ObjDetail.PKID;
+    serviceBidCouncil.Search();
+
+    var randomNumber = new Random().Next(1, 1000);
+
+    if (Model.ObjDetail.IS_MULTIL_ROUND)
+    {
+        Model.ObjList = Model.CurrentRepository.Queryable().Where(x => x.PARENT_BID == Model.ObjDetail.PARENT_BID).ToList();
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content" type="typeInfoBid">
+    <style>
+        /* Note: Try to remove the following lines to see the effect of CSS positioning */
+        .affix {
+            top: 20px;
+            z-index: 9999 !important;
+        }
+    </style>
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+    <div class="row">
+        <div class="col-xs-12 col-sm-3 m-b-10">
+            <div class="sub-sidebar">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="menu">
+                    <ul class="list">
+                        <li>
+                            @if (ViewBag.IsOpenFromPortal == "1")
+                            {
+                                <a href="/Index/ChiTiet/@Model.ObjDetail.PKID" onclick="Forms.Close('@Model.ViewId');">
+                                    <i class="material-icons">arrow_back</i>
+                                    <span>@LanguageUtilities.LangText("mnuQuayLai", frmCode)</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" onclick="Forms.Close('@Model.ViewId');">
+                                    <i class="material-icons">arrow_back</i>
+                                    <span>@LanguageUtilities.LangText("mnuQuayLai", frmCode)</span>
+                                </a>
+                            }
+                        </li>
+
+                        <li class="active">
+                            <a id="mnuThongTin" href="javascript:void(0);" class="menu-toggle sub-menu-toggle" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("DetailBidManager", "Bid", new { @id = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                <i class="material-icons">description</i>
+                                <span>@LanguageUtilities.LangText("mnuThongTin", frmCode)</span>
+                            </a>
+                            <ul class="ml-menu">
+
+                                @*ConfigViettinBank: Bỏ thông tin đề nghị mở thầu*@
+
+                                @*<li>
+                                        <a id="mnuDeNghi" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("DetailRequire", "Bid", new { @bidId = Model.ObjDetail.REQUIRED_CODE })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">description</i>
+                                            <span>@LanguageUtilities.LangText("mnuDeNghi", frmCode)</span>
+                                        </a>
+                                    </li>*@
+
+                                @if (Model.ObjDetail.GIAI_DOAN != Phase_Status.DongThau && (ProfileUtilities.User.USER_NAME == Model.ObjDetail.USER_APPROVE))
+                                {
+                                    <li id="mnuTinTuc" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("Index", "BidNew", new { @id = Model.ObjDetail.ListNew.FirstOrDefault().PKID})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <a href="javascript:void(0);">
+                                            <i class="material-icons">chrome_reader_mode</i>
+                                            <span>@LanguageUtilities.LangText("mnuTinTuc", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }
+
+
+                                <li>
+                                    <a id="mnuHoiDong" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListCouncil", "Bid", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">people</i>
+                                        <span>@LanguageUtilities.LangText("mnuHoiDong", frmCode)</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id="mnuDSNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListContractor", "Bid", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">people_outline</i>
+                                        <span>@LanguageUtilities.LangText("mnuDSNhaThau", frmCode)</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id="mnuTieuChi" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListSpec", "Bid", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">insert_chart</i>
+                                        <span>@LanguageUtilities.LangText("mnuTieuChi", frmCode)</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+                        @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                        @*@if (Model.ObjDetail.GIAI_DOAN != Phase_Status.DongThau && AuthorizeUtilities.CheckUserRightProject("RP303", Model.ObjDetail.PROJECT_CODE).Item1 && (ProfileUtilities.User.USER_NAME == Model.ObjDetail.CREATE_BY || (ProfileUtilities.User.USER_NAME == Model.ObjDetail.USER_MANAGE && Model.ObjDetail.STATUS == EB_Status.DaPheDuyet)))*@
+                        @if (Model.ObjDetail.GIAI_DOAN != Phase_Status.DongThau && (ProfileUtilities.User.USER_NAME == Model.ObjDetail.CREATE_BY || (ProfileUtilities.User.USER_NAME == Model.ObjDetail.USER_MANAGE && Model.ObjDetail.STATUS == EB_Status.DaPheDuyet)))
+                        {
+                            <li>
+                                <a id="mnuEditBid" href="javascript:void(0);" onclick="Forms.LoadAjax({url:'@Url.Action("MenuEdit", "Bid", new { @id = Model.ObjDetail.PKID })'})">
+                                    <i class="material-icons">edit</i>
+                                    <span>@LanguageUtilities.LangText("mnuEditBid", frmCode)</span>
+                                </a>
+                            </li>
+                        }
+
+
+                        @if (Model.ObjDetail.STATUS == EB_Status.DaPheDuyet || Model.ObjDetail.STATUS == EB_Status.ThuongThaoLai || (Model.ObjDetail.STATUS == EB_Status.Huy && Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau))
+                        {
+
+
+                            @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                            @*if (AuthorizeUtilities.CheckUserRightProject("RP316", Model.ObjDetail.PROJECT_CODE).Item1)
+                                {
+                                    <li>
+                                        <a id="mnuHoSoThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidSubmit", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">attach_file</i>
+                                            <span>@LanguageUtilities.LangText("mnuHoSoThau", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }*@
+
+                            <li>
+                                <a id="mnuHoSoThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidSubmit", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                    <i class="material-icons">attach_file</i>
+                                    <span>@LanguageUtilities.LangText("mnuHoSoThau", frmCode)</span>
+                                </a>
+                            </li>
+
+
+                            @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                            //if (AuthorizeUtilities.CheckUserRightProject("RP320", Model.ObjDetail.PROJECT_CODE).Item1 && serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG") || x.VAI_TRO.Split(',').Contains("XG")))) > 0)
+                            if (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG") || x.VAI_TRO.Split(',').Contains("XG")))) > 0)
+                            {
+                                @*if ((serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && ((!string.IsNullOrEmpty(x.VAI_TRO) && (x.VAI_TRO.Contains("TDG") || x.VAI_TRO.Contains("XG"))) || x.IS_QUYET_DINH == true)) > 0)
+                                     || Model.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME || Model.ObjDetail.USER_MANAGE == ProfileUtilities.User.USER_NAME)
+                                    {
+                                        <li>
+                                            <a id="mnuBidContractorPrice" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("Index", "BidContractorPrice", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                                <i class="material-icons">attach_money</i>
+                                                <span>Bảng giá chào thầu</span>
+                                            </a>
+                                        </li>
+                                    }*@
+                                <li>
+                                    <a id="mnuBidContractorPrice" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("Index", "BidContractorPrice", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">attach_money</i>
+                                        <span>Bảng giá chào thầu</span>
+                                    </a>
+                                </li>
+                            }
+
+                            if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChamThau)
+                            {
+
+                                @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                                //if (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME) > 0 && AuthorizeUtilities.CheckUserRightProject("RP314", Model.ObjDetail.PROJECT_CODE).Item1)
+                                if (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME) > 0)
+                                {
+                                    <li>
+                                        <a id="mnuChamThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("CouncilScore", "BidSpec", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">receipt</i>
+                                            <span>@LanguageUtilities.LangText("mnuChamThau", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                            @*if (AuthorizeUtilities.CheckUserRightProject("RP313", Model.ObjDetail.PROJECT_CODE).Item1)
+                                {
+                                    <li>
+                                        <a id="mnuBangDiem" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("ViewSpecScore", "BidSpec", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">format_list_numbered</i>
+                                            <span>@LanguageUtilities.LangText("mnuBangDiem", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }*@
+
+                            @*ConfigViettinBank: Xóa bảng điểm nhà thầu*@
+
+                            @*<li>
+                                    <a id="mnuBangDiem" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("ViewSpecScore", "BidSpec", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">format_list_numbered</i>
+                                        <span>@LanguageUtilities.LangText("mnuBangDiem", frmCode)</span>
+                                    </a>
+                                </li>*@
+
+
+
+
+                            if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau || Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau || Model.ObjDetail.GIAI_DOAN == Phase_Status.VongTiepTheo || Model.ObjDetail.GIAI_DOAN == Phase_Status.ThuongThaoLai)
+                            {
+
+                                @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                                //if (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_QUYET_DINH == true) > 0 && AuthorizeUtilities.CheckUserRightProject("RP315", Model.ObjDetail.PROJECT_CODE).Item1 && Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                                if (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_QUYET_DINH == true) > 0 && Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                                {
+                                    <li>
+                                        <a id="mnuChonNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("SelectContractor", "BidContractor", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">playlist_add_check</i>
+                                            <span>@LanguageUtilities.LangText("mnuChonNhaThau", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+
+                            @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                            @*if (AuthorizeUtilities.CheckUserRightProject("RP317", Model.ObjDetail.PROJECT_CODE).Item1)
+                                            {
+
+                                                //ConfigViettinBank: Trao đổi nhà thầu -> Yêu cầu làm rõ HSDX
+
+                                                <li>
+                                    <a id="mnuTraoDoiNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidContractorQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">question_answer</i>
+                                        <span>@LanguageUtilities.LangText("mnuTraoDoiNhaThau", frmCode)</span>
+                                    </a>
+                                </li>
+                                                <li>
+                                                    <a id="mnuTraoDoiNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidContractorQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                                        <i class="material-icons">question_answer</i>
+                                                        <span>@LanguageUtilities.LangText("mnuYeuCauLamRoHSDX", frmCode)</span>
+                                                    </a>
+                                                </li>
+                                            }*@
+
+
+                            //ConfigViettinBank: Trao đổi nhà thầu -> Yêu cầu làm rõ HSDX
+
+                            @*<li>
+                                    <a id="mnuTraoDoiNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidContractorQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">question_answer</i>
+                                        <span>@LanguageUtilities.LangText("mnuTraoDoiNhaThau", frmCode)</span>
+                                    </a>
+                                </li>*@
+                            <li>
+                                <a id="mnuTraoDoiNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("IndexManager", "BidContractorQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                    <i class="material-icons">question_answer</i>
+                                    <span>@LanguageUtilities.LangText("mnuYeuCauLamRoHSDX", frmCode)</span>
+                                </a>
+                            </li>
+
+
+                            @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                            @*if (AuthorizeUtilities.CheckUserRightProject("RP318", Model.ObjDetail.PROJECT_CODE).Item1)
+                                {
+                                    <li>
+                                        <a id="mnuTraoDoiNoiBo" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("Index", "BidInternalQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                            <i class="material-icons">people</i>
+                                            <span>@LanguageUtilities.LangText("mnuTraoDoiNoiBo", frmCode)</span>
+                                        </a>
+                                    </li>
+                                }*@
+
+                            <li>
+                                <a id="mnuTraoDoiNoiBo" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this);Forms.LoadAjax({url:'@Url.Action("Index", "BidInternalQuestion", new { @bidId = Model.ObjDetail.PKID })',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                    <i class="material-icons">people</i>
+                                    <span>@LanguageUtilities.LangText("mnuTraoDoiNoiBo", frmCode)</span>
+                                </a>
+                            </li>
+
+                        }
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-9">
+            <div class="card border-grey m-b-10" style="padding: 5px;">
+                <div class="body">
+                    <div class="col-indigo font-15">
+                        @if (ProfileUtilities.User.LANGUAGE == "vi")
+                        {
+                            <span>
+                                @Model.ObjDetail.PKID <text>-</text>
+                                @(Model.ObjDetail.TEN_GOI_THAU?.ToUpper() ?? "Thông tin không có")
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                @Model.ObjDetail.PKID <text>-</text>
+                                @(Model.ObjDetail.TEN_GOI_THAU_EN?.ToUpper() ?? "Information not available")
+                            </span>
+                        }
+                        @if (Model.ObjDetail.IS_MULTIL_ROUND)
+                        {
+                            <br />
+                            <div style="margin-top: 5px;">
+                                @foreach (var item in Model.ObjList)
+                                {
+                                    var vdbclickAction = string.Format("CloseCurrent();Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", new { id = item.PKID }));
+                                    <div class="" style="display: inline-block; margin-right: 5px;">
+                                        <input type="radio" value="@item.PKID" class="filled-in" id="rdo_@item.PKID" style="margin:0;" onclick="@vdbclickAction" name="rdoUserDecision" @(item.ROUND == Model.ObjDetail.ROUND ? "checked" : "") />
+                                        <label for="rdo_@item.PKID" style="font-size: 14px; padding-left: 25px;">Vòng @item.ROUND</label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div id="divContentDetail">
+                @*@{Html.RenderAction("DetailBidManager", "Bid", new { @id = Model.ObjDetail.PKID });}*@
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function CloseCurrent() {
+            Forms.Close('@Model.ViewId');
+        }
+
+        function OnClickSubMenu_@(randomNumber)(obj) {
+            $("#@Model.ViewId .sub-sidebar li").removeClass("active");
+            $(obj).parent().addClass("active");
+            //$(".sub-sidebar").affix({ offset: { top: 60 } });
+        }
+
+        $(function () {
+            // Đóng các màn hình info bid khác
+            try {
+                $("div[type=typeInfoBid]").each(function () {
+                    if ($(this).attr("id") != '@Model.ViewId') {
+                        $(this).remove();
+                    }
+                });
+            } catch (e) {
+
+            }
+
+
+            // Mở menu theo notify
+            try {
+                if ("@ViewBag.IdMenu" == "") {
+                    $("#@Model.ViewId #mnuThongTin").click();
+                } else {
+                    if ($("#@Model.ViewId #@ViewBag.IdMenu").length == 1) {
+                        $("#@Model.ViewId #@ViewBag.IdMenu").click();
+                    } else {
+                        $("#@Model.ViewId #mnuThongTin").click();
+                    }
+                }
+            } catch (e) {
+
+            }
+
+
+            $('#@Model.ViewId .sub-menu-toggle').on('click', function (e) {
+                var $this = $(this);
+                var $content = $this.next();
+
+                if ($($this.parents('ul')[0]).hasClass('list')) {
+                    var $not = $(e.target).hasClass('menu-toggle') ? e.target : $(e.target).parents('.menu-toggle');
+
+                    $.each($('.menu-toggle.toggled').not($not).next(), function (i, val) {
+                        if ($(val).is(':visible')) {
+                            $(val).prev().toggleClass('toggled');
+                            $(val).slideUp();
+                        }
+                    });
+                }
+
+                $this.toggleClass('toggled');
+                $content.slideToggle(320);
+            });
+        });
+    </script>
+</div>

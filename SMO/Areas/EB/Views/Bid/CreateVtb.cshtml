@@ -1,0 +1,343 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Core.Entities
+@using Newtonsoft.Json;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_Create";
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_HHDV" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_CURRENCY" });
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    //List<T_MD_HHDV> lstHhdv = UtilsCore.ConvertDataToListExtends<T_MD_CURRENCY>(dsResult.Tables["T_MD_HHDV"]);
+    List<T_MD_CURRENCY> lstCurrency = UtilsCore.ConvertDataToListExtends<T_MD_CURRENCY>(dsResult.Tables["T_MD_CURRENCY"]);
+    var bid = new SMO.Service.EB.BidService();
+    bid.GetAll();
+    // Giữ nguyên logic tính toán của bạn
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.ListFileDelete, new { id = "hddListFileDelete" })
+        @Html.HiddenFor(m => m.ObjDetail.PARENT_BID)
+        @Html.HiddenFor(m => m.ObjDetail.IS_NEW_ROUND)
+        @Html.HiddenFor(m => m.ObjDetail.COMPANY_CODE)
+        @Html.HiddenFor(m => m.ViewId)
+        <input type="hidden" name="lstContractorId" value="@ViewBag.ListContractorID" />
+
+        <div class="row clearfix">
+            @* CỘT TRÁI (8): THÔNG TIN CHÍNH *@
+            <div class="col-xs-12 col-sm-8">
+                <div class="card border-grey">
+                    <div class="body div-po-detail" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">content_copy</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", Model.ViewId), "", "arrow_back")
+                                    @Html.MyButton("cmdSave", "Lưu lại", "SubmitForm();", "", "done_all")
+                                </div>
+                            </div>
+
+                            <div id="divDetail" class="m-t-20">
+                                <div class="m-b-10">
+                                    <span class="waves-effect btn-outline-primary btn" onclick="ShowDialogMaterial();">
+                                        @*<i class="material-icons" style="font-size:16px; vertical-align:middle">add</i>*@
+                                        <span>Thêm item</span>
+                                    </span>
+                                </div>
+
+                                <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                    <table class="table table-condensed table-striped" style="margin-bottom:0px;">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 80px">Mã HH/DV</th>
+                                                <th style="min-width: 40px" class="align-left">Danh mục HH/DV</th>
+                                                <th width="280px" class="align-center">Chi tiết HH/DV</th>
+                                                <th width="80px" class="align-center">Khối lượng</th>
+                                                <th width="150px" class="align-center">Đơn vị tính</th>
+                                                <th width="150px" class="align-center">Đơn giá</th>
+                                                <th width="50px" class="align-center">*</th>
+                                            </tr>
+                                        </thead>
+                                        @* Binding dữ liệu qua Knockout *@
+                                        <tbody data-bind="template: { name: 'RowDetailTemplate', foreach: ObjListDetail }"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* CỘT PHẢI (4): THÔNG TIN PHỤ & FILE ĐÍNH KÈM *@
+            <div class="col-xs-12 col-sm-4">
+                @* CARD CẤU HÌNH *@
+                <div class="card m-b-20 border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitleVtb", frmCode)</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <label>@LanguageUtilities.LangText("lblKHOAN_MUA_SAM", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU)
+                            </div>
+                            <label>@LanguageUtilities.LangText("lblKHOAN_MUA_SAM_EN", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU_EN)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.TEN_GOI_THAU_EN)
+                            </div>
+                            <label>@LanguageUtilities.LangText("lblHinhThucMuaSam", frmCode)</label>
+                            <div class="form-group">
+                                <select name="hinhThucMuaSam" id="ddlHinhThuc" class="selectpicker show-tick" data-container="body" data-width="100%">
+                                    <option value="NHOM1">Nhóm 1</option>
+                                    <option value="NHOM2">Nhóm 2</option>
+                                    <option value="NHOM3">Nhóm 3</option>
+                                </select>
+                            </div>
+                            <label>@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.USER_APPROVE, SelectListUtilities.GetAllUserFecon(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @data_width = "100%" })
+                                @Html.ValidationMessageFor(m => m.ObjDetail.USER_APPROVE)
+                            </div>
+
+                            <label>Gói thầu</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.PACKAGE_CODE, SelectListUtilities.GetAllPackage(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            </div>
+
+                            <label>Phân loại HHDV</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.SCOPE_TYPE_CODE, SelectListUtilities.GetScopeType(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            </div>
+                            <label>@LanguageUtilities.LangText("lblTongGiaTri", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TOTAL_PRICE, new
+                                    {
+                                        @class = "form-control mask-currency align-left",
+                                        @data_bind = "value: TotalValue"
+                                    })
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.TOTAL_PRICE)
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_MO_THAU, new { @class = "datetimepicker", @autocomplete = "off", @data_val = false })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_DONG_THAU, new { @class = "datetimepicker", @autocomplete = "off", @data_val = false })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* CARD FILE HSYC *@
+                <div class="card m-b-20 border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> HỒ SƠ YÊU CẦU</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="m-b-10">
+                                @Html.MyButton("cmdFileHSYC", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_HSYC', 'HSYC');", "Đính kèm hồ sơ yêu cầu", "attach_file")
+                            </div>
+                            <div id="divPreviewFile_HSYC" class="div-file-preview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                @* CARD FILE PHÊ DUYỆT *@
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> QUYẾT ĐỊNH PHÊ DUYỆT</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="m-b-10">
+                                @Html.MyButton("cmdFileQD", "Đính kèm file", "UploadFile.InsertFile('#divPreviewFile_QD', 'QD');", "Đính kèm quyết định", "attach_file")
+                            </div>
+                            <div id="divPreviewFile_QD" class="div-file-preview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/html" id="RowDetailTemplate">
+        <tr>
+            <td style="vertical-align:middle;">
+                <span data-bind="text: CODE"></span>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="text" data-bind="value: TEXT" class="form-control" readonly />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="text" data-bind="value: DESCRIPTION, valueUpdate: 'input'" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="number" min="0" data-bind="value: QUANTITY, valueUpdate: 'input'" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <select data-bind="value: UNIT" class="form-control">
+                            <option value="">-</option>
+                            @foreach (var currency in lstCurrency)
+                            {
+                                <option value="@currency.CODE">@currency.TEXT</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle;">
+                <div class="form-line">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="number" data-bind="value: PRICE_VTB, valueUpdate: 'input'" class="form-control mask-currency" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle;" class="align-center">
+                <i class="material-icons col-red" onclick="RemoveDetail(this);" data-bind="attr: {order : ORDER}" style="cursor:pointer">remove_circle_outline</i>
+            </td>
+        </tr>
+    </script>
+
+    <script src="~/Scripts/PO/ko.model.BID.js"></script>
+    <script type="text/javascript">
+    function ShowDialogMaterial() {
+        var params = {
+            url: "@Url.Action("AddHHDV")"
+        };
+        Forms.ShowLoading();
+        Forms.LoadAjaxModalLarge(params);
+    }
+
+        function SubmitForm() {
+
+  
+
+        var form = $('#@Model.FormId');
+            if (!form.valid()) {
+            return false;
+        }
+
+        var formData = new FormData(form[0]);
+        var rawPrice = $('.mask-currency').val();
+        if (rawPrice) {
+            var cleanPrice = rawPrice.split('.').join('').replace(',', '.');
+            formData.set("ObjDetail.TOTAL_PRICE", cleanPrice);
+        }
+
+        formData.append("strListDetail", JSON.stringify(ko.toJS(model.ObjListDetail)));
+
+        var lstFileBidRequire = @Html.Raw(JsonConvert.SerializeObject(Model.ListRequireFile));
+        formData.append("listFileBid", JSON.stringify(lstFileBidRequire));
+
+        if (UploadFile.ListFile && UploadFile.ListFile.length > 0) {
+            for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                var fileObj = UploadFile.ListFile[i];
+                formData.append("files", fileObj.DataFile);
+                formData.append("fileGroups", fileObj.FileGroup);
+            }
+        }
+
+        Forms.ShowLoading();
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("CreateVtb")",
+            data: formData,
+            headers: { 'RequestVerificationToken': $('#antiForgeryToken').val() },
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                Message.execute(response);
+                Forms.HideLoading();
+            },
+            error: Forms.AjaxErrorHandler
+        });
+    }
+
+        $(function () {
+        ko.applyBindings(model, document.getElementById('@Model.ViewId'));
+
+        Forms.CompleteUI();
+
+        $('.datetimepicker').datetimepicker({
+            format: 'DD/MM/YYYY HH:mm:ss',
+            useCurrent: false,
+            showTodayButton: true
+        });
+
+        $('.mask-currency').inputmask({
+            alias: "decimal",
+            groupSeparator: ".",
+            radixPoint: ",",
+            autoGroup: true,
+            digits: 2,
+            digitsOptional: true,
+            placeholder: "0",
+            rightAlign: false,
+            autoUnmask: true,
+            removeMaskOnSubmit: true
+        });
+    });
+    </script>
+   
+</div>
+
+<style>
+    .bootstrap-select .dropdown-menu {
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    #mainContent .child-content {
+        position: relative;
+        height: 99%;
+    }
+</style>

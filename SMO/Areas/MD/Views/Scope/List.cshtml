@@ -1,0 +1,54 @@
+﻿@model SMO.Service.MD.ScopeService
+@{
+    var number = 1;
+}
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Tên tiếng anh</th>
+                <th>Hiển thị ô nhập</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.CODE.Replace('.', '-') }));
+                var toggleAction = string.Format("Forms.ToggleActive('{0}', this);", Url.Action("ToggleActiveText", new { id = item.CODE.Replace('.', '-') }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td>
+                        <a href="#" onclick="@vdbclickAction">@item.TEXT</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.TEXT_EN</td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE_TEXT)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+

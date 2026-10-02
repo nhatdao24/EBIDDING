@@ -1,0 +1,52 @@
+﻿@model SMO.Service.MD.ProjectService
+@{
+    var frmFormCode = "frmUnitIndex";
+    var number = 1;
+}
+ 
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Tên dự án</th>
+                <th>Tên dự án tiếng anh</th>
+                <th>Giám đốc dự án</th>
+                <th>Địa điểm</th>
+                <th>Địa điểm tiếng anh</th>
+                <th>Giá trị HĐ</th>
+                <th>Giá trị thực hiện</th>
+                <th>Ngày bắt đầu, kết thúc</th>
+                <th>Mã SAP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.CODE }));
+            <tr>
+                <td ondblclick="@vdbclickAction">
+                    <a href="#" onclick="@vdbclickAction">@item.NAME</a>
+                </td>
+                <td ondblclick="@vdbclickAction">
+                    <a href="#" onclick="@vdbclickAction">@item.NAME_EN</a>
+                </td>
+                <td ondblclick="@vdbclickAction">@item.GIAM_DOC</td>
+                <td ondblclick="@vdbclickAction">@item.DIA_DIEM</td>
+                <td ondblclick="@vdbclickAction">@item.DIA_DIEM_EN</td>
+                <td ondblclick="@vdbclickAction">@item.GIA_TRI_HOP_DONG.ToStringVN()</td>
+                <td ondblclick="@vdbclickAction">@item.GIA_TRI_THUC_HIEN.ToStringVN()</td>
+                <td ondblclick="@vdbclickAction">
+                    <div>Bắt đầu: @(item.NGAY_BAT_DAU.HasValue?item.NGAY_BAT_DAU.Value.ToString(Global.DateToStringFormat) : "")</div>
+                    <div>Kết thúc: @(item.NGAY_KET_THUC.HasValue ? item.NGAY_KET_THUC.Value.ToString(Global.DateToStringFormat) : "")</div>
+                </td>
+                <td ondblclick="@vdbclickAction">@item.SAP_CODE</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

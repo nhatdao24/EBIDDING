@@ -1,0 +1,110 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewContractor_Index";
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.REVIEW_ID)
+        @Html.HiddenFor(m => m.ViewId)
+
+        <div class="card border-grey m-b-10">
+            <div class="body">
+                @Html.MyButton("cmdAddContractor", LanguageUtilities.LangText("cmdAddContractor", frmCode), "AddContractor();", " ", "add")
+            </div>
+        </div>
+
+        <div id="divResult">
+        </div>
+    }
+
+    <script type="text/javascript">
+        function AddDetailReviewContractor(headerId, contractorId, reviewId) {
+                var params = {
+                    url: "@Url.Action("AddDetailReviewContractor")",
+                    data: { headerId: headerId, contractorId: contractorId, reviewId: reviewId }
+                };
+                Forms.ShowLoading();
+                Forms.LoadAjaxRight(params);
+            }
+
+            function EditDetailReviewContractor(detailId, contractorId, reviewId) {
+                var params = {
+                    url: "@Url.Action("EditDetailReviewContractor")",
+                    data: { detailId: detailId, contractorId: contractorId, reviewId: reviewId }
+                };
+                Forms.ShowLoading();
+                Forms.LoadAjaxRight(params);
+            }
+
+            function DeleteDetailReviewContractor(detailId) {
+                if (!confirm("Bạn có chắc chắn xóa không?")) {
+                    return;
+                }
+
+                var ajaxParams = {
+                    url: "@Url.Action("DeleteDetailReviewContractor")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { id: detailId}
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+            function AddContractor() {
+                var reviewId = '@Model.ObjDetail.REVIEW_ID';
+                var params = {
+                    url : "@Url.Action("AddContractorReview", "Contractor")",
+                    data: { reviewId: reviewId }
+                };
+                Forms.ShowLoading();
+                Forms.LoadAjaxModal(params);
+            }
+
+            function AddBid(contractorId, reviewId) {
+                var params = {
+                    url: "@Url.Action("AddBid", "ReviewContractor")",
+                    data: { contractorId: contractorId, reviewId: reviewId }
+                };
+                Forms.ShowLoading();
+                Forms.LoadAjaxModal(params);
+            }
+
+            function AddMaterialType() {
+                var params = {
+                    url : "@Url.Action("AddMaterialType", "ReviewContractor")"
+                };
+                Forms.ShowLoading();
+                Forms.LoadAjaxModal(params);
+            }
+
+            function RemoveContractor(id) {
+                if (!confirm("Bạn có chắc chắn xóa không?")) {
+                    return;
+                }
+
+                var ajaxParams = {
+                    url: "@Url.Action("DeleteContractorOfReview")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { id: id}
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+
+            function SubmitListContractorOfReview() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                Forms.SubmitForm('@Model.FormId');
+                Forms.CompleteUI();
+            });
+    </script>
+</div>

@@ -1,0 +1,109 @@
+﻿@model SMO.Service.EB.BidPhaseFileService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidContractor_AddFileInSelectContractor";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("SubmitFileInSelectContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> @LanguageUtilities.LangControl("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdSubmit", LanguageUtilities.LangControl("cmdSubmit", frmCode), "Submit();", "", "done_all")
+                                @Html.MyButton("cmdFile", LanguageUtilities.LangControl("cmdFile", frmCode), "UploadFile.InsertFile('#divPreviewFile','fileHoSo');", "", "attach_file")
+                            </div>
+                        </div>
+
+                        <div>
+                            <div id="divPreviewFile">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function Submit() {
+                var formData = new FormData($('#@Model.FormId')[0]);
+
+                if (UploadFile.ListFile.length == 0) {
+                    alert("Bạn cần chọn ít nhất một file");
+                    return;
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileHoSo") {
+                        formData.append("files", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                Forms.ShowLoading();
+
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    type: "POST",
+                    url: "@Url.Action("SubmitFileInSelectContractor")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        UploadFile.ClearFile();
+                        Message.execute(response);
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            $(function () {
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

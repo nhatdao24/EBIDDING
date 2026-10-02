@@ -1,0 +1,197 @@
+﻿@model SMO.Service.EB.BidService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_DetailBidContractorWait";
+    var frmCodeBidRequired = "frm_BidRequire_Detail";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    dynamic param = new System.Dynamic.ExpandoObject();
+    param.IsFetch = true;
+    var serviceBidRequired = new SMO.Service.EB.BidRequireService();
+    serviceBidRequired.Get(Model.ObjDetail.REQUIRED_CODE, param);
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.PKID);
+
+    if (Model.ObjDetail.MO_TA != null)
+    {
+        var template = Model.ObjDetail.MO_TA
+            .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+            .Replace("{DIA_DIEM}", serviceBid.ObjDetail.Project.DIA_DIEM)
+            .Replace("{THOI_GIAN_MO_THAU}", serviceBid.ObjDetail.NGAY_MO_THAU.ToString())
+            .Replace("{THOI_GIAN_DONG_THAU}", serviceBid.ObjDetail.NGAY_DONG_THAU.ToString())
+            .Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+            .Replace("{NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.FULL_NAME)
+            .Replace("{SDT_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.PHONE)
+            .Replace("{EMAIL_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.EMAIL);
+
+        Model.ObjDetail.MO_TA = template;
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content" type="typeInfoBid">
+    <div class="">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="card border-grey">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @if (ViewBag.IsOpenFromPortal == "1")
+                            {
+                                @Html.MyButton("cmdBack", @LanguageUtilities.LangControl("cmdBack", frmCode), $"window.location='{Url.Action("ChiTiet", "Index", new { @area = "", id = Model.ObjDetail.PKID })}'", "", "arrow_back")
+                            }
+                            else
+                            {
+                                @Html.MyButton("cmdBack", @LanguageUtilities.LangControl("cmdBack", frmCode), string.Format("Forms.Close('{0}');", @Model.ViewId), "", "arrow_back")
+                            }
+                            @if (ViewBag.STATUS != "RJ" && Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && Model.ObjDetail.NGAY_DONG_THAU >= DateTime.Now)
+                            {
+                                @Html.MyButton("cmdApprove", @LanguageUtilities.LangControl("cmdApprove", frmCode), "JoinBid('AP');", "", "done_all")
+                                @Html.MyButton("cmdReject", @LanguageUtilities.LangControl("cmdReject", frmCode), "JoinBid('RJ');", "", "cancel")
+                            }
+                        </div>
+                    </div>
+
+                    <div style="min-height:100vh;">
+                        <div class="col-indigo m-b-10 m-t-15 font-16">
+                            @if (lang == "vi")
+                            {
+                                @Model.ObjDetail.PKID <text>-</text> @Model.ObjDetail.TEN_GOI_THAU
+                            }
+                            else
+                            {
+                                @Model.ObjDetail.PKID <text>-</text> @Model.ObjDetail.TEN_GOI_THAU_EN
+                            }
+                        </div>
+                        <div class="col-blue-grey font-13">
+                            <div class="col-md-3 col-xs-12">
+                                <b>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode): </b> @Model.ObjDetail.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)
+                            </div>
+                            <div class="col-md-3 col-xs-12">
+                                <b>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode): </b> @Model.ObjDetail.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div class="col-md-3 col-xs-12">
+                                <b>@LanguageUtilities.LangText("lblNguoiPhuTrach", "frm_Bid_DetailBidContractor"): </b> @Model.ObjDetail.UserSent.FULL_NAME - @((Model.ObjDetail.UserSent.Title.NAME == null ? "Chưa có chức danh" : Model.ObjDetail.UserSent.Title.NAME))
+                            </div>
+
+                            <div class="col-md-3 col-xs-12">
+                                <b>@LanguageUtilities.LangText("lblPhoneLienHe", "frm_Bid_DetailBidContractor"): </b> @Model.ObjDetail.UserSent.PHONE
+                            </div>
+
+                            <div class="col-md-3 col-xs-12">
+                                <b>@LanguageUtilities.LangText("lblEmailLienHe", "frm_Bid_DetailBidContractor"): </b> @Model.ObjDetail.UserSent.EMAIL
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+
+                        <table class="table table-condensed font-13" style="max-width: 600px;">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 200px">@LanguageUtilities.LangText("thMatHang", frmCodeBidRequired)</th>
+                                    <th style="min-width: 200px">@LanguageUtilities.LangText("thCongViec", frmCodeBidRequired)</th>
+                                    <th width="150px" class="align-right">@LanguageUtilities.LangText("thSoLuong", frmCodeBidRequired)</th>
+                                    @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                    {
+                                        <th width="150px" class="align-right">@LanguageUtilities.LangText("thTimeRent", frmCodeBidRequired)</th>
+                                    }
+                                    <th width="100px" class="align-center">@LanguageUtilities.LangText("thDonViTinh", frmCodeBidRequired)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in serviceBidRequired.ObjHeader.ListDetail.OrderBy(x => x.ITEM_NUMBER == null ? 1 : 0).ThenBy(x => x.ITEM_NUMBER))
+                                {
+                                    <tr>
+                                        <td>@item.Material.TEXT</td>
+                                        <td>[@(item.Scope?.CODE ?? "")] @(item.Scope?.TEXT ?? "")</td>
+                                        <td class="align-right">@item.QUANTITY.ToStringVN()</td>
+                                        @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                        {
+                                            <td class="align-center">
+                                                @(item.TIME_RENT != null ? item.TIME_RENT.ToString() : "")
+                                                @(item.RentUnit != null ? (item.RentUnit.TEXT != null ? item.RentUnit.TEXT : " ") : "")
+                                            </td>
+                                        }
+                                        <td class="align-center">@(item.Unit != null ? item.Unit.TEXT : "")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        @if (lang == "vi")
+                        {
+                            <div>
+                                @Html.Raw(Model.ObjDetail.MO_TA)
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                @Html.Raw(Model.ObjDetail.MO_TA_EN)
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        function CloseForm() {
+            Forms.Close('@Model.ViewId');
+        }
+
+        function JoinBid(status) {
+            @if(lang == "vi")
+            {
+                @:var msg = "Bạn có chắc chắn tham gia gói thầu này không?";
+            }else
+            {
+                @:var msg = "Are you sure?";
+            }
+            if (!confirm(msg)) {
+                return;
+            }
+            var ajaxParams = {
+                url: "@Url.Action("JoinBid")",
+                type: 'POST',
+                dataType : 'json',
+                data: { status : status, bidId: '@Model.ObjDetail.PKID' }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            // Đóng các màn hình info bid khác
+            try {
+                $("div[type=typeInfoBid]").each(function () {
+                    if ($(this).attr("id") != '@Model.ViewId') {
+                        $(this).remove();
+                    }
+                });
+            } catch (e) {
+
+            }
+
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

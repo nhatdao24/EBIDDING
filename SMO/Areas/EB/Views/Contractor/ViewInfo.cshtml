@@ -1,0 +1,329 @@
+﻿@model SMO.Service.EB.ContractorService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Contractor_Detail";
+
+}
+
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+
+<div class="modal-body">
+    <div id='@Model.ViewId' class="container-fluid child-content">
+        <div class="row clearfix">
+            <div class="col-xs-12 col-sm-3">
+                <div class="card profile-card ">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="profile-header">&nbsp;</div>
+                    <div class="profile-body">
+                        <div class="image-area">
+                            <img src="@Model.ObjDetail.LOGO_PATH" />
+                        </div>
+                        <div class="content-area">
+                            <h4>@Model.ObjDetail.TEN_NGAN</h4>
+                            <p>@Model.ObjDetail.TEN_DAI</p>
+                            <p>@Model.ObjDetail.USER_NAME</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-info">
+                        <div class="info-line p-b-10">
+                            @if (!string.IsNullOrEmpty(Model.ObjDetail.FILE_GIOI_THIEU_ID))
+                            {
+                                <a href="#" onclick="DownloadFile('@Model.ObjDetail.FILE_GIOI_THIEU_ID')">
+                                    @LanguageUtilities.LangText("lblTaiFile", frmCode)
+                                </a>
+                            }
+                        </div>
+
+                        <div class="info-line p-b-10">
+                            <a href="#divThongTinLienLac">
+                                @LanguageUtilities.LangText("lblLienLac", frmCode)
+                            </a>
+                        </div>
+
+                        <div class="info-line p-b-10">
+                            <a href="#divThiTruongKinhDoanh">
+                                @LanguageUtilities.LangText("lblTTKinhDoanh", frmCode)
+                            </a>
+                        </div>
+
+                        <div class="info-line p-b-10">
+                            <a href="#divTruSo">
+                                @LanguageUtilities.LangText("lblTruSo", frmCode)
+                            </a>
+                        </div>
+
+                        <div class="info-line p-b-10">
+                            <a href="#divDuAn">
+                                @LanguageUtilities.LangText("lblDuAn", frmCode)
+                            </a>
+                        </div>
+
+                        <div class="info-line p-b-10">
+                            <a href="#divTaiChinh">
+                                @LanguageUtilities.LangText("lblTaiChinh", frmCode)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-9" style="border-left: 1px solid #D7D7D7;">
+                <div class="card ">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTTCty", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        <div class="profile-info">
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblTenNgan", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.TEN_NGAN
+                                </div>
+                            </div>
+
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblTenDai", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.TEN_DAI
+                                </div>
+                            </div>
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblMST", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.MA_SO_THUE
+                                </div>
+                            </div>
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">DMS</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.DMS
+                                </div>
+                            </div>
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblQuocGia", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @(Model.ObjDetail.Country != null ? Model.ObjDetail.Country.TEXT : "")
+                                </div>
+                            </div>
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblSLNhanVien", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.SO_LUONG_NHAN_VIEN
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblVonDieuLe", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.VON_DIEU_LE.ToStringVN() @Model.ObjDetail.VON_DIEU_LE_UNIT
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblNguoiDaiDien", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.NGUOI_DAI_DIEN
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblLinhVucChinh", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.LINH_VUC_CHINH
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblWebsite", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.WEBSITE
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblSoDienThoai", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.PHONE
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblEmal", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.EMAIL
+                                </div>
+                            </div>
+
+                            <div class="info-line row">
+                                <div class="col-xs-12 col-sm-4 m-b-10">
+                                    <span class="col-blue-grey">@LanguageUtilities.LangText("lblDiaChi", frmCode)</span>
+                                </div>
+                                <div class="col-xs-12 col-sm-8 m-b-10">
+                                    @Model.ObjDetail.DIA_CHI
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card m-t-20 " id="divThongTinLienLac">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">contact_phone</i> @LanguageUtilities.LangText("lblTTLienLac", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        @{
+                            var serviceContact = new SMO.Service.EB.ContractorContactService();
+                            serviceContact.ObjDetail.CONTRACTOR_ID = Model.ObjDetail.PKID;
+                            serviceContact.Search();
+                            serviceContact.IsViewOnly = true;
+                            Html.RenderPartial("~/Areas/EB/Views/ContractorContact/List.cshtml", serviceContact);
+                        }
+                    </div>
+                </div>
+
+                <div class="card m-t-20 " id="divThiTruongKinhDoanh">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">public</i> @LanguageUtilities.LangText("lblTTKD", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        @{
+                            var serviceContractorMarket = new SMO.Service.EB.ContractorMarketService();
+                            serviceContractorMarket.ObjDetail.CONTRACTOR_ID = Model.ObjDetail.PKID;
+                            serviceContractorMarket.Search();
+                            serviceContractorMarket.IsViewOnly = true;
+                            Html.RenderPartial("~/Areas/EB/Views/ContractorMarket/List.cshtml", serviceContractorMarket);
+                        }
+                    </div>
+                </div>
+
+                <div class="card m-t-20 " id="divTruSo">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">domain</i> @LanguageUtilities.LangText("lblTSVPCT", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        @{
+                            var serviceContractorLocation = new SMO.Service.EB.ContractorLocationService();
+                            serviceContractorLocation.ObjDetail.CONTRACTOR_ID = Model.ObjDetail.PKID;
+                            serviceContractorLocation.Search();
+                            serviceContractorLocation.IsViewOnly = true;
+                            Html.RenderPartial("~/Areas/EB/Views/ContractorLocation/List.cshtml", serviceContractorLocation);
+                        }
+                    </div>
+                </div>
+
+                <div class="card m-t-20 " id="divDuAn">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">account_balance</i> @LanguageUtilities.LangText("lblDACT", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        @{
+                            var serviceContractorProject = new SMO.Service.EB.ContractorProjectService();
+                            serviceContractorProject.ObjDetail.CONTRACTOR_ID = Model.ObjDetail.PKID;
+                            serviceContractorProject.Search();
+                            serviceContractorProject.IsViewOnly = true;
+                            Html.RenderPartial("~/Areas/EB/Views/ContractorProject/List.cshtml", serviceContractorProject);
+                        }
+                    </div>
+                </div>
+
+                <div class="card m-t-20 " id="divTaiChinh">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">credit_card</i> @LanguageUtilities.LangText("lblTTTC", frmCode)</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+                        @{
+                            var serviceContractorFinance = new SMO.Service.EB.ContractorFinanceService();
+                            serviceContractorFinance.ObjDetail.CONTRACTOR_ID = Model.ObjDetail.PKID;
+                            serviceContractorFinance.Search();
+                            serviceContractorFinance.IsViewOnly = true;
+                            Html.RenderPartial("~/Areas/EB/Views/ContractorFinance/List.cshtml", serviceContractorFinance);
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+
+<script>
+        $(function () {
+    var objectName = $('#contractorLogo').data('objectname');
+    if (objectName) {
+        $.ajax({
+            url: '@Url.Action("GetDownloadUrl", "File")',
+            type: 'GET',
+            data: { objectName: objectName },
+            success: function (response) {
+                if (response.success) {
+                    $('#contractorLogo').attr('src', response.data.url);
+                } else {
+                    $('#contractorLogo').attr('src', '/Content/images/no-logo.png');
+                }
+            }
+        });
+    }
+});
+</script>

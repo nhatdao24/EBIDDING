@@ -1,0 +1,111 @@
+﻿@model SMO.Service.EB.BidInternalQuestionService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    Model.ObjDetail.IS_BID_CLOSE = null;
+    var frmCode = "frm_BidInternalQuestion_Index";
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-8">
+                <div class="card border-grey">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="body">
+                        @Html.MyButton("cmdAddQuestion", LanguageUtilities.LangText("cmdAddQuestion", frmCode), "AddQuestionInternal();", "Alt+S", "question_answer")
+                        @Html.MyButton("cmdAddEmail", @LanguageUtilities.LangText("cmdAddEmail", frmCode), "AddEmail();", "Alt+S", "email")
+                        @Html.MyButton("cmdViewEmail", @LanguageUtilities.LangText("cmdViewEmail", frmCode), "ViewListEmail();", "Alt+S", "history")
+                    </div>
+                </div>
+
+                <div id="divResult">
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content" style="padding-bottom: 0">
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, "", new { @id = "radioIsBidClose_All_" + Model.ViewId, @checked = true, @onchange = "SubmitIndexInternalQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_All_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatca", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, false, new { @id = "radioIsBidClose_True_" + Model.ViewId, @onchange = "SubmitIndexInternalQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_True_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDMoThau", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, true, new { @id = "radioIsBidClose_False_" + Model.ViewId, @onchange = "SubmitIndexInternalQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_False_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDDongThau", frmCode)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function AddAnswerInternal(questionId, userName, bidId, parentId, isSendMail) {
+            var params = {
+                url: "@Url.Action("CreateAnswer")",
+                data: { questionId: questionId, userReply: userName, bidId: bidId, parentId: parentId, isSendMail: isSendMail }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddQuestionInternal() {
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var params = {
+                url : "@Url.Action("CreateQuestion")",
+                data: { bidId: bidId}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddEmail() {
+            var params = {
+                url : "@Url.Action("CreateEmail")",
+                data: { bidId: '@Model.ObjDetail.BID_ID'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function ViewListEmail() {
+            var params = {
+                url : "@Url.Action("ViewListEmail")",
+                data: { bidId: '@Model.ObjDetail.BID_ID'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function SubmitIndexInternalQuestion() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

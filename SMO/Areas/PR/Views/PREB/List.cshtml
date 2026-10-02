@@ -1,0 +1,110 @@
+﻿@model SMO.Service.PR.PREBService
+@{
+    var frmCode = "frm_PREB_Index";
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped" style="font-size: 13px;">
+        <thead>
+            <tr>
+                @*<th width="20px" class="align-center">
+                        @Html.CheckBox("chkAll", new { @id = "chkAll", onclick = "Forms.CheckAll()", @style = "margin:0;" })
+                    </th>*@
+                <th class="align-center">@LanguageUtilities.LangText("lblMaPR", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTenPR", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblMatHang", frmCode)</th>
+                @*ConfigViettinBank: Xoá dự án*@
+                @*<th>Dự án</th>*@
+                <th>Gói thầu</th>
+                @*ConfigViettinBank: đổi tên Phạm vi công việc -> Phân loại HHDV*@
+                <th>Phân loại HHDV</th>
+                @*ConfigViettinBank: Xoá loại hình*@
+                @*<th>Loại hình</th>*@
+                <th class="align-center">Ngày tạo</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblTrangThai", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblYeuCauThau", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", new { id = item.CODE }));
+                <tr>
+                    @*<td>
+                            @Html.CheckBox("chkItem", false, new { @modelId = item.CODE, @class = "chkItem", @style = "margin:0;" })
+                        </td>*@
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.REQUIRE_NAME</td>
+                    <td ondblclick="@vdbclickAction">
+                        @foreach (var detail in item.ListDetail.OrderBy(x => x.ITEM_NUMBER).ToList())
+                        {
+                            <div>@detail.Material.TEXT - @detail.QUANTITY.ToStringVN() @(detail.Unit != null ? detail.Unit.TEXT : "" )</div>
+                        }
+                    </td>
+                    @*ConfigViettinBank: Xoá dự án*@
+                    @*<td ondblclick="@vdbclickAction">
+                            @(item.Project == null ? "" : item.Project.NAME)
+                        </td>*@
+                    <td ondblclick="@vdbclickAction">
+                        @(item.Package == null ? "" : item.Package.TEXT)
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@(item.ScopeType == null ? "" : item.ScopeType.TEXT)</div>
+                        @*<div>@(item.Scope == null ? "" : item.Scope.TEXT)</div>*@
+                    </td>
+                    @*ConfigViettinBank: Xoá loại hình*@
+                    @*<td ondblclick="@vdbclickAction">
+                            @(item.BidType == null ? "" : item.BidType.TEXT)
+                        </td>*@
+
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @item.CREATE_DATE.Value.ToString("dd/MM/yyyy HH:mm")
+                        <div class="col-blue-grey">@item.CREATE_BY</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <span class="badge @EB_Status.GetStatusColor(item.STATUS)">@EB_Status.GetStatusText(item.STATUS)</span>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @(item.UserApprove == null
+                        ? ""
+                        : $"{item.UserApprove.FULL_NAME} - {item.UserApprove.Title?.NAME ?? "Chưa có thông tin chức danh"}")
+                    </td>
+                    <td class="align-center">
+                        @if (item.STATUS == EB_Status.DaPheDuyet)
+                        {
+
+                            @*ConfigViettinBank: Xóa phân quyền dự án*@
+
+                            @*if (AuthorizeUtilities.CheckUserRightProject("RP202", item.PROJECT_CODE).Item1)
+                                {
+                                    @Html.MyButton("cmdCreateBidRequire", @LanguageUtilities.LangText("cmdCreateBidRequire", frmCode), string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create", "BidRequire", new { @area = "EB", prCode = item.CODE })), "Alt+N", "add", "border")
+                                }*@
+
+                            @Html.MyButton("cmdCreateBidRequire", @LanguageUtilities.LangText("cmdCreateBidRequire", frmCode), string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create", "BidRequire", new { @area = "EB", prCode = item.CODE })), "Alt+N", "add", "border")
+
+                        }
+                        @foreach (var bidRequire in item.ListBidRequirePR)
+                        {
+                            <div>
+                                <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", "BidRequire", new {@area = "EB", id = bidRequire.HEADER_CODE }))">
+                                    @bidRequire.HEADER_CODE
+                                </a>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>

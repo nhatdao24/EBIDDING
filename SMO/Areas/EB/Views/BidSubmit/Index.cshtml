@@ -1,0 +1,106 @@
+﻿@model SMO.Service.EB.BidSubmitService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidSubmit_Index";
+
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.BID_ID);
+
+    var countSpecContractor = serviceBid.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidSpecContractorRepo>().Queryable().Count(x => x.BID_ID == Model.ObjDetail.BID_ID && x.CONTRACTOR_ID == ProfileUtilities.User.CONTRACTOR_ID);
+
+}
+@if (true)
+{
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+
+        if (serviceBid.ObjDetail != null && serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && DateTime.Now < serviceBid.ObjDetail.NGAY_DONG_THAU)
+        {
+            if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            @*if (countSpecContractor != 0)
+                {
+                    <div class="m-t-10 m-b-10">
+                        @if (ProfileUtilities.User.LANGUAGE == "vi")
+                            {
+                                <span class="col-red font-16">CHÚ Ý: BẠN CẦN NHẬP ĐẦY ĐỦ THÔNG TIN CHÀO THẦU TRƯỚC KHI NỘP HỒ SƠ!</span>
+                            }
+                            else
+                            {
+                                <span class="col-red font-16">NOTICE: PLEASE ENTER FULL INFORMATION BEFORE SUBMIT FILE!</span>
+                            }
+                    </div>
+                }
+                else
+                {
+                    <div class="page-function m-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdAddSubmit", LanguageUtilities.LangText("cmdAddSubmit", frmCode), $"AddSubmit();", "Alt+S", "attach_file")
+                        </div>
+                    </div>
+                }*@
+            if (!Model.ObjDetail.IS_INPUT_SPEC)
+            {
+                <div class="page-function m-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdAddSubmit", @LanguageUtilities.LangText("cmdAddSubmit", frmCode), $"AddSubmit();", "Alt+S", "attach_file")
+                        @*@Html.MyButton("cmdAddSubmit", LanguageUtilities.LangText("cmdAddSubmit", frmCode), $"AddSubmit();", "Alt+S", "attach_file")*@
+                    </div>
+                </div>
+            }
+
+        }
+
+        <div id="divResult">
+        </div>
+    }
+
+    <script type="text/javascript">
+        function DeleteSubmit(id) {
+            if (confirm("Bạn có chắc chắn xóa không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("DeleteSubmit")",
+                    type: "POST",
+                    data: { id: id, bidId: '@Model.ObjDetail.BID_ID' },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                        SubmitIndexSubmit();
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function AddSubmit() {
+            UploadFile.ClearFile();
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var contractorId = '@ProfileUtilities.User.CONTRACTOR_ID';
+            var params = {
+                url : "@Url.Action("CreateSubmit")",
+                data: { bidId: bidId, contractorId: contractorId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function SubmitIndexSubmit() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

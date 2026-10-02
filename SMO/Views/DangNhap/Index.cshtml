@@ -1,0 +1,274 @@
+﻿@model SMO.Service.AuthorizeService
+
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>ĐĂNG NHẬP</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>SIGN IN</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<div class="container site-content sidebar-right" style="transform: none;">
+    <div class="row" style="transform: none;">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <div style="margin-top: 30px;">
+                @using (Html.BeginForm("Index", "DangNhap", FormMethod.Post, new { @id = "frmLogin", @class = "contact-form" }))
+                {
+                    @Html.HiddenFor(m => m.ReturnUrl)
+                    <input type="hidden" name="ObjUser.IS_LOGIN_AD" id="hddAD" value="@Model.ObjUser.IS_LOGIN_AD" />
+                    if (lang == "vi")
+                    {
+                        <div>
+                            <input name="@Html.NameFor(m => m.ObjUser.USER_NAME)" placeholder="Tên đăng nhập" required autofocus style="width: 100%; margin-bottom: 5px;" value="@Model.ObjUser.USER_NAME">
+                        </div>
+
+                        <div>
+                            <div style="position: relative; width: 100%;">
+                                <input id="txtPassword"
+                                       name="@Html.NameFor(m => m.ObjUser.PASSWORD)"
+                                       placeholder="Mật khẩu"
+                                       required
+                                       type="password"
+                                       style="width: 100%; margin-bottom: 20px; padding-right: 40px;">
+
+                                <span id="togglePassword" style="cursor: pointer; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+                                    <svg id="eyeIcon" style=" margin-bottom: 10px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div id="caplockWarning" style="display:none; text-align: center;margin-bottom: 10px;">
+                                <span style="color: red;">ĐANG BẬT CAPS LOCK</span>
+                            </div>
+                        </div>
+
+
+
+                        @*<div style="margin-bottom: 10px;">
+                                @if (Model.ObjUser.IS_LOGIN_AD)
+                                {
+                                    <input checked type="checkbox" id="chkAD" onclick='$("#hddAD").val($(this).is(":checked"));' />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkAD" onclick='$("#hddAD").val($(this).is(":checked"));' />
+                                }
+                                <label>Đăng nhập bằng tài khoản AD</label>
+                            </div>*@
+
+                        <div style="float: left; margin-top: 0px">
+                            <a href="/DangNhap/LoginAD">Đăng nhập qua Domain</a>
+                        </div>
+
+                        <div style="float: right; margin-top: 0px">
+                            <a href="/ResetPassword">Quên mật khẩu?</a>
+                        </div>
+                        <button style="width: 100%; background-color: #6099BA !important; color: white !important;" type="submit" class="submit" onclick='$("#frmLogin").submit();'>ĐĂNG NHẬP</button>
+                        <hr style="margin-bottom : 5px" />
+
+                        <div style="float: left; margin-top: 10px;">
+                            <span>Bạn chưa có tài khoản?</span>
+                        </div>
+                        <a style="color: white !important;" href="/DangKy">
+                            <button type="button" style="width: 100%; color: white !important; background-color: #009C4E !important ">
+                                Đăng ký
+                            </button>
+                        </a>
+
+
+                    }
+                    else
+                    {
+                        <div>
+                            <input name="@Html.NameFor(m => m.ObjUser.USER_NAME)" placeholder="User name" required autofocus style="width: 100%; margin-bottom: 5px;" value="@Model.ObjUser.USER_NAME">
+                        </div>
+
+                        <div>
+                            <div style="position: relative; width: 100%;">
+                                <input id="txtPassword"
+                                       name="@Html.NameFor(m => m.ObjUser.PASSWORD)"
+                                       placeholder="Password"
+                                       required
+                                       type="password"
+                                       style="width: 100%; margin-bottom: 20px; padding-right: 40px;">
+
+                                <span id="togglePassword" style="cursor: pointer; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+                                    <svg id="eyeIcon" style=" margin-bottom: 10px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div id="caplockWarning" style="display:none; text-align: center;margin-bottom: 10px;">
+                                <span style="color: red;">CAPS LOCK IS ON</span>
+                            </div>
+                        </div>
+
+                        @*<div style="margin-bottom: 10px;">
+                                @if (Model.ObjUser.IS_LOGIN_AD)
+                                {
+                                    <input checked type="checkbox" id="chkAD" onclick='$("#hddAD").val($(this).is(":checked"));' />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkAD" onclick='$("#hddAD").val($(this).is(":checked"));' />
+                                }
+                                <label>Login with account AD</label>
+                            </div>*@
+
+                        <div style="float: left; margin-top: 0px">
+                            <a href="/DangNhap/LoginAD">Login with Domain</a>
+                        </div>
+
+                        <div style="float: right; margin-top: 0px">
+                            <a href="/ResetPassword">Forgot password</a>
+                        </div>
+                        <button style="width: 100%; background-color: #6099BA !important; color: white !important;" type="submit" class="submit" onclick='$("#frmLogin").submit();'>LOG IN</button>
+                        <hr style="margin-bottom : 5px" />
+
+                        <div style="float: left; margin-top: 10px;">
+                            <span>Create an account?</span>
+                        </div>
+                        <a style="color: white !important;" href="/DangKy">
+                            <button type="button" style="width: 100%; color: white !important; background-color: #009C4E !important ">
+                                Register
+                            </button>
+                        </a>
+
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordInput = document.getElementById('txtPassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+
+        if (isPassword) {
+            eyeIcon.innerHTML = `<svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash-fill" viewBox="0 0 16 16">
+                                  <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+                                  <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+                                </svg>`;
+        } else {
+            eyeIcon.innerHTML = `<svg id="eyeIcon" style=" margin-bottom: 10px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                 </svg>`;
+        }
+
+    });
+</script>
+
+<script type="text/javascript">
+    var error = "@ViewBag.Error";
+
+    if (error == "10") {
+        @if(lang == "vi")
+        {
+            @:alert("Thông tin đăng nhập không đúng. Hãy kiểm tra lại thông tin tài khoản, hoặc có thể liên hệ với ban quản trị hệ thống");
+        }
+        else
+        {
+            @:alert("Incorrect username or password.");
+        }
+    } else if (error == "2") {
+        @if(lang == "vi")
+        {
+            @:alert("Tài khoản đã bị khóa. Vui lòng liên hệ với ban quản trị hệ thống.");
+        }
+        else
+        {
+            @:alert("Account has been locked!");
+        }
+    }
+    else if (error == "3") {
+        @if(lang == "vi")
+        {
+            @:alert("Xác thực recapcha không chính xác! Yêu cầu tích vào ô chọn 'Tôi không phải là người máy!'");
+        }
+        else
+        {
+            @:alert("Capcha invalid. You not check : 'I'm not robot.'!");
+        }
+    }
+    else if (error == "11") {
+        @if(lang == "vi")
+        {
+            @:alert("Hệ thống bị lỗi. Vui lòng đăng nhập lại!");
+        }
+        else
+        {
+            @:alert("System error. Please login again!");
+        }
+    }
+    else if (error == "12") {
+        alert("Tài khoản AD chính xác, nhưng chưa gán với một tài khoản EBIDDING nào cả. Vui lòng liên hệ với ban quản trị!");
+    }
+    else if (error == "13") {
+        alert("Tài khoản AD không chính xác!");
+    }
+
+    $(function () {
+        $("#menu-item-dangnhap").attr("class", "menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-125 current_page_item current_page_parent menu-item-127 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default");
+        $("#mobile-menu-dangnhap a").attr("class", "active");
+        $("#hddAD").val($("#chkAD").is(":checked"));
+    });
+
+    function onSubmit(token) {
+        $("#frmLogin").submit();
+    }
+
+    var input = document.getElementById("txtPassword");
+    var text = document.getElementById("caplockWarning");
+    input.addEventListener("keyup", function (event) {
+        if (event.getModifierState("CapsLock")) {
+            text.style.display = "block";
+        } else {
+            text.style.display = "none"
+        }
+    });
+</script>
+
+
+

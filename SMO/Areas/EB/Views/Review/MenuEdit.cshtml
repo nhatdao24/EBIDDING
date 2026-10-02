@@ -1,0 +1,74 @@
+﻿@model SMO.Service.EB.ReviewService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Review_MenuEdit";
+
+}
+<div id='@Model.ViewId' class="container-fluid child-content" type="typeInfoReview">
+    <div class="row">
+        <div class="col-xs-12 col-sm-3">
+            <div class="sub-sidebar">
+                <div class="menu">
+                    <ul class="list">
+                        <li onclick="OnClickSubMenuEdit(this); Forms.Close('@Model.ViewId');">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">arrow_back</i>
+                                <span>@LanguageUtilities.LangText("cmdBack", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li class="active" onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Edit", "Review", new { id = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">description</i>
+                                <span>@LanguageUtilities.LangText("mnuThongTinChinh", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "ReviewCouncil", new { @reviewId = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">people</i>
+                                <span>@LanguageUtilities.LangText("mnuHoiDongDanhGia", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "ReviewContractor", new { @reviewId = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">people_outline</i>
+                                <span>@LanguageUtilities.LangText("mnuDanhSachNhaThau_GoiThau", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "ReviewSpec", new { @reviewId = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">insert_chart</i>
+                                <span>@LanguageUtilities.LangText("mnuTieuChiDanhGia", frmCode)</span>
+                            </a>
+                        </li>
+
+                        @*<li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "ReviewRating", new { @reviewId = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">insert_chart</i>
+                                <span>@LanguageUtilities.LangText("mnuDanhGiaXepLoai", frmCode)</span>
+                            </a>
+                        </li>*@
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-9">
+            <div id="divContentEdit">
+                @{Html.RenderAction("Edit", "Review", new { id = Model.ObjDetail.CODE });}
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function OnClickSubMenuEdit(obj){
+            $("#@Model.ViewId .sub-sidebar li").removeClass("active");
+            $(obj).addClass("active");
+            Forms.CloseRightContent();
+        }
+    </script>
+</div>

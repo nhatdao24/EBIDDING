@@ -1,0 +1,47 @@
+﻿@model SMO.Service.EB.ContractorService
+@using SMO.Repository.Implement.MD;
+@{
+    var frmCode = "frm_Contractor_AddContractorBid";
+    var lstRate = Model.UnitOfWork.Repository<MdRatingRepo>().GetAll();
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllContractorForAdd_@Model.ViewId" onclick="Forms.CheckAll('chkItemContractorForAdd_@Model.ViewId', '#chkAllContractorForAdd_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllContractorForAdd_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("thTenNhaThau", frmCode)</th>
+                <th class=" align-center">@LanguageUtilities.LangText("thBlackList", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var rate = lstRate.FirstOrDefault(x => x.RATING == item.XEP_HANG);
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemContractorForAdd" name="chkItemContractorForAdd_@Model.ViewId" id="@("chkItemContractorForAdd_" + Model.ViewId + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItemContractorForAdd_" + Model.ViewId + item.PKID)"></label>
+                    </td>
+                    <td>
+                        <div>@item.TEN_NGAN</div>
+                        <div class="col-blue-grey">@item.TEN_DAI</div>
+                        @*<div class="col-blue-grey">@LanguageUtilities.LangText("lblLinhVucChinh", frmCode): @item.LINH_VUC_CHINH</div>*@
+                        <div class="col-blue-grey">@LanguageUtilities.LangText("lblXepHang", frmCode): @item.XEP_HANG</div>
+                    </td>
+                    <td class="align-center">
+                        @if (rate != null)
+                        {
+                            <i class="material-icons col-fecon" style="cursor:pointer">check</i>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

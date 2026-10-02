@@ -1,0 +1,449 @@
+﻿@model SMO.Service.EB.ReviewFinalService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewFinal_Detail";
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var lstRating = Model.ObjListRating.Select(x => x.RATING).Distinct().ToList();
+    var randomNumber =  new Random().Next(1, 1000);
+
+    //Kiểm tra user cần phê duyệt hay không
+    var checkApprove = false;
+    if (Model.ObjDetail.STATUS == Review_Final_Status.ChoPheDuyet || Model.ObjDetail.STATUS == Review_Final_Status.DangPheDuyet)
+    {
+        var userApprove = Model.ObjDetail.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == false);
+        if (userApprove == null)
+        {
+            checkApprove = false;
+        }
+        else
+        {
+            // Kiểm tra user level thấp hơn đã phê duyệt hay chưa
+            if (Model.ObjDetail.ListUser.FirstOrDefault(x => x.C_LEVEL < userApprove.C_LEVEL && x.IS_APPROVED == false) != null)
+            {
+                checkApprove = false;
+            }
+            else
+            {
+                checkApprove = true;
+            }
+        }
+
+    }
+
+    //Check user có đc hủy phê duyệt hay ko
+    var checkApprove2 = false;
+    if (Model.ObjDetail.STATUS == Review_Final_Status.DaPheDuyet || Model.ObjDetail.STATUS == Review_Final_Status.DangPheDuyet)
+    {
+        var userApprove = Model.ObjDetail.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == true);
+        if (userApprove == null)
+        {
+            checkApprove2 = false;
+        }
+        else
+        {
+            // Kiểm tra user level cao hơn đã phê duyệt hay chưa
+            if (Model.ObjDetail.ListUser.FirstOrDefault(x => x.C_LEVEL > userApprove.C_LEVEL && x.IS_APPROVED == true) != null)
+            {
+                checkApprove2 = false;
+            }
+            else
+            {
+                checkApprove2 = true;
+            }
+        }
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">edit</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdBack", LanguageUtilities.LangText("cmdBack", frmCode), string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                                @if (AuthorizeUtilities.CheckUserRight("R2103"))
+                                {
+                                    if ((Model.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME && (Model.ObjDetail.STATUS == Review_Final_Status.KhoiTao || Model.ObjDetail.STATUS == Review_Final_Status.TuChoi))
+                                        || checkApprove)
+                                    {
+                                        @Html.MyButton("cmdEdit", LanguageUtilities.LangText("cmdEdit", frmCode), string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = Model.ObjDetail.CODE, viewIdDetail = Model.ViewId })), "Chỉnh sửa", "edit")
+                                    }
+                                }
+                                @if (Model.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME && (Model.ObjDetail.STATUS == Review_Final_Status.KhoiTao || Model.ObjDetail.STATUS == Review_Final_Status.TuChoi))
+                                {
+                                    if (AuthorizeUtilities.CheckUserRight("R2105"))
+                                    {
+                                        @Html.MyButton("cmdSent", @LanguageUtilities.LangText("cmdSent", frmCode), $"Send_{randomNumber}();", "Trình duyệt", "send")
+                                    }
+                                    <text> </text>
+                                    if (AuthorizeUtilities.CheckUserRight("R2106"))
+                                    {
+                                        @Html.MyButton("cmdCancel", @LanguageUtilities.LangText("cmdCancel", frmCode), $"Cancel_{randomNumber}();", "", "delete")
+                                    }
+                                }
+                                @if (Model.ObjDetail.STATUS == Review_Final_Status.ChoPheDuyet && Model.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME)
+                                {
+                                    if (AuthorizeUtilities.CheckUserRight("R2105"))
+                                    {
+                                        @Html.MyButton("cmdCancelSend", "Hủy trình duyệt", $"CancelSend_{randomNumber}();", "Trình duyệt", "cancel")
+                                    }
+                                }
+                                @if (checkApprove)
+                                {
+                                    @*if (AuthorizeUtilities.CheckUserRight("R2103") && Model.ObjDetail.ListUser.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME) > 0)
+                                        {
+                                            @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "SubmitForm();", "Alt+S", "save")
+                                        }*@
+                                    if (AuthorizeUtilities.CheckUserRight("R2107"))
+                                    {
+                                        @Html.MyButton("cmdApprove", @LanguageUtilities.LangText("cmdApprove", frmCode), $"Approve_{randomNumber}();", "", "done_all")
+                                    }
+                                    <text> </text>
+                                    if (AuthorizeUtilities.CheckUserRight("R2108"))
+                                    {
+                                        @Html.MyButton("cmdReject", @LanguageUtilities.LangText("cmdReject", frmCode), $"Reject_{randomNumber}();", "", "cancel")
+                                    }
+                                }
+                                @if (checkApprove2)
+                                {
+                                    if (AuthorizeUtilities.CheckUserRight("R2107"))
+                                    {
+                                        @Html.MyButton("cmdCancelApprove", LanguageUtilities.LangText("cmdCancelApprove", frmCode), "CancelApprove();", "", "cancel")
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div id="divDetail" class="m-t-20">
+                            <div class="table-responsive">
+                                <table class="table table-bordered font-13" style="margin-bottom:0px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 200px">@LanguageUtilities.LangText("lblItem", frmCode)</th>
+                                            <th width="50px" class="align-center">@LanguageUtilities.LangText("lblMaBangDanhGia", frmCode)</th>
+                                            <th width="150px" class="align-center">@LanguageUtilities.LangText("lblCongViec", frmCode)</th>
+                                            <th width="150px" class="align-center">@LanguageUtilities.LangText("lblGiaTri", frmCode)</th>
+                                            <th width="100px" class="align-center">@LanguageUtilities.LangText("lblDiemTB", frmCode)</th>
+                                            <th width="50px" class="align-center">@LanguageUtilities.LangText("lblXepHang", frmCode)</th>
+                                            <th width="200px" class="align-center">@LanguageUtilities.LangText("lblGhiChu", frmCode)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.ObjListContractor)
+                                        {
+                                            var findContractor = Model.ObjListContractor.FirstOrDefault(x => x.PKID == item.PKID);
+                                            var indexContractor = Model.ObjListContractor.ToList().IndexOf(findContractor);
+                                            <tr>
+                                                <td colspan="4">
+                                                    <b>@item.Contractor.TEN_NGAN</b>
+                                                    <div>
+                                                        <a onclick="$('.detail_@item.PKID').toggle();" style="cursor: pointer" class="col-blue-grey">@LanguageUtilities.LangText("lblChiTiet", frmCode)</a>
+                                                    </div>
+                                                </td>
+                                                <td class="align-center">
+                                                    @Model.ObjListContractor[indexContractor].SCORE.ToStringVN()
+                                                </td>
+                                                <td class="align-center">
+                                                    @Model.ObjListContractor[indexContractor].RATE
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        @foreach (var note in item.ListNote)
+                                                        {
+                                                            if (!string.IsNullOrEmpty(note.NOTES))
+                                                            {
+                                                                <div class="col-red">@note.CREATE_BY : @note.NOTES</div>
+                                                            }
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            foreach (var detail in item.ListDetail)
+                                            {
+                                                var findDetail = item.ListDetail.FirstOrDefault(x => x.PKID == detail.PKID);
+                                                var indexDetail = item.ListDetail.IndexOf(findDetail);
+                                                var actionReview = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetail", "Review", new { id = detail.REVIEW_ID }));
+                                                <tr style="background-color: #f9f9f9; display: none" class="detail_@item.PKID">
+                                                    @if (indexDetail == 0)
+                                                    {
+                                                        <td rowspan="@item.ListDetail.Count">
+                                                            @if (detail.Project != null)
+                                                            {
+                                                                <div>
+                                                                    @detail.Project.NAME
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+
+                                                    <td class="align-center">
+                                                        <div><a href="#" onclick="@actionReview">@detail.REVIEW_ID</a></div>
+                                                    </td>
+
+                                                    <td class="align-center">
+                                                        <div>@detail.INFO_BID</div>
+                                                        @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                                        {
+                                                            foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                                            {
+                                                                var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                                if (find != null)
+                                                                {
+                                                                    var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                                    <div><a href="#" onclick="@action">@find.PKID</a></div>
+                                                                }
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td class="align-center">
+                                                        @detail.GIA_TRI.ToStringVN()
+                                                    </td>
+                                                    <td class="align-center">
+                                                        @detail.SCORE.ToStringVN()
+                                                    </td>
+                                                    <td class="align-center">
+                                                        @detail.RATE
+                                                    </td>
+                                                    @*@if (item.ListDetail.IndexOf(detail) == 0)
+                                                        {
+                                                            <td rowspan="@(item.ListDetail.Count)">
+                                                                <div>
+                                                                    @foreach (var note in item.ListNote)
+                                                                    {
+                                                                        if (!string.IsNullOrEmpty(note.NOTES))
+                                                                        {
+                                                                            <div class="col-red">@note.CREATE_BY : @note.NOTES</div>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                        }*@
+                                                    @if (item.ListDetail.IndexOf(detail) == 0)
+                                                    {
+                                                        <td rowspan="@(item.ListDetail.Count)"></td>
+                                                    }
+                                                </tr>
+                                            }
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 p-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                    </ul>
+                    <div class="tab-content po-info">
+                        <ul>
+                            <li>
+                                <span>@Model.ObjDetail.DESCRIPTION</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblTuNgay", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.FROM_DATE.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblDenNgay", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.TO_DATE.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">timeline</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblTrangThai", frmCode)</span>
+                                </span>
+                                <span class="badge @Review_Final_Status.GetStatusColor(Model.ObjDetail.STATUS)" style="float:right">@Review_Final_Status.GetStatusText(Model.ObjDetail.STATUS)</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">person</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</span>
+                                </span>
+                                @foreach (var user in Model.ObjDetail.ListUser.OrderBy(x => x.C_LEVEL).ThenBy(x => x.USER_NAME))
+                                {
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            &nbsp;&nbsp;&nbsp;&nbsp;@user.USER_NAME
+
+                                        </div>
+                                        <div class="col-sm-4">
+                                            @if (user.IS_APPROVED)
+                                            {
+                                                <span class="badge bg-blue">Đã phê duyệt</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-deep-orange">Chưa phê duyệt</span>
+                                            }
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span>@(user.DATE_APPROVE.HasValue ? user.DATE_APPROVE.Value.ToString(Global.DateTimeToStringFormat) : "")</span>
+                                        </div>
+                                    </div>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">timeline</i> LỊCH SỬ XẾP HẠNG @*: <span class="col-pink">@Model.ObjDetail.CODE</span>*@</a></li>
+                    </ul>
+                    <div class="tab-content po-info table-responsive">
+                        <table class="table table-condensed" style="font-size: 13px">
+                            <tbody>
+                                @foreach (var item in Model.ObjDetail.ListHistory.OrderByDescending(x => x.STATUS_DATE))
+                                {
+                                    <tr>
+                                        <td>
+                                            <label>@item.USER_CREATE.FULL_NAME</label><br />
+                                            <span>@(item.STATUS_DATE.HasValue ? item.STATUS_DATE.Value.ToString("dd/MM/yyyy HH:mm") : string.Empty)</span>
+                                        </td>
+                                        <td>
+                                            <a href="#" onclick="Forms.LoadAjaxModal('@Url.Action("ViewHistory", new { id = Model.ObjDetail.CODE})')">
+                                                <span class="badge @Review_Final_Status.GetStatusColor(item.STATUS)">@Review_Final_Status.GetStatusText(item.STATUS)</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var ListRating = @Html.Raw(JsonConvert.SerializeObject(Model.ObjListRating, serializerSetting));
+        function CloseFormDetail(){
+            Forms.Close('@Model.ViewId');
+        }
+
+        function Send_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn trình duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Send")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function CancelSend_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn hủy trình duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("CancelSend")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function Cancel_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn hủy không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Cancel")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function Reject_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn từ chối không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Reject")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function Approve_@(randomNumber)() {
+            if (confirm("Bạn có chắc chắn phê duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Approve")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function CancelApprove() {
+            if (confirm("Bạn có chắc chắn hủy phê duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("CancelApprove")",
+                    type: "POST",
+                    data: { id: '@Model.ObjDetail.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

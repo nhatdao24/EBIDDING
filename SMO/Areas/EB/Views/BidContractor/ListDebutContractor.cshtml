@@ -1,0 +1,206 @@
+﻿@model SMO.Service.EB.BidContractorService
+@using SMO.Service.EB
+@using SMO.Service
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.EB;
+@{
+    var serviceSpec = new BidSpecService();
+    serviceSpec.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceSpec.ObjSpecContractor.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.GetListViewSpecScore();
+
+    var lstScore = new List<T_EB_CONTRACTOR_SCORE>();
+
+    foreach (var item in Model.ObjList)
+    {
+        var sumSystemScore = serviceSpec.ObjListSpecSystemScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        var sumUserScore = serviceSpec.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        lstScore.Add(new T_EB_CONTRACTOR_SCORE()
+        {
+            BidContractor = item,
+            SYSTEM_SCORE = sumSystemScore,
+            USER_SCORE = sumUserScore
+        });
+    }
+
+    var frmCode = "frm_BidContractor_SelectContractor";
+    var contractorWin = Model.ObjList.FirstOrDefault(x => x.IS_WINNING);
+
+    var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+}
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-bordered font-13">
+        <thead>
+            <tr>
+                <th class="align-center">CHỌN TRÚNG THẦU</th>
+                <th style="min-width: 150px;" class="align-center">GIÁ TRỊ GIAO</thstyle="min-width:>
+                <th style="min-width: 250px;">@LanguageUtilities.LangText("thNhaThau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thTrangThaiDauThau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thDiemHoiDong", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thGiaChaoThau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thGiaHieuChinh", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thGiaThuongThao", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="8" style="background-color: #F4F4F4 !important">
+                    <b class="col-red">@LanguageUtilities.LangText("lblDSSoBo", frmCode)</b>
+                </td>
+            </tr>
+            @foreach (var item in lstScore.Where(x => x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+            {
+                var contractor = Model.ObjList.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                if ((contractor.STATUS == "AP" || contractor.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                {
+                    var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");// giá nhà thầu nộp đầu tiên
+                    //var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                    var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");// giá nhà thầu nộp cuối
+                    var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                    <tr>
+                        <td class="align-center">
+                            <input type="checkbox" class="filled-in" id="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID" name="chkItem_Winning" value="@item.BidContractor.CONTRACTOR_ID" style="margin:0;" @(item.BidContractor.IS_WINNING ? "checked" : "" ) />
+                            <label for="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID"></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @if (item.BidContractor.PERCENT_WINNING != null)
+                                    {
+                                        <input style="text-align:center" class="form-control inputMask value_debut"
+                                               placeholder="Nhập giá trị" type="text"
+                                               value="@item.BidContractor.PERCENT_WINNING"
+                                               data-inputmask="'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                               id="txtPercentWin_@item.BidContractor.CONTRACTOR_ID">
+                                    }
+                                    else
+                                    {
+                                        <input style="text-align:center" class="form-control inputMask value_debut"
+                                               placeholder="Nhập giá trị" type="text"
+                                               value="@item.BidContractor.PERCENT_DEBUT"
+                                               data-inputmask="'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                               id="txtPercentWin_@item.BidContractor.CONTRACTOR_ID">
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                            <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                        </td>
+                        <td class="align-center">
+                            @if (contractor.STATUS == "AP")
+                            {
+                                <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                            }
+                        </td>
+                        <td class="align-center">
+                            @item.USER_SCORE.ToStringVN()
+                        </td>
+
+                        <td>
+                            @if (giaChaoThau != null)
+                            {
+                                @(giaChaoThau.FIRST_PRICE > 0 ? giaChaoThau.FIRST_PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                            }
+                        </td>
+                        <td>
+                            <span class="priceValue" data-price="@giaHieuChinh.PRICE">
+                                @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                            </span>
+                        </td>
+                        <td>
+                            @if (giaThuongThao != null)
+                            {
+                                @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                            }
+                        </td>
+
+                    </tr>
+                }
+            }
+            <tr>
+                <td colspan="8" style="background-color: #F4F4F4 !important">
+                    <b class="col-blue">@LanguageUtilities.LangText("lblDSConLai", frmCode)</b>
+                </td>
+            </tr>
+            @foreach (var item in lstScore.Where(x => !x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+            {
+                var contractor = Model.ObjList.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                if ((contractor.STATUS == "AP" || contractor.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                {
+                    var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0"); // giá nhà thầu nộp đàu tiên
+                    //var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                    var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0"); // giá nhà thầu nộp cuối cùng
+                    var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                    <tr>
+                        <td class="align-center">
+                            <input type="checkbox" class="filled-in" id="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID" name="chkItem_Winning" value="@item.BidContractor.CONTRACTOR_ID" style="margin:0;" @(item.BidContractor.IS_WINNING ? "checked" : "" ) />
+                            <label for="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID"></label>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input style="text-align:center" class="form-control inputMask value_debut" placeholder="Nhập tỉ lệ %" type="text"
+                                             data-inputmask="'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                             value="@item.BidContractor.PERCENT_WINNING" id="txtPercentWin_@item.BidContractor.CONTRACTOR_ID">
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                            <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                        </td>
+                        <td class="align-center">
+                            @if (contractor.STATUS == "AP")
+                            {
+                                <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                            }
+                        </td>
+                        <td class="align-center">
+                            @item.USER_SCORE.ToStringVN()
+                        </td>
+                        <td>
+                            @if (giaChaoThau != null)
+                            {
+                                @(giaChaoThau.FIRST_PRICE > 0 ? giaChaoThau.FIRST_PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                            }
+                        </td>
+                        <td>
+                            @if (giaHieuChinh != null)
+                            {
+                                <span class="priceValue" data-price="@giaHieuChinh.PRICE">
+                                    @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @if (giaThuongThao != null)
+                            {
+                                @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+    $(function () {
+        $(".inputMask").inputmask('integer', { min: 0});
+        Forms.CompleteUI();
+    });
+</script>

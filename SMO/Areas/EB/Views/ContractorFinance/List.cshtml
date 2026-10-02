@@ -1,0 +1,56 @@
+﻿@model SMO.Service.EB.ContractorFinanceService
+@{ 
+    var frmCode = "frm_ContractorFinance_Index";
+
+}
+<div class="table-responsive font-13">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("lblNamTaiChinh", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblDoanhThu", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblLoiNhuanGop", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblLoiNhuanRong", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblVonChuSH", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblFile", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.YEAR))
+            {
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'"+ item.PKID +"'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjaxModal({0});", param);
+                if (Model.IsViewOnly)
+                {
+                    vdbclickAction = "";
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.YEAR</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.DOANH_THU.ToStringVN() @item.DOANH_THU_CURRENCY
+                    </td> 
+                    <td ondblclick="@vdbclickAction">
+                        @item.LOI_NHUAN_GOP.ToStringVN() @item.LOI_NHUAN_GOP_CURRENCY
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.LOI_NHUAN_RONG.ToStringVN() @item.LOI_NHUAN_RONG_CURRENCY
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.VON_CSH.ToStringVN() @item.VON_CSH_CURRENCY
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.FILE_ID))
+                        {
+                            <a href="#" onclick="DownloadFile('@item.File.PKID')">
+                                @LanguageUtilities.LangText("lblTaiFile", frmCode)
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

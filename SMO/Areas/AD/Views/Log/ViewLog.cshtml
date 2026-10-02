@@ -1,0 +1,17 @@
+﻿@{
+    var listLine = ViewBag.Content as List<string>;
+}
+
+<body style="font-size: 13px; font-family:Arial">
+    @foreach (var item in ViewBag.Content)
+    {
+        <div>@item</div>
+    }
+</body>
+
+<style>
+    div {
+        padding: 3px;
+    }
+</style>
+

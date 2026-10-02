@@ -1,0 +1,170 @@
+﻿@model SMO.Service.EB.BidService
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+<div class="row">
+    @foreach (var bid in Model.ObjList)
+    {
+        if (bid.ListNew.Count > 0)
+        {
+            <article class="col-sm-12 post type-post status-publish format-standard has-post-thumbnail hentry category-business tag-wordpress pmpro-has-access">
+                <div class="content-inner">
+                    <div class="row">
+                        <div class="col-sm-4 col-xs-12">
+                            <div class="post-formats-wrapper"><a class="post-image" href="/Index/ChiTiet/@bid.PKID"><img style="width: 100%" src="@bid.ListNew.FirstOrDefault().IMAGE_PATH" class="attachment-full size-full wp-post-image" alt=""></a></div>
+                        </div>
+                        <div class="col-sm-8 col-xs-12">
+                            <div class="entry-content">
+                                <header class="entry-header">
+                                    @*<div class="date-meta"> 20<i> January</i></div>*@
+                                    <div class="entry-contain">
+                                        <h3 class="entry-title text-align-center" style="font-size: 20px;">
+                                            <a href="Index/ChiTiet/@bid.PKID" rel="bookmark">
+                                                @if (lang == "vi")
+                                                {
+                                                    @bid.TEN_GOI_THAU
+                                                }
+                                                else
+                                                {
+                                                    @bid.TEN_GOI_THAU_EN
+                                                }
+                                            </a>
+                                        </h3>
+                                        <div class="entry-summary">
+                                            @if (lang == "vi")
+                                            {
+                                                if (!string.IsNullOrEmpty(bid.PROJECT_CODE))
+                                                {
+                                                    <p><b>Dự án: </b>@bid.Project.NAME</p>
+                                                }
+                                                <p>@bid.ListNew.FirstOrDefault().MO_TA_NGAN</p>
+                                            }
+                                            else
+                                            {
+                                                if (!string.IsNullOrEmpty(bid.PROJECT_CODE))
+                                                {
+                                                    <p><b>Project: </b>@bid.Project.NAME</p>
+                                                }
+                                                <p>@bid.ListNew.FirstOrDefault().MO_TA_NGAN_EN</p>
+                                            }
+                                        </div>
+
+                                        <ul class="entry-meta">
+                                            @if (lang == "vi")
+                                            {
+                                                <li class="entry-category"> <span>Mời thầu</span> <span class="vcard author author_name"><a href="#">@bid.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</a></span></li>
+                                                <li class="entry-category"> <span>Đóng thầu</span> <a href="#" rel="category tag">@bid.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</a></li>
+                                                <li class="entry-category"> <span>Loại</span> <a href="#" rel="category tag">@bid.BidType.TEXT</a></li>
+                                                <li class="entry-category">
+                                                    <span>Giai đoạn</span>
+                                                    <a href="#" rel="category tag">
+                                                        @Phase_Status.GetStatusText(bid.GIAI_DOAN, lang)
+                                                    </a>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="entry-category"> <span>From</span> <span class="vcard author author_name"><a href="#">@bid.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</a></span></li>
+                                                <li class="entry-category"> <span>To</span> <a href="#" rel="category tag">@bid.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</a></li>
+                                                <li class="entry-category"> <span>Type</span> <a href="#" rel="category tag">@bid.BidType.TEXT_EN</a></li>
+                                                <li class="entry-category">
+                                                    <span>Status</span>
+                                                    <a href="#" rel="category tag">
+                                                        @Phase_Status.GetStatusText(bid.GIAI_DOAN, lang)
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </header>
+                              
+                                @if (lang == "vi")
+                                {
+                                    <div class="readmore"> <a href="/Index/ChiTiet/@bid.PKID">Xem thêm</a></div>
+                                }
+                                else
+                                {
+                                    <div class="readmore"> <a href="/Index/ChiTiet/@bid.PKID">See more</a></div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                </div>
+            </article>
+        }
+    }
+</div>
+
+@{
+    int intNumberPage = 0;
+    if (Model.TotalRecord % Model.NumerRecordPerPage == 0)
+    {
+        intNumberPage = Model.TotalRecord / Model.NumerRecordPerPage;
+    }
+    else
+    {
+        intNumberPage = (Model.TotalRecord / Model.NumerRecordPerPage) + 1;
+    }
+    if (Model.TotalRecord == 0) { intNumberPage = 1; }
+
+    List<string> vObjPage = new List<string>();
+    for (int i = 1; i <= intNumberPage; i++)
+    {
+        vObjPage.Add(i.ToString());
+    }
+}
+
+@if (Model.ObjList.Count == 0)
+{
+    if (lang == "vi")
+    {
+        <h4>Không tìm thấy dữ liệu!</h4>
+    }
+    else
+    {
+        <h4>Data not found!</h4>
+    }
+}
+else
+{
+    <div class="pagination loop-pagination">
+        @Html.HiddenFor(m => m.NumerRecordPerPage, new { @id = "NumberRecordPerPage" })
+        <ul class="page-numbers" style="text-align: center;">
+            <li><a class="page-numbers" href="#" style="font-size: 26px; font-weight: normal; background-color: #075985 !important; color: #fff" onclick="Paging.FirstPage('@Model.FormId');">«</a></li>
+            <li><a class="page-numbers" href="#" style="font-size: 26px; font-weight: normal; background-color: #075985 !important; color: #fff" onclick="Paging.PrePage('@Model.FormId');">‹</a></li>
+
+            <li>
+                <a class="page-numbers" style="width: 70px;">
+                    @Html.DropDownList("Page", new SelectList(vObjPage.ToArray()), new { @style = "width: 60px;height: 38px;border: none;cursor: pointer;", @onChange = string.Format("Paging.ChangePage('{0}');", Model.FormId), @id = "Page" })
+                    @*<select id="Page" name="Page" style="width: 70px;height: 38px;border: none;cursor: pointer;" onchange="Paging.ChangePage('@Model.FormId');">
+                            @for (int i = 1; i <= Model.TotalRecord; i++)
+                            {
+                                if (i == )
+                                {
+
+                                }
+                                <option>@i</option>
+                            }
+                        </select>*@
+                </a>
+            </li>
+
+            <li><a class="page-numbers" href="#" style="font-size: 26px; font-weight: normal; background-color: #075985 !important; color: #fff" onclick="Paging.NextPage('@Model.FormId');">›</a></li>
+            <li><a class="page-numbers" href="#" style="font-size: 26px; font-weight: normal; background-color: #075985 !important; color: #fff" onclick="Paging.LastPage('@Model.FormId');">»</a></li>
+        </ul>
+    </div>
+}
+
+

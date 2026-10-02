@@ -1,0 +1,142 @@
+﻿@model SMO.Service.MD.ProjectService
+
+@{
+    var ProjectCode = ViewBag.ProjectCode;
+
+}
+@Html.MyButton("cmdCapNhatQuyen", "Cập nhật quyền", "UpdateRightProJectOfUser();", "Alt+S", "done_all")
+<div style="margin-top : 15px" class="page-function">
+
+</div>
+
+<div class="row" style="margin-top:20px">
+    <div class="col-sm-5">
+        <div id="divListUserOfProject" class="border-grey" style="height: calc(50vh - 130px); overflow: auto; margin-top: 20px; width: 100%;">
+
+        </div>
+    </div>
+    <div class="col-sm-7">
+        <div id="divTreeUserRight">
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var ProjectCode = '@ViewBag.ProjectCode';
+
+    var settingUser = {
+        view: {
+            selectedMulti: false,
+            nameIsHTML: true,
+            showTitle: false,
+            fontCss: GetFont
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        }
+    }
+
+    var settingRight = {
+        check: {
+            enable: true,
+            chkboxType: { "Y": "ps", "N": "ps" }
+        },
+        view: {
+            selectedMulti: false,
+            nameIsHTML: true,
+            showTitle: false,
+            fontCss: GetFont
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        }
+    };
+
+    function GetFont(treeId, node) {
+        if (node.isRemove == "1") {
+            return { color: "red" };
+        }
+
+        if (node.isAdd == "1") {
+            return { color: "blue" };
+        }
+    }
+    let currentUserName = "";
+
+    function HighLightRow(row) {
+        const rows = document.querySelectorAll("#userTable tbody tr");
+        rows.forEach(r => r.classList.remove("selected"));
+        row.classList.add("selected");
+    }
+
+    function RowClicked(row, userName) {
+        currentUserName = row.cells[0].innerText;
+        HighLightRow(row);
+        BuildTreeRight(currentUserName);
+    }
+
+    function BuildTreeRight(currentUserName) {
+        $('#divTreeUserRight').html("");
+        Forms.ShowLoading();
+        var ajaxParams = {
+            url: '@Url.Action("BuildTreeRight")',
+            type: "GET",
+            data: { userName: currentUserName, projectCode: ProjectCode },
+            success: function (response) {
+                $('#divTreeUserRight').html(response);
+            }
+        };
+        Forms.Ajax(ajaxParams);
+    }
+
+    function UpdateRightProJectOfUser()
+    {
+        debugger
+          var zTree = $.fn.zTree.getZTreeObj("treeRight");
+          var nodeChange = zTree.getChangeCheckedNodes(true);
+          var userName = currentUserName;
+          var arrRight = [];
+          var arrStatus = [];
+          $.each(nodeChange, function (i, val) {
+              arrRight.push(nodeChange[i].id);
+              arrStatus.push(nodeChange[i].checked);
+          });
+          var ajaxParams = {
+              url: '@Url.Action("UpdateRightProJectOfUser")',
+              type: "POST",
+              data: { userName: userName, rightList: arrRight.join("|"), statusList: arrStatus.join("|"), projectCode: ProjectCode },
+              dataType: "json",
+              success: function (response) {
+                  Message.execute(response);
+              }
+          };
+          Forms.Ajax(ajaxParams);
+    }
+
+
+
+    function GetListUserOfProject()
+    {
+         $('#divListUserOfProject').html("");
+         Forms.ShowLoading();
+         var ajaxParams = {
+             url: '@Url.Action("GetListUserOfProject")',
+             type: "GET",
+             data: { projectCode: ProjectCode },
+             success: function (response) {
+                 $('#divListUserOfProject').html(response);
+             }
+         };
+         Forms.Ajax(ajaxParams);
+    }
+
+    $(function () {
+        GetListUserOfProject();
+        Forms.CompleteUI();
+    });
+</script>

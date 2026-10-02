@@ -1,0 +1,339 @@
+﻿@model SMO.Service.EB.BidNewService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidNew_Index";
+    var bidId = Model.ObjDetail.BID_ID;
+
+    var bidService = new SMO.Service.EB.BidService();
+    var bid = bidService.CurrentRepository.Get(bidId);
+
+    if(Model.ObjDetail.BAI_VIET != null)
+    {
+        var template = Model.ObjDetail.BAI_VIET
+        .Replace("{TEN_GOI_THAU}", bid.TEN_GOI_THAU)
+        .Replace("{DIA_DIEM}", bid.Project.DIA_DIEM)
+        .Replace("{THOI_GIAN_MO_THAU}", bid.NGAY_MO_THAU.ToString())
+        .Replace("{THOI_GIAN_DONG_THAU}", bid.NGAY_DONG_THAU.ToString())
+        .Replace("{DU_AN}", bid.Project.NAME)
+        .Replace("{NGUOI_PHU_TRACH}", bid.UserSent.FULL_NAME)
+        .Replace("{SDT_NGUOI_PHU_TRACH}", bid.UserSent.PHONE)
+        .Replace("{EMAIL_NGUOI_PHU_TRACH}", bid.UserSent.EMAIL);
+
+
+        Model.ObjDetail.BAI_VIET = template;
+    }
+    if (Model.ObjDetail.BAI_VIET_EN != null)
+    {
+        var template_en = Model.ObjDetail.BAI_VIET_EN
+        .Replace("{TEN_GOI_THAU_EN}", bid.TEN_GOI_THAU_EN)
+        .Replace("{DIA_DIEM_EN}", bid.Project.DIA_DIEM_EN)
+        .Replace("{THOI_GIAN_MO_THAU}", bid.NGAY_MO_THAU.ToString())
+        .Replace("{THOI_GIAN_DONG_THAU}", bid.NGAY_DONG_THAU.ToString())
+        .Replace("{DU_AN_EN}", bid.Project.NAME_EN)
+        .Replace("{NGUOI_PHU_TRACH}", bid.UserSent.FULL_NAME)
+        .Replace("{SDT_NGUOI_PHU_TRACH}", bid.UserSent.PHONE)
+        .Replace("{EMAIL_NGUOI_PHU_TRACH}", bid.UserSent.EMAIL);
+
+
+        Model.ObjDetail.BAI_VIET_EN = template_en;
+    }
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+        @Html.HiddenFor(m => m.ObjDetail.IMAGE_PATH, new { @id = "hddImagePath"})
+        @Html.HiddenFor(m => m.ObjDetail.IS_PUBLIC, new { @id = "hddIsPublic"})
+        <div class="card border-grey">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">chrome_reader_mode</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+
+                        <div class="page-function-button m-r-20">
+                            @if ((bid.STATUS == "01" || bid.STATUS == "04") && (ProfileUtilities.User.USER_NAME == bid.CREATE_BY || ProfileUtilities.User.USER_NAME == bid.USER_MANAGE))
+                            {
+                                @Html.MyButton("cmdSave", @LanguageUtilities.LangText("cmdSave", frmCode), "SubmitFormNew();", "Alt+N", "done_all", "disabled ")
+                            }
+                           </div>
+                    </div>
+                    @if ((bid.STATUS == "01" || bid.STATUS == "04") && (ProfileUtilities.User.USER_NAME == bid.CREATE_BY || ProfileUtilities.User.USER_NAME == bid.USER_MANAGE))
+                    {
+                        <div class="row m-t-20">
+                            <div class="col-xs-12 col-md-8">
+                                @*<label>@LanguageUtilities.LangText("lblMO_TA_NGAN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA_NGAN, new { id = "txtMoTaNgan" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblMO_TA_NGAN_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.MO_TA_NGAN_EN, new { id = "txtMoTaNgan_EN" })
+                                    </div>
+                                </div>*@
+
+                                <div class="form-group m-t-20">
+                                    @if (Model.ObjDetail.IS_PUBLIC)
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" checked />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" />
+                                    }
+                                    <label for="chkIsPublic_@Model.ViewId"></label> &nbsp;&nbsp;<b>@LanguageUtilities.LangText("lblIS_PUBLIC", frmCode)</b>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-md-4">
+                                <div class="align-center m-b-10">
+                                    @Html.MyButton("cmdImage", @LanguageUtilities.LangText("cmdImage", frmCode), "document.getElementById('fileInput').click();", "Alt+N", "add_a_photo")
+                                </div>
+
+                                <input type="file" id="fileInput" name="fileInput" style="display:none;" accept="image/*" onchange="previewImage(event)" />
+
+                                <div class="img-responsive" id="divPreviewImage">
+                                    @if (string.IsNullOrEmpty(Model.ObjDetail.IMAGE_PATH))
+                                    {
+                                        <img id="preview" style="width: 100%; height: 150px; display: none;" />
+                                    }
+                                    else
+                                    {
+                                        <img id="preview" style="width: 100%;" src="@Model.ObjDetail.IMAGE_PATH" />
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12">
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET, new { id = "txtBaiViet" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET_EN, new { id = "txtBaiViet_EN" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (ProfileUtilities.User?.USER_NAME == bid.USER_APPROVE)
+                    {
+                        <div class="row m-t-20">
+                            <div class="col-xs-12 col-md-8">
+                               
+
+                                <div class="form-group m-t-20">
+                                    @if (Model.ObjDetail.IS_PUBLIC)
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" checked disabled />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" disabled />
+                                    }
+                                    <label for="chkIsPublic_@Model.ViewId"></label> &nbsp;&nbsp;<b>@LanguageUtilities.LangText("lblIS_PUBLIC", frmCode)</b>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-md-4">
+                                @*<div class="align-center m-b-10">
+                                    @Html.MyButton("cmdImage", @LanguageUtilities.LangText("cmdImage", frmCode), "SelectImage();", "Alt+N", "add_a_photo")
+                                </div>*@
+
+                                <div class="img-responsive" id="divPreviewImage">
+                                    @if (string.IsNullOrEmpty(Model.ObjDetail.IMAGE_PATH))
+                                    {
+                                        <img style="width: 100%; height: 150px;" />
+                                    }
+                                    else
+                                    {
+                                        <img style="width: 100%;" src="@Model.ObjDetail.IMAGE_PATH" />
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12">
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET, new { id = "txtBaiViet", @disabled = "true" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET_EN, new { id = "txtBaiViet_EN", @disabled = "true" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+
+
+                    else
+                    {
+                        <div class="row m-t-20">
+                            <div class="col-xs-12 col-md-8">
+                              
+
+                                <div class="form-group m-t-20">
+                                    @if (Model.ObjDetail.IS_PUBLIC)
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" checked disabled />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkIsPublic_@Model.ViewId" onchange="OnChangeIsPublic(this);" style="margin:0;" class="filled-in" disabled />
+                                    }
+                                    <label for="chkIsPublic_@Model.ViewId"></label> &nbsp;&nbsp;<b>@LanguageUtilities.LangText("lblIS_PUBLIC", frmCode)</b>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-md-4">
+                                @*<div class="align-center m-b-10">
+                                    @Html.MyButton("cmdImage", @LanguageUtilities.LangText("cmdImage", frmCode), "SelectImage();", "Alt+N", "add_a_photo")
+                                </div>*@
+
+                                <div class="img-responsive" id="divPreviewImage">
+                                    @if (string.IsNullOrEmpty(Model.ObjDetail.IMAGE_PATH))
+                                    {
+                                        <img style="width: 100%; height: 150px;" />
+                                    }
+                                    else
+                                    {
+                                        <img style="width: 100%;" src="@Model.ObjDetail.IMAGE_PATH" />
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <div class="col-xs-12">
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET, new { id = "txtBaiViet", @disabled = "true" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblBAI_VIET_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjDetail.BAI_VIET_EN, new { id = "txtBaiViet_EN", @disabled = "true" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+
+    }
+<script type="text/javascript">
+        function OnChangeIsPublic(obj) {
+            $("#hddIsPublic").val($(obj).is(":checked"));
+        }
+
+    function previewImage(event) {
+        debugger
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.getElementById('preview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    updateImagePath(file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateImagePath(fileName) {
+            const basePath = "/UploadImageNews/image/";
+            const fullPath = basePath + fileName;
+            $("#hddImagePath").val(fullPath);
+        }
+
+    function SubmitFormNew() {
+        debugger
+           var fileInput = document.getElementById('fileInput');
+           var preImg = document.getElementById('preview');
+           //if ($('#txtMoTaNgan').val() == '') {
+           //    Message.func.AlertDanger({ Message: { Code: "", Message: "Mô tả không được để trống !" } });
+           //    return;
+           //}
+
+            if (!preImg.src) {
+               Message.func.AlertDanger({ Message: { Code: "", Message: "Ảnh không được để trống !" } });
+               return;
+            }
+           $("#txtBaiViet").val(CKEDITOR.instances.txtBaiViet.getData());
+           $("#txtBaiViet_EN").val(CKEDITOR.instances.txtBaiViet_EN.getData());
+
+            var formData = new FormData(document.getElementById('@Model.FormId'));
+
+            // Gửi AJAX request
+            $.ajax({
+               url : "@Url.Action("Update")", // Thay thế bằng tên controller của bạn
+                type: 'POST',
+                data: formData,
+                processData: false, // Để jQuery không xử lý dữ liệu
+                contentType: false, // Để jQuery không thiết lập content type
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                },
+                error: function (error) {
+                    // Xử lý lỗi
+                    console.error("Lỗi upload:", error);
+                }
+            });
+        }
+
+        $(function () {
+            CKEDITOR.replace('txtBaiViet', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+
+            CKEDITOR.replace('txtBaiViet_EN', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+
+            //CKEDITOR.replace('txtMoTaNgan', {
+            //    filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images',
+            //    toolbar: 'Standard'
+            //});
+            Forms.CompleteUI();
+        });
+</script>
+</div>

@@ -1,0 +1,300 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_DetailBidContractor";
+    var frmCodeBidRequired = "frm_BidRequire_Detail";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    dynamic param = new System.Dynamic.ExpandoObject();
+    param.IsFetch = true;
+    var serviceBidRequired = new SMO.Service.EB.BidRequireService();
+    serviceBidRequired.Get(Model.ObjDetail.REQUIRED_CODE, param);
+
+
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID && x.CONTRACTOR_ID == ProfileUtilities.User.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).ToList();
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.PKID);
+
+    if (Model.ObjDetail.MO_TA != null)
+    {
+        var template = Model.ObjDetail.MO_TA
+            .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+            .Replace("{DIA_DIEM}", serviceBid.ObjDetail.Project.DIA_DIEM)
+            .Replace("{THOI_GIAN_MO_THAU}", serviceBid.ObjDetail.NGAY_MO_THAU.ToString())
+            .Replace("{THOI_GIAN_DONG_THAU}", serviceBid.ObjDetail.NGAY_DONG_THAU.ToString())
+            .Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+            .Replace("{NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.FULL_NAME)
+            .Replace("{SDT_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.PHONE)
+            .Replace("{EMAIL_NGUOI_PHU_TRACH}", serviceBid.ObjDetail.UserSent.EMAIL);
+
+        Model.ObjDetail.MO_TA = template;
+    }
+}
+<div id='@Model.ViewId'>
+    <div class="row">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey m-b-10">
+                <div class="body multi_step_form">
+                    <form id="msform">
+                        <ul id="progressbar" style="padding-left: 0; margin-bottom: 0">
+                            @if (Model.ObjDetail.GIAI_DOAN == Phase_Status.KhoiTao)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChamThau)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.ThuongThaoLai)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li>@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+                            else if (Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau)
+                            {
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.KhoiTao, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.NopHoSo, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChamThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.ChonNhaThau, lang)</li>
+                                <li class="active">@Phase_Status.GetStatusText(Phase_Status.DongThau, lang)</li>
+                            }
+
+                        </ul>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.ObjDetail.CHECK_BID_SPEC)
+            {
+                <div class="card border-grey m-b-10">
+                    <div class="body col-red m-t-5">
+                        @if (ProfileUtilities.User.LANGUAGE == "vi")
+                        {
+                            <b>CHÚ Ý : CHƯA NHẬP HẾT THÔNG TIN THẦU!</b>
+                        }
+                        else
+                        {
+                            <b>NOTICE: PLEASE ENTER FULL INFORMATION BEFORE ATTACH FILE!</b>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && Model.ObjDetail.NGAY_DONG_THAU >= DateTime.Now)
+            {
+                if (lstSubmit.Count() > 0)
+                {
+                    var newSubmit = lstSubmit.FirstOrDefault();
+                    <div class="card border-grey m-b-10">
+                        <div class="body col-red m-t-5">
+                            @if (ProfileUtilities.User.LANGUAGE == "vi")
+                            {
+                                <b>ĐÃ NỘP HỒ SƠ! - NGÀY NỘP: @(newSubmit.CREATE_DATE.HasValue ? newSubmit.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</b>
+                            }
+                            else
+                            {
+                                <b>SUBMITTED! - DATE SUBMIT: @(newSubmit.CREATE_DATE.HasValue ? newSubmit.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</b>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card border-grey m-b-10">
+                        <div class="body col-red m-t-5">
+                            @if (ProfileUtilities.User.LANGUAGE == "vi")
+                            {
+                                <b>CHƯA NỘP HỒ SƠ!</b>
+                            }
+                            else
+                            {
+                                <b>HAVE NOT SUBMITTED FILE YET!</b>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else if (Model.ObjDetail.NGAY_DONG_THAU < DateTime.Now)
+            {
+                <div class="card border-grey m-b-10">
+                    <div class="body col-red m-t-5">
+                        @if (ProfileUtilities.User.LANGUAGE == "vi")
+                        {
+                            <b>THÔNG BÁO : ĐÃ HẾT HẠN NỘP HỒ SƠ!</b>
+                        }
+                        else
+                        {
+                            <b>NOTIFICATION: BID SUBMISSION PERIOD IS EXPIRED!</b>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && Model.ObjDetail.NGAY_DONG_THAU >= DateTime.Now)
+            {
+                <div class="card border-grey">
+                    <div class="body">
+                        @Html.MyButton("cmdSubmitBid", @LanguageUtilities.LangText("cmdSubmitBid", frmCode), "$('#mnuNhapTieuChi').click();", "", "attach_file")
+                    </div>
+                </div>
+            }
+
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body">
+                    <div class="tab-content">
+                        <div style="min-height:500px;">
+                            @*<div class="col-indigo m-b-10 m-t-15 font-16">
+                                    @if (lang == "vi")
+                                    {
+                                        @Model.ObjDetail.PKID <text>-</text> @Model.ObjDetail.TEN_GOI_THAU
+                                    }
+                                    else
+                                    {
+                                        @Model.ObjDetail.PKID <text>-</text> @Model.ObjDetail.TEN_GOI_THAU_EN
+                                    }
+                                </div>*@
+                            <div class="col-blue-grey font-13 row m-l-0 m-r-0 m-t-20" style="border-bottom: 1px solid #D7D7D7;">
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNGAY_MO_THAU", frmCode): </b> @Model.ObjDetail.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)
+                                </div>
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNGAY_DONG_THAU", frmCode): </b> @Model.ObjDetail.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)
+                                </div>
+
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblNguoiPhuTrach", frmCode): </b> @Model.ObjDetail.UserSent.FULL_NAME - @((Model.ObjDetail.UserSent.Title.NAME == null ? "Chưa có chức danh" : Model.ObjDetail.UserSent.Title.NAME))
+                                </div>
+
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblPhoneLienHe", frmCode): </b> @Model.ObjDetail.UserSent.PHONE
+                                </div>
+
+                                <div class="col-md-6 col-xs-12">
+                                    <b>@LanguageUtilities.LangText("lblEmailLienHe", frmCode): </b> @Model.ObjDetail.UserSent.EMAIL
+                                </div>
+                            </div>
+
+
+                            <div class="table-responsive">
+                                <table class="table table-condensed font-13">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 200px">@LanguageUtilities.LangText("thMatHang", frmCodeBidRequired)</th>
+                                            <th style="min-width: 200px">@LanguageUtilities.LangText("thCongViec", frmCodeBidRequired)</th>
+
+                                            <th width="150px" class="align-right">@LanguageUtilities.LangText("thSoLuong", frmCodeBidRequired)</th>
+                                            @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                            {
+                                                <th width="150px" class="align-right">@LanguageUtilities.LangText("thTimeRent", frmCodeBidRequired)</th>
+                                            }
+                                            <th width="100px" class="align-center">@LanguageUtilities.LangText("thDonViTinh", frmCodeBidRequired)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in serviceBidRequired.ObjHeader.ListDetail.OrderBy(x => x.ITEM_NUMBER == null ? 1 : 0).ThenBy(x => x.ITEM_NUMBER))
+                                        {
+                                            <tr>
+                                                <td>@item.Material.TEXT</td>
+                                                <td>[@(item.Scope?.CODE ?? "")] @(item.Scope?.TEXT ?? "")</td>
+
+                                                <td class="align-right">@item.QUANTITY.ToStringVN()</td>
+                                                @if (serviceBidRequired.ObjHeader.IS_RENT)
+                                                {
+                                                    <td class="align-center">
+                                                        @(item.TIME_RENT != null ? item.TIME_RENT.ToString() : "")
+                                                        @(item.RentUnit != null ? (item.RentUnit.TEXT != null ? item.RentUnit.TEXT : " ") : "")
+                                                    </td>
+                                                }
+                                                <td class="align-center">@(item.Unit != null ? item.Unit.TEXT : "")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+
+                            @if (lang == "vi")
+                            {
+                                <div>
+                                    @Html.Raw(Model.ObjDetail.MO_TA)
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    @Html.Raw(Model.ObjDetail.MO_TA_EN)
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="card border-grey">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        @{Html.RenderPartial("ListFile", Model.ObjDetail.ListFile.Select(x => x.FileUpload).ToList());}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var err = "@Model.ObjDetail.CHECK_BID_SPEC";
+        function CheckBidSpec() {
+            if (err == "True") {
+                alert("CHÚ Ý: Bạn cần nhập đầy đủ thông tin chào thầu..!");
+            }
+        }
+        $(function () {
+            Forms.CompleteUI();
+            CheckBidSpec();
+        });
+    </script>
+</div>

@@ -1,0 +1,95 @@
+﻿@model SMO.Service.EB.BidCouncilService
+@using Newtonsoft.Json
+@{
+    var number = 1;
+    var frmCode = "frm_BidCouncil_Index";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-bordered font-13">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllCouncilOfBid_@Model.ViewId" onclick="Forms.CheckAll('chkItemCouncilOfBid_@Model.ViewId', '#chkAllCouncilOfBid_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllCouncilOfBid_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("thTenNguoiCham", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNguoiQuyetDinh", frmCode)</th>
+                <th style="min-width:250px;">@LanguageUtilities.LangText("thVaiTro", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.IS_QUYET_DINH).ThenBy(x => x.USER_NAME))
+            {
+                var index = Model.ObjList.IndexOf(item);
+                @Html.HiddenFor(m => Model.ObjList[index].PKID)
+                @Html.HiddenFor(m => Model.ObjList[index].BID_ID)
+                @Html.HiddenFor(m => Model.ObjList[index].USER_NAME)
+                @Html.HiddenFor(m => Model.ObjList[index].IS_QUYET_DINH, new { @id = "hdd_" + item.PKID, @class = "hddQuyetDinh" })
+                var check = "";
+                if (item.IS_QUYET_DINH == true)
+                {
+                    check = "checked";
+                }
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemCouncilOfBid" name="chkItemCouncilOfBid_@Model.ViewId" id="chkItemCouncilOfBid_@Model.ViewId@item.PKID" modelId="@item.PKID" style="margin:0;" />
+                        <label for="chkItemCouncilOfBid_@Model.ViewId@item.PKID"></label>
+                    </td>
+                    <td>
+                        <div>@item.User.USER_NAME</div>
+                        <div class="col-blue-grey">@item.User.FULL_NAME</div>
+                    </td>
+                    <td class="align-center">
+                        <input @check onclick="CheckIsQuyetDinh(this,'@item.PKID');" type="checkbox" class="filled-in chkQuyetDinh" name="@Html.NameFor(m => Model.ObjList[index].IS_QUYET_DINH)" id="chk_@Model.ViewId@item.PKID" style="margin:0;" />
+                        <label for="chk_@Model.ViewId@item.PKID"></label>
+                    </td>
+                    <td>
+                        <select class="form-control  form-control selectpicker show-tick" data-container="body" data-live-search="false" multiple="true" name="ObjList[@index].VAI_TRO">
+                            <option value="">-</option>
+                            @foreach (var vaitro in SelectListUtilities.GetDictionary(Domain.VAI_TRO.ToString(), false, false, "", lang))
+                            {
+                                if (!string.IsNullOrEmpty(item.VAI_TRO) && item.VAI_TRO.Contains(vaitro.Value))
+                                {
+                                    <option value="@vaitro.Value" selected>@vaitro.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@vaitro.Value">@vaitro.Text</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function CheckIsQuyetDinh(obj, id) {
+        //$(".hddQuyetDinh").val(false);
+        //$(".chkQuyetDinh").not(obj).prop('checked', false);
+        $('#@Model.ViewId #hdd_' + id).val($(obj).is(":checked"));
+    }
+
+    var message = null;
+    @{
+        if (ViewBag.Message != null)
+        {
+            @:message = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Message))
+        }
+    }
+    $(function () {
+        Forms.CompleteUI();
+        if (message != null) {
+            Message.execute(message);
+        }
+    });
+</script>

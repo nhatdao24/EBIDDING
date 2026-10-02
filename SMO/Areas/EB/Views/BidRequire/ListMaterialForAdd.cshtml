@@ -1,0 +1,39 @@
+﻿@model SMO.Service.MD.MaterialService
+@{ 
+    var frmCode = "frm_BidRequire_AddMaterial";
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered font-13">
+        <thead>
+            <tr>
+                <th>Mã hàng hóa</th>
+                <th>Tên hàng hóa</th>
+                <th>Đơn vị tính</th>
+                <th width="50px">Chọn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                    <tr>
+                        <td>@item.CODE</td>
+                        <td>@item.TEXT</td>
+                        <td>@item.UNIT</td>
+                        <td class="align-center">
+                            <i class="material-icons col-fecon" id="ic_@item.CODE"
+                               onclick="@($"AddDetail('{item.CODE}', '{item.TEXT}', '1', '{item.UNIT}', '' , '','','','');"); $(this).html('done_all');"
+                               style="cursor:pointer">add_circle_outline</i>
+                        </td>
+                    </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>

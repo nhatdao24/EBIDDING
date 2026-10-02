@@ -1,0 +1,82 @@
+﻿@model SMO.Service.EB.BidService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_MenuEdit";
+
+}
+<div id='@Model.ViewId' class="container-fluid child-content" type="typeInfoBid">
+    <div class="row">
+        <div class="col-xs-12 col-sm-3">
+            <div class="sub-sidebar">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="menu">
+                    <ul class="list">
+                        <li onclick="OnClickSubMenuEdit(this); Forms.Close('@Model.ViewId');">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">arrow_back</i>
+                                <span>@LanguageUtilities.LangText("mnuQuayLai", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li class="active" onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Edit", "Bid", new { id = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">description</i>
+                                <span>@LanguageUtilities.LangText("mnuThongTin", frmCode)</span>
+                            </a>
+                        </li>
+
+                        @*ConfigViettinBank: Ẩn biên soạn tin tức*@
+
+                        @*<li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "BidNew", new { @id = Model.ObjDetail.ListNew.FirstOrDefault().PKID})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+            <a href="javascript:void(0);">
+                <i class="material-icons">chrome_reader_mode</i>
+                <span>@LanguageUtilities.LangText("mnuTinTuc", frmCode)</span>
+            </a>
+        </li>*@
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "BidCouncil", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">people</i>
+                                <span>@LanguageUtilities.LangText("mnuHoiDong", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "BidContractor", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">people_outline</i>
+                                <span>@LanguageUtilities.LangText("mnuNhaThau", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li onclick="OnClickSubMenuEdit(this); Forms.LoadAjax({url:'@Url.Action("Index", "BidSpec", new { @bidId = Model.ObjDetail.PKID})',  htmlTarget: '#@Model.ViewId #divContentEdit'})">
+                            <a href="javascript:void(0);">
+                                <i class="material-icons">insert_chart</i>
+                                <span>@LanguageUtilities.LangText("mnuTieuChi", frmCode)</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-9">
+            <div id="divContentEdit">
+                @{Html.RenderAction("Edit", "Bid", new { id = Model.ObjDetail.PKID });}
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function OnClickSubMenuEdit(obj){
+            $("#@Model.ViewId .sub-sidebar li").removeClass("active");
+            $(obj).addClass("active");
+            Forms.CloseRightContent();
+        }
+    </script>
+</div>

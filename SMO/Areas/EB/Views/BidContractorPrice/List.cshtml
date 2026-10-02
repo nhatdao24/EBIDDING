@@ -1,0 +1,407 @@
+﻿@model SMO.Service.EB.BidContractorPriceService
+@using Newtonsoft.Json
+@using NHibernate.Linq
+@using SMO.Repository.Implement.EB;
+@{
+    var frmCode = "frm_BidContractor_Index";
+    var lstBidContractor = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorRepo>().Queryable()
+        .Where(x => x.BID_ID == Model.ObjDetail.BID_ID).Fetch(x => x.Contractor).OrderBy(x => x.CONTRACTOR_ID).ThenBy(x => x.IS_SELECTED).ToList();
+
+    var lstBidContractorPriceFile = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceFileRepo>().Queryable()
+        .Where(x => x.BID_ID == Model.ObjDetail.BID_ID).Fetch(x => x.FileUpload).OrderBy(x => x.CONTRACTOR_ID).ToList();
+
+    var serviceBid = new SMO.Service.EB.BidService();
+    dynamic param = new System.Dynamic.ExpandoObject();
+    param.IsFetch_ListUser = true;
+    param.IsFetch_ListOrg = true;
+    serviceBid.Get(Model.ObjDetail.BID_ID, param);
+
+    var isUpdate = ViewBag.IsUpdate == "1" ? true : false;
+    //if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.ChonNhaThau && (serviceBid.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME || serviceBid.ObjDetail.USER_MANAGE == ProfileUtilities.User.USER_NAME))
+    //{
+    //    isUpdate = true;
+    //}
+
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+}
+
+@if (isUpdate)
+{
+    <div class="table-responsive">
+        <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+        <table class="table table-bordered font-13">
+            <thead>
+                <tr>
+                    <th class="align-center">Giá chào thầu</th>
+
+                    @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                    @*<th style="max-width: 200px;" class="align-center">
+                        Giá hiệu chỉnh
+                    </th>
+                    <th style="max-width: 200px;" class="align-center">
+            Giá thương thảo
+        </th>*@
+                    @*<th style="max-width: 200px;" class="align-center">
+            Giá trúng thầu
+        </th>*@
+                    <th style="max-width: 200px;" class="align-center">
+                        File đính kèm
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in lstBidContractor)
+                {
+                    if ((item.STATUS == "AP" || item.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID) > 0)
+                    {
+                        <input type="hidden" class="contractorId" value="@item.CONTRACTOR_ID" />
+                        var findGiaChaoThau = Model.ObjList.Where(x => x.TYPE == "0" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findGiaHieuChinh = Model.ObjList.Where(x => x.TYPE == "1" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findGiaThuongThao = Model.ObjList.Where(x => x.TYPE == "2" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findTrungThau = Model.ObjList.Where(x => x.TYPE == "3" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).ToList();
+                        <tr>
+                            <td>
+                                <div>@item.Contractor.TEN_NGAN</div>
+                                <div class="col-blue-grey">@item.Contractor.TEN_DAI</div>
+                            </td>
+
+                            @*ConfigViettinBank: ẩnGiá hiệu chỉnh (VNĐ)	Giá thương thảo (VNĐ) *@ 
+
+                            @*<td class="align-center">
+                                <span class="waves-effect btn-default btn" onclick="AddPrice('1', '@item.CONTRACTOR_ID');" title="">
+                                        <i class="col-fecon material-icons">add</i><span class="font-13">Thêm lần điều chỉnh</span>
+                                    </span>
+                            <td class="align-center">
+                                @*<span class="waves-effect btn-default btn" onclick="AddPrice('1', '@item.CONTRACTOR_ID');" title="">
+                            <i class="col-fecon material-icons">add</i><span class="font-13">Thêm lần điều chỉnh</span>
+                        </span>*@
+                            </td>
+                            <td class="align-center">
+                                <span class="waves-effect btn-default btn btn-border" onclick="AddPrice('2', '@item.CONTRACTOR_ID');" title="">
+                                    <i class="col-fecon material-icons">add</i><span class="font-13">Thêm lần thương thảo</span>
+                                </span>
+                            </td>*@
+
+                            <td class="align-center">
+                                @Html.MyButton("cmdFileGia", @LanguageUtilities.LangText("cmdFileGia", frmCode), "UploadFile.InsertFile('#divFileDinhKem_" + item.CONTRACTOR_ID + "','file_" + item.CONTRACTOR_ID + "');", "Chọn file", "attach_file")
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @if (findGiaChaoThau.Count > 0)
+                                {
+                                    var indexGiaChaoThau = Model.ObjList.IndexOf(findGiaChaoThau.FirstOrDefault());
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].PKID" value="@findGiaChaoThau.FirstOrDefault().PKID" />
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].BID_ID" value="@findGiaChaoThau.FirstOrDefault().BID_ID" />
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].CONTRACTOR_ID" value="@findGiaChaoThau.FirstOrDefault().CONTRACTOR_ID" />
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].TYPE" value="@findGiaChaoThau.FirstOrDefault().TYPE" />
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].C_ORDER" value="@indexGiaChaoThau" />
+                                    <input type="hidden" name="ObjList[@indexGiaChaoThau].Index" value="@indexGiaChaoThau" />
+                                }
+
+                                @*ConfigViettinBank: đổi value giá hiệu chỉnh sang giá chào thầu  *@
+
+                                @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().PRICE.ToStringVN() : "") @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().CURRENCY_CODE : "")
+
+                                @{
+                                    if (findTrungThau.Count > 0)
+                                    {
+                                        foreach (var giaTrungThau in findTrungThau)
+                                        {
+                                            var index = Model.ObjList.IndexOf(giaTrungThau);
+                                            <input type="hidden" name="ObjList[@index].PKID" value="@giaTrungThau.PKID" />
+                                            <input type="hidden" name="ObjList[@index].BID_ID" value="@giaTrungThau.BID_ID" />
+                                            <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@giaTrungThau.CONTRACTOR_ID" />
+                                            <input type="hidden" name="ObjList[@index].TYPE" value="@giaTrungThau.TYPE" />
+                                            <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                                            <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                                        }
+
+                                    }
+                                }
+                            </td>
+
+                            @*ConfigViettinBank: ẩnGiá hiệu chỉnh (VNĐ)	Giá thương thảo (VNĐ) *@
+                            @*<td>
+
+                                @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().PRICE.ToStringVN() : "") @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().CURRENCY_CODE : "")
+
+                            </td>*@
+
+                            @*@{
+                                if (findGiaHieuChinh.Count > 0)
+                                {
+                                    foreach (var GiaHieuChinh in findGiaHieuChinh)
+                                    {
+                                        var index = Model.ObjList.IndexOf(GiaHieuChinh);
+                                        <input type="hidden" name="ObjList[@index].PKID" value="@GiaHieuChinh.PKID" />
+
+                                        <input type="hidden" name="ObjList[@index].BID_ID" value="@GiaHieuChinh.BID_ID" />
+                                        <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@GiaHieuChinh.CONTRACTOR_ID" />
+                                        <input type="hidden" name="ObjList[@index].TYPE" value="@GiaHieuChinh.TYPE" />
+                                        <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                                        <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                                    }
+
+                                }
+                            }*@
+
+                            @*ConfigViettinBank: ẩn Giá hiệu chỉnh (VNĐ)	Giá thương thảo (VNĐ) *@
+
+
+                            @*<td style="vertical-align:top;">
+                                <div id="divGiaThuongThao_@item.CONTRACTOR_ID" class="p-t-10">
+                                    @foreach (var giaThuongThao in findGiaThuongThao)
+                                    {
+                                        var index = Model.ObjList.IndexOf(giaThuongThao);
+                            @*ConfigViettinBank: Xoá giá thương thảo*@
+
+                            @*<td style="vertical-align:top;">
+                        <div id="divGiaThuongThao_@item.CONTRACTOR_ID" class="p-t-10">
+                            @foreach (var giaThuongThao in findGiaThuongThao)
+                            {
+                                var index = Model.ObjList.IndexOf(giaThuongThao);
+
+                                <div style="display: table; width: 100%;" id="div_@index">
+                                    <div style="display: table-cell">
+                                        <input type="hidden" name="ObjList[@index].IS_DELETE" value="@giaThuongThao.IS_DELETE" id="hddIsDelete_@index" />
+                                        <input type="hidden" name="ObjList[@index].PKID" value="@giaThuongThao.PKID" />
+                                        <input type="hidden" name="ObjList[@index].BID_ID" value="@giaThuongThao.BID_ID" />
+                                        <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                                        <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@giaThuongThao.CONTRACTOR_ID" />
+                                        <input type="hidden" name="ObjList[@index].TYPE" value="@giaThuongThao.TYPE" />
+                                        <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                                        <label>Giá trị</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="text" class="form-control inputMask"
+                                                       data-inputmask="'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                                       name="ObjList[@index].PRICE" value="@giaThuongThao.PRICE" />
+                                                <div id="error-message" class="text-danger"></div>
+                                            </div>
+                                        </div>
+
+                                        <label>Ghi chú</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="text" class="form-control" name="ObjList[@index].NOTE" value="@giaThuongThao.NOTE" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display: table-cell; vertical-align: middle; text-align: center">
+                                        <i class="material-icons col-red" onclick="RemovePrice(this,'@index');" style="cursor:pointer">remove_circle_outline</i>
+                                    </div>
+                                </div>
+                            </td>*@
+                                <hr style="border-top: 1px solid rgba(22, 49, 94,1) !important" id="hr_@index" />
+                            }
+                        </div>
+                    </td>*@
+
+                            <td style="vertical-align:top;">
+                                <div id="divFileDinhKem_@item.CONTRACTOR_ID" class="p-t-10">
+                                    @*@{Html.RenderPartial("ListFile", lstBidContractorPriceFile.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).Select(x => x.FileUpload).ToList());}*@
+                                    @{Html.RenderPartial("ListFile", lstBidContractorPriceFile.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).Select(x => x.FileUpload).ToList(), new ViewDataDictionary { new KeyValuePair<string, object>("isRemoveFile", true) });}
+                                </div>
+                            </td>
+                            <hr />
+                        </tr>
+                    }
+                    else
+                    {
+
+
+                        @*ConfigViettinBank: Value Giá chào thầu -> Giá hiệu chỉnh*@
+
+                        //var findGiaChaoThau = Model.ObjList.Where(x => x.TYPE == "0" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findGiaChaoThau = Model.ObjList.Where(x => x.TYPE == "1" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+
+                        @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                        //var findGiaHieuChinh = Model.ObjList.Where(x => x.TYPE == "1" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        //var findGiaThuongThao = Model.ObjList.Where(x => x.TYPE == "2" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findTrungThau = Model.ObjList.Where(x => x.TYPE == "3" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).ToList();
+
+                        @*ConfigViettinBank: Value Giá chào thầu -> Giá hiệu chỉnh*@
+
+                        @*foreach (var gia in findGiaChaoThau)
+                {
+                    var index = Model.ObjList.IndexOf(findGiaChaoThau.FirstOrDefault());
+                    <input type="hidden" name="ObjList[@index].PKID" value="@gia.PKID" />
+                    <input type="hidden" name="ObjList[@index].BID_ID" value="@gia.BID_ID" />
+                    <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@gia.CONTRACTOR_ID" />
+                    <input type="hidden" name="ObjList[@index].TYPE" value="@gia.TYPE" />
+                    <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                    <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                }*@
+                        foreach (var gia in findGiaChaoThau)
+                        {
+                            var index = Model.ObjList.IndexOf(findGiaChaoThau.FirstOrDefault());
+                            <input type="hidden" name="ObjList[@index].PKID" value="@gia.PKID" />
+                            <input type="hidden" name="ObjList[@index].BID_ID" value="@gia.BID_ID" />
+                            <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@gia.CONTRACTOR_ID" />
+                            <input type="hidden" name="ObjList[@index].TYPE" value="@gia.TYPE" />
+                            <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                            <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                        }
+
+                        @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                        @*foreach (var gia in findGiaHieuChinh)
+                {
+                    var index = Model.ObjList.IndexOf(findGiaHieuChinh.FirstOrDefault());
+                    <input type="hidden" name="ObjList[@index].PKID" value="@gia.PKID" />
+                    <input type="hidden" name="ObjList[@index].BID_ID" value="@gia.BID_ID" />
+                    <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@gia.CONTRACTOR_ID" />
+                    <input type="hidden" name="ObjList[@index].TYPE" value="@gia.TYPE" />
+                    <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                    <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                }
+                foreach (var gia in findGiaThuongThao)
+                {
+                    var index = Model.ObjList.IndexOf(findGiaThuongThao.FirstOrDefault());
+                    <input type="hidden" name="ObjList[@index].PKID" value="@gia.PKID" />
+                    <input type="hidden" name="ObjList[@index].BID_ID" value="@gia.BID_ID" />
+                    <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@gia.CONTRACTOR_ID" />
+                    <input type="hidden" name="ObjList[@index].TYPE" value="@gia.TYPE" />
+                    <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                    <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                }*@
+                        foreach (var gia in findTrungThau)
+                        {
+                            var index = Model.ObjList.IndexOf(findTrungThau.FirstOrDefault());
+                            <input type="hidden" name="ObjList[@index].PKID" value="@gia.PKID" />
+                            <input type="hidden" name="ObjList[@index].BID_ID" value="@gia.BID_ID" />
+                            <input type="hidden" name="ObjList[@index].CONTRACTOR_ID" value="@gia.CONTRACTOR_ID" />
+                            <input type="hidden" name="ObjList[@index].TYPE" value="@gia.TYPE" />
+                            <input type="hidden" name="ObjList[@index].C_ORDER" value="@index" />
+                            <input type="hidden" name="ObjList[@index].Index" value="@index" />
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+        <table class="table table-bordered font-13">
+            <thead>
+                <tr>
+                    <th class="align-center">Giá chào thầu (VNĐ)</th>
+
+                    @*ConfigViettinBank: ẩnGiá hiệu chỉnh (VNĐ)	Giá thương thảo (VNĐ) *@
+
+                    @*<th style="max-width: 200px;" class="align-center">
+                        Giá hiệu chỉnh (VNĐ)
+                    </th>
+                    <th style="max-width: 200px;" class="align-center">
+                        Giá thương thảo (VNĐ)
+                    </th>*@
+                    @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                    @*<th style="max-width: 200px;" class="align-center">
+            Giá hiệu chỉnh (VNĐ)
+        </th>
+        <th style="max-width: 200px;" class="align-center">
+            Giá thương thảo (VNĐ)
+        </th>*@
+                    @*<th style="max-width: 200px;" class="align-center">
+            Giá trúng thầu (VNĐ)
+        </th>*@
+                    <th style="max-width: 200px;" class="align-center">
+                        File đính kèm
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in lstBidContractor)
+                {
+                    if ((item.STATUS == "AP" || item.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID) > 0)
+                    {
+
+                        @*ConfigViettinBank: Value Giá chào thầu -> Giá hiệu chỉnh*@
+
+                        //var findGiaChaoThau = Model.ObjList.Where(x => x.TYPE == "0" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findGiaChaoThau = Model.ObjList.Where(x => x.TYPE == "1" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+
+                        @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                        //var findGiaHieuChinh = Model.ObjList.Where(x => x.TYPE == "1" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        //var findGiaThuongThao = Model.ObjList.Where(x => x.TYPE == "2" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).ToList();
+                        var findGiaTrungThau = Model.ObjList.Where(x => x.TYPE == "3" && x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).ToList();
+                        <tr>
+                            <td colspan="5">
+                                <div>@item.Contractor.TEN_NGAN</div>
+                                <div class="col-blue-grey">@item.Contractor.TEN_DAI</div>
+                            </td>
+                        </tr>
+                        <tr>
+
+                            @*ConfigViettinBank: Value Giá chào thầu -> Giá hiệu chỉnh*@
+
+                            @*<td>
+                        @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().FIRST_PRICE.ToStringVN() : "") @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().CURRENCY_CODE : "")
+                    </td>*@
+                            <td>
+                                @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().PRICE.ToStringVN() : "") @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().CURRENCY_CODE : "")
+                            </td>
+
+                            @*ConfigViettinBank: Xoá giá hiệu chỉnh và giá thương thảo*@
+
+                            @*<td>
+                                @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().PRICE.ToStringVN() : "") @(findGiaChaoThau.Count > 0 ? findGiaChaoThau.FirstOrDefault().CURRENCY_CODE : "")
+                            </td>
+                            <td>
+                                @{
+                                    int j = 1;
+                                }
+                                @foreach (var giaThuongThao in findGiaThuongThao)
+                                {
+
+                                    <div><b> Lần @j: @giaThuongThao.PRICE.ToStringVN()</b></div>
+                                    <div>Người thực hiện @j: @giaThuongThao.CREATE_BY</div>
+                                    <div>(Ghi chú: @giaThuongThao.NOTE)</div>
+                                    j++;
+                    if (j <= findGiaThuongThao.Count())
+                    {
+                        <hr />
+                    }
+
+                                }
+                            </td>*@
+                            <td style="vertical-align:top;">
+                                <div id="divFileDinhKem_@item.CONTRACTOR_ID" class="p-t-10">
+                                    @{Html.RenderPartial("ListFile", lstBidContractorPriceFile.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).OrderByDescending(x => x.CREATE_DATE).Select(x => x.FileUpload).ToList());}
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+<script type="text/javascript">
+                  $(".inputMask").inputmask('integer', { min: 0});
+
+    var numberCurrent = @(Model.ObjList.Count);
+    var message = null;
+    @{
+        if (ViewBag.Message != null)
+        {
+            @:message = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Message))
+        }
+    }
+        $(function () {
+        Forms.CompleteUI();
+        if (message != null) {
+            Message.execute(message);
+        }
+    });
+</script>

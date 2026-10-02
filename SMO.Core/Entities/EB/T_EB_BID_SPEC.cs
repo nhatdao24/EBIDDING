@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace SMO.Core.Entities
+{
+    public partial class T_EB_BID_SPEC : BaseEntity
+    {
+        public virtual string PKID { get; set; }
+        public virtual string BID_ID { get; set; }
+        public virtual string PARENT_ID { get; set; }
+        public virtual string NAME { get; set; }
+        public virtual string NAME_EN { get; set; }
+        public virtual string DESCRIPTION { get; set; }
+        public virtual string DESCRIPTION_EN { get; set; }
+        public virtual string TYPE { get; set; }
+        public virtual int C_ORDER { get; set; }
+        public virtual decimal RATIO { get; set; }
+        public virtual bool IS_SPEC_PRICE { get; set; }
+        public virtual bool IS_NOT_SHOW_CONTRACTOR { get; set; }
+        public virtual string ROLE { get; set; }
+        public virtual string VALUE_OF_SPEC { get; set; }
+
+        public virtual string MD_PKID { get; set; }
+        public virtual IList<T_EB_BID_SPEC_DETAIL> ListDetail { get; set; }
+
+        private T_MD_DICTIONARY _Dictionary;
+        public virtual T_MD_DICTIONARY Dictionary
+        {
+            get
+            {
+                if (_Dictionary == null)
+                {
+                    _Dictionary = new T_MD_DICTIONARY();
+                }
+                return _Dictionary;
+            }
+
+            set
+            {
+                _Dictionary = value;
+            }
+
+        }
+
+
+        public T_EB_BID_SPEC()
+        {
+            ListDetail = new List<T_EB_BID_SPEC_DETAIL>();
+        }
+    }
+}

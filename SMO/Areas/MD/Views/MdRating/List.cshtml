@@ -1,0 +1,59 @@
+﻿@model SMO.Service.MD.MdRatingService
+@{
+    var number = 1;
+}
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th class="align-center">Điểm từ</th>
+                <th class="align-center">Điểm đến</th>
+                <th class="align-center">Xếp loại</th>
+                <th class="align-center">Black list</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.PKID }));
+                var toggleAction = string.Format("Forms.ToggleActive('{0}', this);", Url.Action("ToggleBlackList", new { id = item.PKID }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItem" + item.PKID)"></label>
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@item.FROM_VALUE.ToStringVN()</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@item.TO_VALUE.ToStringVN()</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@item.RATING</td>
+                    <td class="align-center">
+                        @if (item.IS_BLACK_LIST)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+
+

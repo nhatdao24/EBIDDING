@@ -1,0 +1,96 @@
+﻿@model SMO.Service.AD.UserService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var bidId = ViewBag.BidId;
+    var frmCode = "frm_BidCouncil_AddCouncil";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListCouncilForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="bidId" value="@bidId" />
+            @Html.HiddenFor(m => m.ViewId)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdSelect", @LanguageUtilities.LangText("cmdSelect", frmCode), "AddCouncilToBid();", "Alt+N", "add")
+                            </div>
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { placeholder = LanguageUtilities.LangText("lblPlaceHolder", frmCode), @class = "align-center", @data_val = false })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function AddCouncilToBid() {
+                var lstSelected = '';
+                $('#@Model.ViewId .chkItemCouncilForAdd').each(function () {
+                    if (this.checked) {
+                        lstSelected += $(this).attr('modelId') + ',';
+                    }
+                });
+                if (lstSelected == '') {
+                    alert("Bạn hãy chọn ít nhất một người dùng!");
+                    return;
+                }
+
+                lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+                var ajaxParams = {
+                    url: "@Url.Action("AddCouncilToBid")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { lstCouncil: lstSelected, bidId: '@bidId' }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+            function SubmitListCouncilForAdd() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                SubmitListCouncilForAdd();
+                Forms.CompleteUI();
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

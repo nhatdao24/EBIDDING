@@ -1,0 +1,74 @@
+﻿@model SMO.Service.MD.VendorService
+@{
+    var frmFormCode = "frmVendorIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive font-13">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">Trạng thái</th>
+                <th>Tài khoản ebidding</th>
+                <th>Mã</th>
+                <th>Tên ngắn</th>
+                <th>Tên đầy đủ</th>
+                <th>Mã số thuế</th>
+                <th style="min-width: 250px;">Lĩnh vực chính</th>
+                <th>Khu vực</th>
+                <th>Tỉnh thành</th>
+                <th>Địa chỉ</th>
+                <th>Số điện thoại</th>
+                <th>Số FAX</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th style="min-width: 250px;">Liên hệ</th>
+                <th style="min-width: 250px;">Đơn vị từng giao dịch</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                <tr>
+                    <td class="align-center">
+                        @if (item.STATUS)
+                        {
+                            <span class="badge bg-blue">Đã tạo T.Khoản</span>
+                        }
+                        else
+                        {
+                            @Html.MyButton("cmdAdd", "Tạo tài khoản", string.Format("CreateAccount('{0}');", item.CODE), "Alt+N", "person_add", "border")
+                            @*@Html.MyButton("cmdAdd", "Tạo tài khoản", string.Format("Forms.LoadAjax('{0}');", @Url.Action("CreateUserContractor", "User", new { @area = "AD", vendorId = item.CODE })), "Alt+N", "person_add", "border")*@
+                        }
+                    </td>
+                    <td style="white-space: nowrap;">@item.USER_NAME</td>
+                    <td style="white-space: nowrap;">@item.CODE</td>
+                    <td style="white-space: nowrap;">@item.SHORT_NAME</td>
+                    <td style="white-space: nowrap;">@item.LONG_NAME</td>
+                    <td style="white-space: nowrap;">@item.MA_SO_THUE</td>
+                    <td>@item.LINH_VUC_CHINH</td>
+                    <td style="white-space: nowrap;">@item.KHU_VUC</td>
+                    <td style="white-space: nowrap;">@item.TINH_THANH</td>
+                    <td style="white-space: nowrap;">@item.DIA_CHI</td>
+                    <td style="white-space: nowrap;">@item.SO_DIEN_THOAI</td>
+                    <td style="white-space: nowrap;">@item.SO_FAX</td>
+                    <td style="white-space: nowrap;">@item.EMAIL</td>
+                    <td style="white-space: nowrap;">@item.WEBSITE</td>
+                    <td>@item.LIEN_HE</td>
+                    <td>@item.DON_VI_TUNG_GIAO_DICH</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>
+
+@{ Html.RenderPartial("Paging", Model); }

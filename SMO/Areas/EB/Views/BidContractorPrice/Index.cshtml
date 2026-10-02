@@ -1,0 +1,256 @@
+﻿@model SMO.Service.EB.BidContractorPriceService
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidContractor_Index";
+
+    var serviceBid = new SMO.Service.EB.BidService();
+    dynamic param = new System.Dynamic.ExpandoObject();
+    param.IsFetch_ListUser = true;
+    param.IsFetch_ListOrg = true;
+    serviceBid.Get(Model.ObjDetail.BID_ID, param);
+
+    var serviceBidCouncil = new SMO.Service.EB.BidCouncilService();
+    serviceBidCouncil.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidCouncil.Search();
+
+    var isUpdate = ViewBag.IsUpdate == "1" ? true : false;
+    var isTT = 2;
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+        @Html.HiddenFor(m => m.ObjDetail.ListFileDelete, new { id = "hddListFileDelete" })
+        @Html.HiddenFor(m => m.ViewId)
+        <input type="hidden" id="isUpdate" name="isUpdate" value="@ViewBag.IsUpdate" />
+
+        <div class="card border-grey">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">attach_money</i> BẢNG GIÁ CHÀO THẦU</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    @if (isUpdate)
+                    {
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @if (serviceBid.ObjDetail.GIAI_DOAN == "08")
+                                {
+
+                                    @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                                    @*if ((AuthorizeUtilities.CheckUserRightProject("RP320", serviceBid.ObjDetail.PROJECT_CODE).Item1 && serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG")))) > 0))
+                                        {
+                                            @Html.MyButton("cmdUpdate", "Cập nhật lại giá thương thảo", "SubmitListContractorPriceOfBid('1', null);", "Alt+S", "done_all")
+                                            @Html.MyButton("cmdUpdate", "Trình lại giá thương thảo", "SubmitListContractorPriceOfBid('1', '2');", "Alt+S", "done_all")
+
+                                        }*@
+                                    if ((serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG")))) > 0))
+                                    {
+                                        @Html.MyButton("cmdUpdate", "Cập nhật lại giá thương thảo", "SubmitListContractorPriceOfBid('1', null);", "Alt+S", "done_all")
+                                        @Html.MyButton("cmdUpdate", "Trình lại giá thương thảo", "SubmitListContractorPriceOfBid('1', '2');", "Alt+S", "done_all")
+
+                                    }
+
+                                }
+                                else
+                                {
+
+                                    @*ConfigViettinBank: Xoá phân quyền dự án*@
+
+                                    @*if ((AuthorizeUtilities.CheckUserRightProject("RP320", serviceBid.ObjDetail.PROJECT_CODE).Item1 && serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG")))) > 0))
+                                        {
+                                            @Html.MyButton("cmdUpdate", "Cập nhật lại giá thương thảo", "SubmitListContractorPriceOfBid('1');", "Alt+S", "done_all")
+                                        }*@
+                                    if ((serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && (x.VAI_TRO.Split(',').Contains("TDG")))) > 0))
+                                    {
+                                        @Html.MyButton("cmdUpdate", "Cập nhật lại giá thương thảo", "SubmitListContractorPriceOfBid('1');", "Alt+S", "done_all")
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @if ((serviceBid.ObjDetail.GIAI_DOAN == "08" || serviceBid.ObjDetail.GIAI_DOAN == "03" || serviceBid.ObjDetail.GIAI_DOAN == "02") &&
+                                    serviceBidCouncil.ObjList != null &&
+                                    (serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && (x.VAI_TRO != null && x.VAI_TRO.Split(',').Contains("TDG"))) > 0))
+                                {
+                                    @Html.MyButton("cmdEdit", "Chỉnh sửa bảng giá", "OnClickEditPrice();", "Alt+S", "edit")
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div style="display:none">
+        <div id="divTemplatePrice">
+            <div style="display: table; width: 100%;" id="div__Index">
+                <div style="display: table-cell">
+                    <input type="hidden" name="ObjList[_Index].BID_ID" value="_BID_ID" />
+                    <input type="hidden" name="ObjList[_Index].IS_DELETE" id="hddIsDelete__Index" />
+                    <input type="hidden" name="ObjList[_Index].CONTRACTOR_ID" value="_CONTRACTOR_ID" />
+                    <input type="hidden" name="ObjList[_Index].TYPE" value="_TYPE" />
+                    <input type="hidden" name="ObjList[_Index].C_ORDER" value="_Index" />
+                    <input type="hidden" name="ObjList[_Index].Index" value="_Index" />
+                    <label>Giá trị</label>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text"
+                                   data-inputmask="'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                   class="form-control inputMask" name="ObjList[_Index].PRICE" />
+                        </div>
+                    </div>
+
+                    <label>Ghi chú</label>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <input type="text" class="form-control" name="ObjList[_Index].NOTE" />
+                        </div>
+                    </div>
+                </div>
+                <div style="display: table-cell; vertical-align: middle; text-align: center">
+                    <i class="material-icons col-red" onclick="RemovePrice(this,'_Index');" style="cursor:pointer">remove_circle_outline</i>
+                </div>
+            </div>
+
+            <hr style="border-top: 1px solid rgba(22, 49, 94,1) !important" id="hr__Index" />
+            @*<div>
+                    <input type="hidden" name="ObjList[_Index].BID_ID" value="_BID_ID" />
+                    <input type="hidden" name="ObjList[_Index].CONTRACTOR_ID" value="_CONTRACTOR_ID" />
+                    <input type="text" class="form-control" name="ObjList[_Index].PRICE" />
+                    <input type="text" class="form-control" name="ObjList[_Index].TYPE" value="_TYPE" />
+                    <input type="text" class="form-control" name="ObjList[_Index].CURRENCY_CODE" />
+                    <input type="text" class="form-control" name="ObjList[_Index].NOTE" />
+                    <i class="material-icons col-red" onclick="RemovePrice(this,'_Index');" style="cursor:pointer">remove_circle_outline</i>
+                </div>*@
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function OnClickEditPrice() {
+            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("Index", "BidContractorPrice", new { @isUpdate = "1", @bidId = Model.ObjDetail.BID_ID}))', htmlTarget: '#divContentDetail' });
+        }
+
+        UploadFile.ListFile = [];
+
+        function RemoveFile(obj, fileId) {
+            if (!confirm("Bạn có chắc chắn xóa file này?")) {
+                return;
+            }
+            $(obj).parent().parent().parent().parent().remove();
+            $("#hddListFileDelete").val($("#hddListFileDelete").val() + "|" + fileId);
+        }
+
+        function AddPrice(type, contractorId) {
+            var html = $('#divTemplatePrice').html();
+            html = html.replace(/_Index/g, numberCurrent);
+            html = html.replace(/_BID_ID/g, '@Model.ObjDetail.BID_ID');
+            html = html.replace(/_CONTRACTOR_ID/g, contractorId);
+            html = html.replace(/_TYPE/g, type);
+            if (type == "1") {
+                $("#divGiaHieuChinh_" + contractorId).append(html);
+            } else {
+                $("#divGiaThuongThao_" + contractorId).append(html);
+            }
+            $(".inputMask").inputmask();
+
+            numberCurrent++;
+        }
+
+        function RemovePrice(obj, index) {
+            $("#div_" + index ).hide();
+            $("#hr_" + index ).hide();
+            $("#hddIsDelete_" + index).val("1");
+        }
+
+        function SubmitListContractorPriceOfBid(isUpdate, isTT) {
+            debugger;
+            $("#@Model.ViewId #isUpdate").val(isUpdate);
+            $(".inputMask").inputmask('remove');
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+            formData.append('isTT', isTT);
+            for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                $.each($(".contractorId"), function () {
+                    if (UploadFile.ListFile[i].FileGroup == "file_" + $(this).val()) {
+                        formData.append($(this).val(), UploadFile.ListFile[i].DataFile);
+                    }
+                });
+
+            }
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+            $.ajax({
+                xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                type: "POST",
+                url: "@Url.Action("List")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    if (response.Data === "2") {
+                        setTimeout(() => {
+                            $('#mnuBidContractorPrice').click();
+                        }, 1500);
+                    } else {
+                        setTimeout(() => {
+                            $('#mnuBidContractorPrice').click();
+                        }, 1500);
+                    }
+                    $(".inputMask").inputmask('integer', { min: 0 });
+
+                    Forms.CompleteUI();
+
+                },
+                error: Forms.AjaxErrorHandler
+            });
+
+        }
+
+        $(function () {
+            $(".inputMask").inputmask('integer', { min: 0});
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

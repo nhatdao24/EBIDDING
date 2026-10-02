@@ -1,0 +1,46 @@
+﻿@model SMO.Service.EB.ContractorLocationService
+@{
+    var frmCode = "frm_ContractorLocation_Index";
+
+}
+<div class="table-responsive font-13">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("lblQuocGia", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblEmail", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblPhone", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblAddress", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.COUNTRY_CODE))
+            {
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.PKID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjaxModal({0});", param);
+                if (Model.IsViewOnly)
+                {
+                    vdbclickAction = "";
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @if (item.Country != null)
+                        {
+                            @item.Country.TEXT
+                        }
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.EMAIL</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.PHONE
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.ADDRESS
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

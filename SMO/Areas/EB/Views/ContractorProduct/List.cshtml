@@ -1,0 +1,20 @@
+﻿@model SMO.Service.EB.ContractorProductService
+@{ 
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+@foreach (var item in Model.ObjList.OrderBy(x => x.PRODUCT_CODE))
+{
+    if (lang == "vi")
+    {
+        <span class="badge bg-blue">@item.Product.TEXT</span>
+    }
+    else
+    {
+        <span class="badge bg-blue">@item.Product.TEXT_EN</span>
+    }
+}

@@ -1,0 +1,221 @@
+﻿@model SMO.Service.EB.BidInternalQuestionService
+@using SMO.Service.EB
+@using SMO.Service.CF
+@using SMO.Repository.Implement.AD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    List<string> lstUserName = new List<string>();
+    var serviceBidCouncil = new BidCouncilService();
+    serviceBidCouncil.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidCouncil.Search();
+
+    lstUserName.AddRange(serviceBidCouncil.ObjList.Select(x => x.USER_NAME).ToList());
+
+    var serviceBid = new BidService();
+    serviceBid.Get(Model.ObjDetail.BID_ID);
+    lstUserName.Add(serviceBid.ObjDetail.CREATE_BY);
+    lstUserName.Add(serviceBid.ObjDetail.USER_MANAGE);
+    lstUserName.Add(serviceBid.ObjDetail.USER_APPROVE);
+
+    var ListUser = Model.UnitOfWork.Repository<UserRepo>().Queryable().Where(x => lstUserName.Contains(x.USER_NAME)).ToList();
+
+    var frmCode = "frm_BidInternalQuestion_CreateEmail";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("CreateEmail", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="hddBidId" name="bidId" value="@Model.ObjDetail.BID_ID" />
+            <input type="hidden" name="listCouncil" value="" id="hddListCouncil" />
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">email</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdCreate", LanguageUtilities.LangText("cmdCreate", frmCode), "CreateEmail();", "Alt+N", "send")
+                                @Html.MyButton("cmdFileEmailInternal", @LanguageUtilities.LangText("cmdFileEmailInternal", frmCode), "UploadFile.InsertFile('#divPreviewFileEmailInternal','fileEmailInternal');", "Chọn file", "attach_file")
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="m-b-10">
+                                <label>@LanguageUtilities.LangText("lblChonNguoiGui", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-sm-6">
+                                <input checked onclick="OnCheckAll(this);" type="checkbox" class="filled-in" name="chkALLContractor" id="chkALLContractor_@Model.ViewId" style="margin:0;" />
+                                <label for="chkALLContractor_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            @foreach (var item in ListUser.Where(x => x.USER_NAME != ProfileUtilities.User.USER_NAME).ToList())
+                            {
+                                <div class="col-xs-12 col-sm-6">
+                                    <input checked onclick="OnChangeUser(this);" type="checkbox" class="filled-in chkContractor" value="@item.USER_NAME" id="chkItem_@Model.ViewId@item.USER_NAME" style="margin:0;" />
+                                    <label for="chkItem_@Model.ViewId@item.USER_NAME"></label> &nbsp; &nbsp; <span>@item.FULL_NAME <div class="col-blue-grey font-12 m-l-35 ">@item.EMAIL</div></span>
+
+                                </div>
+                            }
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        <div>
+                            <div id="divPreviewFileEmailInternal">
+
+                            </div>
+
+                            <div class="form-group">
+                                <label>@LanguageUtilities.LangText("lblTieuDe", frmCode)</label>
+                                <div class="form-line">
+                                    <input name="subject" id="txtSubject" type="text" class="form-control" value="Trao đổi nội bộ gói thầu [@serviceBid.ObjDetail.PKID - @serviceBid.ObjDetail.TEN_GOI_THAU]" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>@LanguageUtilities.LangText("lblNoiDung", frmCode)</label>
+                                <div class="form-line">
+                                    <textarea name="content" id="txtContent"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function OnCheckAll(obj) {
+                $('#@Model.ViewId .chkContractor:checkbox').prop('checked', $(obj).is(':checked'));
+                OnChangeUser();
+            }
+
+            function OnChangeUser(obj) {
+                if (obj != null && $(obj).is(':checked') == false) {
+                    $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+                }
+
+                $("#@Model.ViewId .clsContractor").hide();
+
+                var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                    arr.push($(this).val());
+                });
+
+                if (arr.length == 0) {
+                    return;
+                    //$(".clsContractor").show();
+                }
+
+                $.each(arr, function (key, value) {
+                    $("#@Model.ViewId .clsContractor_" + value).show();
+                });
+            }
+
+            @*function CreateEmail() {
+                var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                    arr.push($(this).val());
+                });
+
+                if (arr.length == 0) {
+                    alert("Bạn cần chọn ít nhất một người nhận email!");
+                    return;
+                }
+                $("#txtContent").val(CKEDITOR.instances.txtContent.getData());
+                $("#hddListCouncil").val(arr.join("|"));
+                Forms.SubmitForm('@Model.FormId');
+            }*@
+
+            function CreateEmail() {
+                var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                    arr.push($(this).val());
+                });
+
+                if (arr.length == 0) {
+                    alert("Bạn cần chọn ít nhất một người nhận email!");
+                    return;
+                }
+                $("#txtContent").val(CKEDITOR.instances.txtContent.getData());
+                $("#hddListCouncil").val(arr.join("|"));
+                var formData = new FormData($('#@Model.FormId')[0]);
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    if (UploadFile.ListFile[i].FileGroup == "fileEmailInternal") {
+                        formData.append("files", UploadFile.ListFile[i].DataFile);
+                    }
+                }
+
+                Forms.ShowLoading();
+
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    type: "POST",
+                    url: "@Url.Action("CreateEmail")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        UploadFile.ClearFile("fileEmailInternal");
+                        Message.execute(response);
+                        $("#btnClose").click();
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            $(function () {
+                CKEDITOR.replace('txtContent', {
+                    //toolbar: 'Basic'
+                    filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+                });
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+

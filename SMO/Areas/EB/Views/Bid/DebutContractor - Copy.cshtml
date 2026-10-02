@@ -1,0 +1,153 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Service.EB
+@using SMO.Service
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.MD;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var serviceSpec = new BidSpecService();
+    serviceSpec.ObjDetail.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.ObjSpecContractor.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.GetListViewSpecScore();
+
+    var lstScore = new List<T_EB_CONTRACTOR_SCORE>();
+
+    foreach (var item in Model.ObjDetail.ListContractor)
+    {
+        var sumSystemScore = serviceSpec.ObjListSpecSystemScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        var sumUserScore = serviceSpec.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        lstScore.Add(new T_EB_CONTRACTOR_SCORE()
+        {
+            BidContractor = item,
+            SYSTEM_SCORE = sumSystemScore,
+            USER_SCORE = sumUserScore
+        });
+    }
+
+    var lstMDRating = Model.UnitOfWork.Repository<MdRatingRepo>().GetAll();
+
+    var frmCode = "frm_Bid_DebutContractor";
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("UpdateDebutContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.PKID)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdSelect", LanguageUtilities.LangText("cmdSelect", frmCode), "Submit();", "Alt+N", "done_all")
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped font-13">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>@LanguageUtilities.LangText("thNhaThau", frmCode)</th>
+                                        <th class="align-center">@LanguageUtilities.LangText("thDiemHoiDong", frmCode)</th>
+                                        <th class="align-center">@LanguageUtilities.LangText("thDiemHeThong", frmCode)</th>
+                                        <th class="align-center">@LanguageUtilities.LangText("thGiaTT", frmCode)</th>
+                                        <th class="align-center" style="min-width:100px;">@LanguageUtilities.LangText("thDonVi", frmCode)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in lstScore.OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+                                    {
+                                        var index = Model.ObjDetail.ListContractor.IndexOf(item.BidContractor);
+
+                                        <tr>
+                                            <td>
+                                                @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].PKID)
+                                                @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].BID_ID)
+                                                @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].CONTRACTOR_ID)
+                                                @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].STATUS)
+                                                @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].IS_WINNING)
+                                                <input type="checkbox" class="filled-in" id="chkItem_@Model.ViewId@index" style="margin:0;" @(item.BidContractor.IS_SELECTED ? "checked" : "" ) onchange="$('#hdd_@Model.ViewId@index').val($(this).is(':checked'));" />
+                                                <label for="chkItem_@Model.ViewId@index"></label>
+                                                <input id="hdd_@Model.ViewId@index" name="ObjDetail.ListContractor[@index].IS_SELECTED" type="hidden" value="@(item.BidContractor.IS_SELECTED ? "true" : "false" )">
+                                            </td>
+                                            <td>
+                                                <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                                                <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                                            </td>
+                                            <td class="align-center">
+                                                @item.USER_SCORE.ToStringVN()
+                                                @*@serviceSpec.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY)*@
+                                            </td>
+                                            <td class="align-center">
+                                                @item.SYSTEM_SCORE.ToStringVN()
+                                                @*@serviceSpec.ObjListSpecSystemScore.Where(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY)*@
+                                            </td>
+                                            <td>
+                                                <div class="form-group" style="margin-bottom:0;">
+                                                    <div class="form-line">
+                                                        @Html.MyTextBoxFor(m => Model.ObjDetail.ListContractor[index].PRICE, new { @class = "inputMask", @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true" })
+                                                    </div>
+                                                    @Html.ValidationMessageFor(m => Model.ObjDetail.ListContractor[index].PRICE)
+                                                </div>
+                                            </td>
+                                            <td style="vertical-align:middle; padding-top: 11px;">
+                                                <select data-virtual-scroll="false" data-container="body" name="@Html.NameFor(m => Model.ObjDetail.ListContractor[index].CURRENCY_CODE)"
+                                                        data-live-search="true" data-show-subtext="false"
+                                                        class="selectpicker show-tick dropdown form-control">
+                                                    @foreach (var unit in SelectListUtilities.GetCurrency(false))
+                                                    {
+                                                        var select = "";
+                                                        if (unit.Value == Model.ObjDetail.ListContractor[index].CURRENCY_CODE)
+                                                        {
+                                                            select = "selected";
+                                                        }
+                                                        <option value="@unit.Value" @select>
+                                                            @unit.Text
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function Submit() {
+                $(".inputMask").inputmask('remove');
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                $(".inputMask").inputmask();
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

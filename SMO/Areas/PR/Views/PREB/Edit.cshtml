@@ -1,0 +1,455 @@
+﻿@model SMO.Service.PR.PREBService
+@using SMO.Core.Entities
+@using Newtonsoft.Json
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_UNIT" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_CURRENCY" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_RENT_UNIT" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_SCOPE" });
+
+
+
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    List<T_MD_UNIT> lstUnit = UtilsCore.ConvertDataToListExtends<T_MD_UNIT>(dsResult.Tables["T_MD_UNIT"]);
+    List<SMO.Core.Entities.MD.T_MD_RENT_UNIT> lstRent = UtilsCore.ConvertDataToListExtends<SMO.Core.Entities.MD.T_MD_RENT_UNIT>(dsResult.Tables["T_MD_RENT_UNIT"]);
+    List<T_MD_SCOPE> lstScope = UtilsCore.ConvertDataToListExtends<T_MD_SCOPE>(dsResult.Tables["T_MD_SCOPE"]);
+
+    List<T_MD_CURRENCY> lstCurrency = UtilsCore.ConvertDataToListExtends<T_MD_CURRENCY>(dsResult.Tables["T_MD_CURRENCY"]);
+    var frmCode = "frm_PREB_Edit";
+
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+    @Html.HiddenFor(m => m.ObjHeader.IS_RENT, new { @data_bind = "value: ObjHeader.IS_RENT", @id = "hddIsRent" })
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">edit</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdBack", LanguageUtilities.LangControl("cmdBack", frmCode), string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                                @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "Submit();", "Lưu thông tin", "save")
+                            </div>
+                        </div>
+
+                        <div id="divDetail" class="m-t-20">
+                            <div class="m-b-10">
+                                <span class="waves-effect btn-outline-primary btn" onclick="ShowDialogMaterial();">
+                                    <span>@LanguageUtilities.LangText("cmdAddItem", frmCode)</span>
+                                </span>
+                                <div style="float:right;">
+                                    @if (Model.ObjHeader.IS_RENT)
+                                    {
+                                        <input type="checkbox" checked id="chkIsRent_@Model.ViewId" onchange="OnChangeIsRent(this);" style="margin:0;" class="filled-in" />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" id="chkIsRent_@Model.ViewId" onchange="OnChangeIsRent(this);" style="margin:0;" class="filled-in" />
+                                    }
+                                    <label for="chkIsRent_@Model.ViewId"></label> &nbsp;&nbsp;<b>Có hàng hóa cho thuê</b>
+                                </div>
+                            </div>
+                            <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                <table class="table table-condensed font-13" style="margin-bottom:0px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 50px">Mã hàng hóa</th>
+                                            <th style="min-width: 50px" class="align-left">Hàng hóa</th>
+                                            <th style="min-width: 200px" class="align-left">Công việc</th>
+                                            <th width="100px" class="align-center rentUnit">Thời gian thuê</th>
+                                            <th width="100px" class="align-center rentUnit">Đơn vị thời gian</th>
+                                            <th width="150px" class="align-center">Số lượng</th>
+                                            <th width="100px" class="align-center">Đơn vị tính</th>
+                                            <th width="100px" class="align-center">Ghi chú</th>
+                                            <th width="10px" class="align-center">#</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="template: { name: 'RowDetailTemplate', foreach: ObjListDetail }"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 p-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <label>@LanguageUtilities.LangText("lblMaPR", frmCode)</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.CODE, new { @data_bind = "value: ObjHeader.CODE", @disabled = "" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjHeader.CODE)
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblTenPR", frmCode)</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.REQUIRE_NAME, new {@id = "REQUIRE_NAME", @data_bind = "value: ObjHeader.REQUIRE_NAME" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjHeader.REQUIRE_NAME)
+                        </div>
+
+                        <label>Dự án</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_CODE, SelectListUtilities.GetProjectOfUser(), new {@id = "PROJECT_CODE", @data_bind = "value: ObjHeader.PROJECT_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            @Html.ValidationMessageFor(m => m.ObjHeader.PROJECT_CODE)
+                        </div>
+
+                        <label>Gói thầu</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.PACKAGE_CODE, SelectListUtilities.GetAllPackage(), new { @data_bind = "value: ObjHeader.PACKAGE_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                        </div>
+
+                        <label>Phạm vi công việc</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.SCOPE_TYPE_CODE, SelectListUtilities.GetScopeType(), new { @data_bind = "value: ObjHeader.SCOPE_TYPE_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                        </div>
+
+                        <label>Loại hình</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.BID_TYPE_CODE, SelectListUtilities.GetBidType("vi", true), new { @data_bind = "value: ObjHeader.BID_TYPE_CODE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblNgayYeuCau", frmCode)</label>
+                        <div class="input-group form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.REQUIRE_DATE, new { @id = "REQUIRE_DATE", @data_bind = "value: ObjHeader.REQUIRE_DATE", @class = "datepicker" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjHeader.REQUIRE_DATE)
+                            <span class="input-group-addon" style="padding-right: 0;">
+                                <i class="material-icons col-fecon">date_range</i>
+                            </span>
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblThoiHan", frmCode)</label>
+                        <div class="input-group form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjHeader.DESTINATION_DATE, new { @id = "DESTINATION_DATE", @data_bind = "value: ObjHeader.DESTINATION_DATE", @class = "datepicker" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjHeader.DESTINATION_DATE)
+                            <span class="input-group-addon" style="padding-right: 0;">
+                                <i class="material-icons col-fecon">date_range</i>
+                            </span>
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.USER_APPROVE, SelectListUtilities.GetUserApproveProject("RP107", Model.ObjHeader.PROJECT_CODE), new { @id = "USER_APPROVE_PR", @data_bind = "value: ObjHeader.USER_APPROVE", @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            @Html.ValidationMessageFor(m => m.ObjHeader.USER_APPROVE)
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblMoTa", frmCode)</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjHeader.DESCRIPTION, new { @data_bind = "value: ObjHeader.DESCRIPTION" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-grey">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> HỒ SƠ ĐÍNH KÈM</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div>
+                            @Html.MyButton("cmdFileHoSo", "Chọn file", "UploadFile.InsertFile();", "Chọn file hồ sơ", "attach_file")
+                        </div>
+
+                        <div id="divPreviewFile" class="m-t-10">
+
+                        </div>
+
+                        <hr />
+
+                        @{Html.RenderPartial("ListFile", Model.ObjHeader.ListFile.Select(x => x.File).OrderBy(x => x.FILE_OLD_NAME).ToList(), new ViewDataDictionary { new KeyValuePair<string, object>("isRemoveFile", true) });}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/html" id="RowDetailTemplate">
+        <tr>
+            <td style="vertical-align:middle;">
+                <span data-bind="text: MATERIAL_CODE"></span>
+            </td>
+            <td style="vertical-align:middle;">
+                <span data-bind="text: MATERIAL_TEXT"></span>
+            </td>
+            <td style="vertical-align:middle; padding-top: 11px;">
+                <select data-virtual-scroll="false" data-container="body"
+                        data-bind="value: SCOPE_CODE" data-live-search="true" data-show-subtext="false"
+                        class="selectpicker show-tick dropdown form-control">
+                    <option value="">-</option>
+                    @foreach (var scope in lstScope)
+                    {
+                        <option value="@scope.CODE">
+                            [@scope.CODE] @scope.TEXT
+                        </option>
+                    }
+                </select>
+            </td>
+
+            <td style="vertical-align:middle;" class="rentUnit">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="text" data-bind="value: TIME_RENT, inputmask:{'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true}" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+
+            <td style="vertical-align:middle; padding-top: 11px;" class="rentUnit">
+                <select data-virtual-scroll="false" data-container="body"
+                        data-bind="value: RENT_UNIT_CODE" data-live-search="true" data-show-subtext="false"
+                        class="selectpicker show-tick dropdown form-control">
+                    <option value="">-</option>
+                    @foreach (var rent in lstRent)
+                    {
+                        <option value="@rent.CODE">
+                            @rent.TEXT
+                        </option>
+                    }
+                </select>
+            </td>
+
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input id="Luong" type="text" data-bind="value: QUANTITY, inputmask:{'alias': 'decimal', 'groupSeparator': '.', 'radixPoint' :',', 'autoGroup': true, 'autoUnmask': true}" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle; padding-top: 11px;">
+                <select data-virtual-scroll="false" data-container="body"
+                        data-bind="value: UNIT_CODE" data-live-search="true" data-show-subtext="false"
+                        class="selectpicker show-tick dropdown form-control">
+                    <option value="">-</option>
+                    @foreach (var unit in lstUnit)
+                    {
+                        <option value="@unit.CODE">
+                            @unit.TEXT
+                        </option>
+                    }
+                </select>
+            </td>
+
+            <td style="vertical-align:middle;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="text" data-bind="value: NOTE" class="form-control align-center" />
+                    </div>
+                </div>
+            </td>
+
+            <td style="vertical-align:middle;">
+                <i class="material-icons col-red" onclick="RemoveDetail(this);" data-bind="attr: {order : ORDER}" style="cursor:pointer">remove_circle_outline</i>
+            </td>
+        </tr>
+    </script>
+
+    <script src="~/Scripts/PO/ko.model.PREB.js"></script>
+    <script type="text/javascript">
+        UploadFile.ListFile = [];
+
+        function OnChangeIsRent(obj) {
+            var checked = $(obj).is(":checked");
+            $("#hddIsRent").val(checked);
+            model.ObjHeader.IS_RENT(checked);
+            $(".rentUnit").hide();
+            if (checked) {
+                $(".rentUnit").show();
+            }
+        }
+
+        function ReloadIsRent() {
+            $(".rentUnit").hide();
+            if ($("#hddIsRent").val().toString() == "true") {
+                $(".rentUnit").show();
+            }
+        }
+
+        function RemoveFile(obj, fileId) {
+            if (!confirm("Bạn có chắc chắn xóa file này?")) {
+                return;
+            }
+            $(obj).parent().parent().parent().parent().remove(); 
+            model.ObjHeader.ListFileDelete.push(fileId);
+        }
+
+
+        function ShowDialogMaterial(){
+            var roleCode = '@Model.ObjDetail.CODE';
+            var params = {
+                url : "@Url.Action("AddMaterial")"
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function Submit() {
+            const startDateStr = $('#REQUIRE_DATE').val().trim();
+            const endDateStr = $('#DESTINATION_DATE').val().trim();
+
+            function convertDateFormat(dateStr) {
+                const parts = dateStr.split('/');
+                if (parts.length !== 3) {
+                    return null; 
+                }
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+
+            const formattedStartDate = convertDateFormat(startDateStr);
+            const formattedEndDate = convertDateFormat(endDateStr);
+
+            var requireDate = new Date(formattedStartDate);
+            var destinationDate = new Date(formattedEndDate);
+
+            if (startDateStr.length == 0) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Ngày yêu cầu không được để trống !" } });
+                return;
+            }
+            if (endDateStr.length == 0) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Ngày nhận hàng/thi công không được để trống !" } });
+                return;
+            }
+
+             if ($('#USER_APPROVE_PR').val() == '') {
+                 Message.func.AlertDanger({ Message: { Code: "", Message: "Chưa có người phê duyệt !" } });
+                 return;
+             }
+
+            if (requireDate.getTime() > destinationDate.getTime()) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Ngày yêu cầu phải nhỏ hơn ngày nhận hàng/thi công!" } });
+                return;
+            }
+
+            if (model.ObjListDetail().length == 0) {
+                Message.func.AlertDanger({Message : {Code : "", Message : "Chưa có thông tin các item !"}});
+                return;
+            }
+            if ($('#REQUIRE_NAME').val().trim() === '') {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Tên PR không được để trống !" } });
+                return;
+            }
+            if ($('#PROJECT_CODE').val().trim() === '') {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Bạn chưa chọn dự án !" } });
+                return;
+            }
+
+            IsChange = false;
+            model.ViewId = '@ViewBag.ViewIdDetail';
+
+             var formData = new FormData();
+             Forms.AppendFormdata(formData, ko.toJS(model));
+
+
+             for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                 formData.append("files", UploadFile.ListFile[i].DataFile);
+             }
+
+             Forms.ShowLoading();
+             var headers = {
+                 'RequestVerificationToken': $('#antiForgeryToken').val(),
+             };
+
+            $.ajax({
+                 xhr: function () {
+                     var xhr = new window.XMLHttpRequest();
+
+                     xhr.upload.addEventListener("progress", function (evt) {
+                         if (evt.lengthComputable) {
+                             var percentComplete = evt.loaded / evt.total;
+                             percentComplete = parseInt(percentComplete * 100);
+                             console.log(percentComplete);
+
+                             if (percentComplete === 100) {
+                                 //alert("kakalot");
+                             }
+                         }
+                     }, false);
+
+                     return xhr;
+                 },
+                 type: "POST",
+                 url: "@Url.Action("Update")",
+                 data: formData,
+                 headers: headers,
+                 contentType: false,
+                 processData: false,
+                 success: function (response) {
+                     Message.execute(response);
+                     try {
+                         SubmitIndex();
+                     } catch (e) {
+
+                     }
+                     Forms.LoadAjax('@Url.Action("Detail", new { id = Model.ObjHeader.CODE})');
+                     Forms.Close('@ViewBag.ViewIdDetail');
+                     Forms.Close('@Model.ViewId');
+                     Forms.AjaxLoadSuccessHandler(response);
+                     Forms.HideLoading();
+                 },
+                 error: Forms.AjaxErrorHandler
+             });
+        };
+
+        var number = 1;
+        var model = new Model();
+        var lstDetail = @Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader.ListDetail, serializerSetting));
+        lstDetail.sort(function (a, b) {
+            return a.ITEM_NUMBER - b.ITEM_NUMBER;
+        });
+        $.each(lstDetail, function () {
+            model.ObjListDetail.push(new Detail(number, this.MATERIAL_CODE, this.Material?.TEXT ?? '', this.QUANTITY, this.UNIT_CODE, this.PRICE,this.CURRENCY_CODE, this.SCOPE_CODE, this.Scope?.TEXT ?? '', this.TIME_RENT ?? '', this.RENT_UNIT_CODE ?? '', this.NOTE ?? ''));
+            number = number + 1;
+        });
+
+        @{
+            Model.ObjHeader.ListDetail = null;
+            Model.ObjHeader.ListBidRequirePR = null;
+            Model.ObjHeader.UserApprove = null;
+            Model.ObjHeader.UserSent = null;
+        }
+        var Header = ko.mapping.fromJS(@Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader, serializerSetting )));
+        Header.REQUIRE_DATE(ConvertDateInJson(Header.REQUIRE_DATE()));
+        Header.DESTINATION_DATE(ConvertDateInJson(Header.DESTINATION_DATE()));
+        model.ObjHeader = Header;
+        model.ObjHeader.ListFileDelete = ko.observableArray([]);
+
+        $(function () {
+            ko.applyBindings(model, document.getElementById('@Model.ViewId'));
+            CheckChange(model);
+            Forms.CompleteUI();
+            IsChange = false;
+            ReloadIsRent();
+        });
+    </script>
+</div>

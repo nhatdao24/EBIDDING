@@ -1,0 +1,55 @@
+﻿@model SMO.Service.MD.FAQQuestionService
+@{
+    var number = 0;
+}
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive font-13">
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="align-center" style="width: 50px;">STT</th>
+                <th style="width: 50%">Câu hỏi</th>
+                <th style="width: 50%">Câu trả lời</th>
+                <th class="align-center" style="width: 50px;">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.STATUS).ThenByDescending(x => x.CREATE_DATE))
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.PKID }));
+                <tr>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@number</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">
+                            <div>Người hỏi: @item.NAME</div>
+                            <div>Email: @item.EMAIL</div>
+                            <div>Ngày Feedback: @item.CREATE_DATE.Value</div>
+                            <b>@item.SUBJECT</b>
+                            <div class="col-blue-grey">@item.CONTENTS</div>
+                        </a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @if (item.STATUS)
+                        {
+                            <div>@Html.Raw(item.ANSWER)</div>
+                            <div>Ngày trả lời: @item.UPDATE_DATE.Value</div>
+                        }
+                        else
+                        {
+                            <span class="badge bg-red">Chưa trả lời</span>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @Html.MyButton("cmdTraloi", "Trả lời", vdbclickAction, "", "reply", "border")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

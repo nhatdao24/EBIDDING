@@ -1,0 +1,125 @@
+﻿@model SMO.Service.EB.ContractorScopeService
+@using System.Linq
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var serviceScopeType = new SMO.Service.MD.ScopeTypeService();
+    serviceScopeType.GetAll();
+    var serviceScope = new SMO.Service.MD.ScopeService();
+    serviceScope.GetAll();
+    var frmCode = "frm_ContractorScope_Edit";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                            </div>
+                        </div>
+
+                        <div class="row m-t-20">
+                            <div class="col-xs-12">
+                                <select name="@Html.NameFor(m => m.ObjDetail.SCOPE_CODE)" id="dllScope" onchange="ShowText2();"
+                                        multiple="multiple" required title="Trường này bắt buộc nhập (required)">
+                                    @foreach (var item in serviceScopeType.ObjList.OrderBy(x => x.TEXT))
+                                    {
+                                        var lstScope = serviceScope.ObjList.Where(x => x.TYPE_CODE == item.CODE).ToList();
+                                        var lstScopeID = new List<string>();
+
+                                        if (!string.IsNullOrEmpty(Model.ObjDetail.SCOPE_CODE))
+                                        {
+                                            lstScopeID = Model.ObjDetail.SCOPE_CODE.Split(',').ToList();
+                                        }
+
+                                        <optgroup label="@item.TEXT">
+                                            @if (lstScopeID.Count > 0 && lstScopeID.Contains(item.CODE))
+                                            {
+                                                <option value="@item.CODE" selected>@item.TEXT</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.CODE">@item.TEXT</option>
+                                            }
+                                        </optgroup>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            $(function () {
+                $('#dllScope').multiSelect({
+                    selectableHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+                    selectionHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+                    afterInit: function (ms) {
+                        var that = this,
+                            $selectableSearch = that.$selectableUl.prev(),
+                            $selectionSearch = that.$selectionUl.prev(),
+                            selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
+                            selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
+
+                        that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+                            .on('keydown', function (e) {
+                                if (e.which === 40) {
+                                    that.$selectableUl.focus();
+                                    return false;
+                                }
+                            });
+
+                        that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+                            .on('keydown', function (e) {
+                                if (e.which == 40) {
+                                    that.$selectionUl.focus();
+                                    return false;
+                                }
+                            });
+                    },
+                    afterSelect: function () {
+                        this.qs1.cache();
+                        this.qs2.cache();
+                    },
+                    afterDeselect: function () {
+                        this.qs1.cache();
+                        this.qs2.cache();
+                    }
+                });
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

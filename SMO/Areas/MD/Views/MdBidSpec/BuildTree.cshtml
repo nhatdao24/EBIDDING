@@ -1,0 +1,20 @@
+﻿<input type="hidden" id="hddParentSpec" value="" />
+<ul id="treeSpec" class="ztree"></ul>
+
+<script type="text/javascript">
+    var zNodesSpec = jQuery.parseJSON('@Html.Raw(ViewBag.zNodeSpec)');
+    $(function () {
+        $.fn.zTree.init($("#treeSpec"), settingSpec, zNodesSpec);
+        var zTreeSpec = $.fn.zTree.getZTreeObj("treeSpec");
+        setTimeout(function () {
+            var selected = "@ViewBag.SpecSelected";
+            if (selected != null && selected !== "") {
+                var node = zTreeSpec.getNodesByParam("id", selected, null);
+                if (node != null) {
+                    $("#hddParentSpec").val(node[0].pId);
+                    zTree.selectNode(node[0]);
+                }
+            }
+        }, 500);
+    });
+</script>

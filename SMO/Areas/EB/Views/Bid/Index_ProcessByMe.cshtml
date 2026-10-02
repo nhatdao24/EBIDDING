@@ -1,0 +1,201 @@
+﻿@model SMO.Service.EB.BidService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_Index_ProcessByMe";
+
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List_ProcessByMe", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.GIAI_DOAN, new { id = "hddGiaiDoan" })
+        <div class="card border-grey">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist" id="ulBidIndex">
+                    <li role="presentation" class="active" style="cursor: pointer;" onclick="$('#hddGiaiDoan').val('01'); OnClickTab(this)">
+                        <a><i class="material-icons col-fecon">playlist_add_check</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a>
+                    </li>
+                    <li role="presentation" style="cursor: pointer;" onclick="$('#hddGiaiDoan').val('02'); OnClickTab(this)">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">playlist_play</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                    </li>
+                    <li role="presentation" style="cursor: pointer;" onclick="$('#hddGiaiDoan').val('08'); OnClickTab(this)">
+                        <a><i class="material-icons col-fecon">stop</i> @LanguageUtilities.LangText("lblTitle4", frmCode)</a>
+                    </li>
+                    <li role="presentation" style="cursor: pointer;" onclick="$('#hddGiaiDoan').val('05'); OnClickTab(this)">
+                        <a><i class="material-icons col-fecon">lock</i> @LanguageUtilities.LangText("lblTitle3", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        @*<div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdAdd", "Thêm mới", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create")), "Alt+N", "add")
+                            </div>*@
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.TEN_GOI_THAU, new { placeholder = LanguageUtilities.LangText("lblPlaceHolder", frmCode), @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Tìm theo các chỉ tiêu khác" id="spShowMore" onclick="$('#spHideMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_more</i>
+                            </span>
+                            <span class="input-group-addon" title="Ẩn các chỉ tiêu tìm kiếm khác" style="display:none;" id="spHideMore" onclick="$('#spShowMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_less</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="page-search-advance row m-l-0 m-r-0 m-b-10" style="display:none;">
+                        @*<div class="col-md-4 col-xs-12">
+                                <label>@LanguageUtilities.LangText("lblNgayTao", frmCode)</label>
+                                <div class="input-group form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.CREATE_DATE, new { @class = "datepicker", @data_val = false })
+                                    </div>
+                                    <span class="input-group-addon">
+                                        <i class="material-icons">date_range</i>
+                                    </span>
+                                </div>
+                            </div>*@
+
+                        <div class="col-md-4 col-xs-12">
+                            <label>@LanguageUtilities.LangText("lblNguoiTrinh", frmCode)</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.CREATE_BY, SelectListUtilities.GetAllUserFecon(true), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @data_val = false })
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-xs-12">
+                            <label>@LanguageUtilities.LangText("lblDuAn", frmCode)</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_CODE, SelectListUtilities.GetAllProject(true), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @data_val = false })
+                            </div>
+                        </div>d
+
+                        <div class="clearfix"></div>
+
+                        <div class="col-md-4 col-xs-12 input-daterange">
+                            <label>@LanguageUtilities.LangText("lblNgayTao", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line" style="float:left; width: 49%; margin-right:2px;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FROM_DATE, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblFrom", frmCode), @autocomplete = "off" })
+                                </div>
+                                <div class="form-line" style="float:left; width: 49%;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TO_DATE, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblTo", frmCode), @autocomplete = "off" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-xs-12 input-daterange">
+                            <label>@LanguageUtilities.LangText("lblNgayMoThau", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line" style="float:left; width: 49%; margin-right:2px;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FROM_DATE_NGAY_MO_THAU, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblFrom", frmCode), @autocomplete = "off" })
+                                </div>
+                                <div class="form-line" style="float:left; width: 49%;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TO_DATE_NGAY_MO_THAU, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblTo", frmCode), @autocomplete = "off" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-xs-12 input-daterange">
+                            <label>@LanguageUtilities.LangText("lblNgayDongThau", frmCode)</label>
+                            <div class="form-group">
+                                <div class="form-line" style="float:left; width: 49%; margin-right:2px;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FROM_DATE_NGAY_DONG_THAU, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblFrom", frmCode), @autocomplete = "off" })
+                                </div>
+                                <div class="form-line" style="float:left; width: 49%;">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TO_DATE_NGAY_DONG_THAU, new { @data_val = false, @placeholder = LanguageUtilities.LangText("lblTo", frmCode), @autocomplete = "off" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        @*ConfigViettinBank: Bỏ dự án*@
+
+                        @*<div class="col-md-3 col-xs-12">
+                                <label>Dự án</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_CODE, SelectListUtilities.GetProjectOfUser(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                </div>
+                            </div>*@
+
+                        <div class="col-md-3 col-xs-12">
+                            <label>Gói thầu</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.PACKAGE_CODE, SelectListUtilities.GetAllPackage(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-xs-12">
+
+                            @*ConfigViettinBank: Phạm vi công việc -> Phân loại HHDV*@
+
+                            <label>Phân loại HHDV</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.SCOPE_TYPE_CODE, SelectListUtilities.GetScopeType(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                            </div>
+                        </div>
+
+                        @*ConfigViettinBank: Bỏ loại hình*@
+
+                        @*<div class="col-md-3 col-xs-12">
+                                <label>Loại hình</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetBidType("vi", true), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body" })
+                                </div>
+                            </div>*@
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function OnClickTab(tab) {
+            $("#ulBidIndex li").removeClass("active");
+            $(tab).addClass("active");
+            SubmitIndex();
+        }
+
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+             Forms.SubmitForm('@Model.FormId');
+             Forms.CompleteUI();
+             Forms.SubmitByEnter("@Model.FormId");
+
+             $('.input-daterange').datepicker({
+                 format: "dd/mm/yyyy",
+                 maxViewMode: 2,
+                 autoclose: true,
+                 keyboardNavigation: false,
+                 todayBtn: "linked",
+                 clearBtn: true,
+                 todayHighlight: true,
+                 language: "vi"
+             });
+         });
+    </script>
+</div>
+
+

@@ -1,0 +1,178 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@using SMO.Service.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    Model.ObjDetail.IS_BID_CLOSE = null;
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+    var frmCode = "frm_BidContractorQuestion_IndexManager";
+    var typeEmail = 1;
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("ListManager", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+        @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID, new { @id = "hddContractorId"})
+        <div class="row">
+            <div class="col-xs-12 col-sm-8">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="card border-grey"> 
+                    <div class="body">
+                        @Html.MyButton("cmdAddQuestion", @LanguageUtilities.LangText("cmdAddQuestion", frmCode), "AddQuestionManager();", "Alt+S", "question_answer")
+                        @Html.MyButton("cmdAddEmail", @LanguageUtilities.LangText("cmdAddEmail", frmCode), "AddEmail();", "Alt+S", "email")
+                        @Html.MyButton("cmdViewEmail", @LanguageUtilities.LangText("cmdViewEmail", frmCode), "ViewListEmail();", "Alt+S", "history")
+                    </div>
+                </div>
+
+                <div id="divResult">
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content" style="padding-bottom: 0">
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, "", new { @id = "radioIsBidClose_All_" + Model.ViewId, @checked = true, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_All_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, false, new { @id = "radioIsBidClose_True_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_True_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDMoThau", frmCode)</label>
+                            </div>
+                            
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, true, new { @id = "radioIsBidClose_False_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_False_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDDongThau", frmCode)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card m-t-10 border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content" style="padding-bottom: 0">
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, "", new { @id = "radioType_ALL_" + Model.ViewId, @checked = true, @onchange = "SubmitIndexContractorQuestion();" , @class= "radio-col-blue-grey" })
+                                <label for="radioType_ALL_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa2", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, UserType.NhaThau, new { @id = "radioType_NT_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioType_NT_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblNhaThauHoi", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, UserType.NB, new { @id = "radioType_FC_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioType_FC_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblFeconHoi", frmCode)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card m-t-10 border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle3", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div>
+                                <input name="radioContractor" checked="checked" id="radio_ContractorAll_@Model.ViewId" onchange="ChangeContractor(this,'');" type="radio" class= "radio-col-blue-grey">
+                                <label for="radio_ContractorAll_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa3", frmCode)</label>
+                            </div>
+                            @foreach (var item in serviceBidContractor.ObjList)
+                            {
+                                <div>
+                                    <input name="radioContractor" id="radio_@Model.ViewId@item.CONTRACTOR_ID" onchange="ChangeContractor(this,'@item.CONTRACTOR_ID');" type="radio" class= "radio-col-blue-grey">
+                                    <label for="radio_@Model.ViewId@item.CONTRACTOR_ID" style="font-size: 13px;">
+                                        @try
+                                        {
+                                            @item.Contractor.TEN_NGAN
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                          
+                                        }
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+<script type="text/javascript">
+        function ChangeContractor(obj, contractorId) {
+            $("#@Model.ViewId #hddContractorId").val(contractorId);
+            SubmitIndexContractorQuestion();
+        }
+
+        function AddEmail() {
+            var params = {
+                url : "@Url.Action("CreateEmail")",
+                data: { bidId: '@Model.ObjDetail.BID_ID', typeEmail : '@typeEmail'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function ViewListEmail() {
+            var params = {
+                url : "@Url.Action("ViewListEmail")",
+                data: { bidId: '@Model.ObjDetail.BID_ID', type : '@typeEmail'}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function AddAnswerManager(questionId) {
+            var params = {
+                url : "@Url.Action("CreateAnswer")",
+                data: { questionId: questionId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddQuestionManager() {
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var contractorId = $("#@Model.ViewId #hddContractorId").val();
+            var params = {
+                url : "@Url.Action("CreateQuestion")",
+                data: { bidId: bidId, contractorId: contractorId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function SubmitIndexContractorQuestion() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+</script>
+</div>

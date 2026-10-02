@@ -1,0 +1,66 @@
+﻿@model SMO.Service.EB.ReviewCouncilService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Review_DetailListCouncil";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div id='@Model.ViewId'>
+    <div class="card border-grey">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">people</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive">
+                    <table class="table table-bordered font-13">
+                        <thead>
+                            <tr>
+                                <th>@LanguageUtilities.LangText("lblTenNguoiDanhGia", frmCode)</th>
+                                <th style="min-width:250px;">@LanguageUtilities.LangText("lblTrangThaiGuiMail", frmCode)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ObjList.OrderByDescending(x => x.USER_NAME))
+                            {
+                                <tr>
+                                    <td>
+                                        <div>@item.User.USER_NAME @(!string.IsNullOrEmpty(item.EMAIL_ID)?"(ĐÃ GỬI MAIL)":"")</div>
+                                        <div class="col-blue-grey">@item.User.FULL_NAME</div>
+                                    </td>
+
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.EMAIL_ID))
+                                        {
+                                            <span class="badge bg-blue">Đã gửi mail</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-red">Chưa gửi mail</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+

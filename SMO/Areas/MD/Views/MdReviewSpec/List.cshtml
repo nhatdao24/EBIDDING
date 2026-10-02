@@ -1,0 +1,36 @@
+﻿@model SMO.Service.MD.MdReviewSpecService
+@{
+    var number = 1;
+}
+ 
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th style="max-width: 120px;">Tiêu chí</th>
+                <th>Thứ tự</th>
+                <th>Trọng số</th>
+                <th>Số điểm tối đa</th>
+                <th>Vai trò</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.C_ORDER))
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.NAME</a>
+                        <div class="font-13"><i>@item.DESCRIPTION</i></div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.C_ORDER</td>
+                    <td ondblclick="@vdbclickAction">@item.RATIO %</td>
+                    <td ondblclick="@vdbclickAction">@item.MAX_SCORE</td>
+                    <td ondblclick="@vdbclickAction">@VaiTroReview.GetText(item.VAI_TRO)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

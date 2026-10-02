@@ -1,0 +1,133 @@
+﻿@model SMO.Service.PR.PRSAPService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_PRSAP_Detail";
+
+}
+<div id='@Model.ViewId'  class="container-fluid child-content">
+    @Html.HiddenFor(m => m.ViewId)
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">content_copy</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div role="tabpanel">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdBack", LanguageUtilities.LangText("cmdBack", frmCode), string.Format("Forms.Close('{0}');", Model.ViewId), "Alt+N", "arrow_back")
+                                </div>
+                            </div>
+                            <div id="divDetail" class="m-t-20">
+                                <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                    <table class="table table-condensed font-13">
+                                        <thead>
+                                            <tr>
+                                                <th>@LanguageUtilities.LangText("lblMaMatHang", frmCode)</th>
+                                                <th>@LanguageUtilities.LangText("lblTenMatHang", frmCode)</th>
+                                                <th class="align-center">@LanguageUtilities.LangText("lblSoLuong", frmCode)</th>
+                                                <th class="align-center">@LanguageUtilities.LangText("lblDonViTinh", frmCode)</th>
+                                                <th class="align-center">@LanguageUtilities.LangText("lblDonGia", frmCode)</th>
+                                                <th class="align-center">@LanguageUtilities.LangText("lblThanhTien", frmCode)</th>
+                                                <th class="align-center">@LanguageUtilities.LangText("lblDonViTien", frmCode)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.ObjDetail.ListDetail)
+                                            {
+                                                <tr>
+                                                    <td>@(string.IsNullOrWhiteSpace(item.MATERIAL_CODE) ? "" : item.MATERIAL_CODE.TrimStart('0'))</td>
+                                                    <td>@item.MATERIAL_NAME</td>
+                                                    <td class="align-center">@item.QUANTITY.ToStringVN()</td>
+                                                    <td class="align-center">@item.UNIT</td>
+                                                    <td class="align-center">@item.PRICE.ToStringVN()</td>
+                                                    <td class="align-center">@item.SUM_VALUE.ToStringVN()</td>
+                                                    <td class="align-center">@item.CURRENCY</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode) @*: <span class="col-pink">@Model.ObjHeader.CODE</span>*@</a></li>
+                    </ul>
+                    <div class="tab-content po-info">
+                        <ul>
+                            <li>
+                                <span>@Model.ObjDetail.REQUIRE_NAME</span>
+                            </li>
+                            
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblMaPR", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.CODE</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNgayYeuCau", frmCode)</span>
+                                </span>
+                                <span style="float:right" >@(Model.ObjDetail.REQUIRE_DATE.HasValue ? Model.ObjDetail.REQUIRE_DATE.Value.ToString("dd/MM/yyyy") : "")</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblThoiHan", frmCode)</span>
+                                </span>
+                                <span style="float:right">@(Model.ObjDetail.DESTINATION_DATE.HasValue ? Model.ObjDetail.DESTINATION_DATE.Value.ToString("dd/MM/yyyy") : "")</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblDonVi", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.COMPANY_NAME</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblBoPhan", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.DEPARTMENT_NAME</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNguoiDeNghi", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjDetail.REQUIRE_USER</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

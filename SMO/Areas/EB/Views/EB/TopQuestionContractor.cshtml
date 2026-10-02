@@ -1,0 +1,122 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@using SMO.Core.Entities
+@{
+    var number = 1;
+    var listBid = ViewBag.ListBid as List<T_EB_BID>;
+    var frmCode = "frm_EB_TopQuestionContractor";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+@if (ProfileUtilities.User.IS_CHANGE_LANG)
+{
+    <div class="divLanguage">
+        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+    </div>
+}
+
+@foreach (var question in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+{
+    number = 1;
+
+    var bid = listBid.FirstOrDefault(x => x.PKID == question.BID_ID);
+
+    <div class="conversation">
+        <div class="question">
+            @if (question.TYPE == UserType.NhaThau)
+            {
+                <div class="user">@ProfileUtilities.User.Contractor.TEN_NGAN ► CTD</div>
+            }
+            else
+            {
+                <div class="user">CTD ► @ProfileUtilities.User.Contractor.TEN_NGAN</div>
+            }
+            <div class="time">
+                @question.CREATE_DATE.ToString()
+                @if (!question.IS_BID_CLOSE.Value)
+                {
+                    <span>(@LanguageUtilities.LangText("lblGDMoiThau", frmCode))</span>
+                }
+                else
+                {
+                    <span>(@LanguageUtilities.LangText("lblGDDongThau", frmCode))</span>
+                }
+                <div class="font-13">
+                    @if(lang == "vi")
+                    {
+                        <span>@bid.TEN_GOI_THAU</span>
+                    }
+                    else
+                    {
+                        <span>@bid.TEN_GOI_THAU_EN</span>
+                    }
+                </div>
+            </div>
+
+            <div class="content">
+                @Html.Raw(question.CONTENTS)
+            </div>
+            <div class="reply">
+                <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidContractor", "Bid", new { id = bid.PKID, idMenu = "mnuTraoDoiFecon" }))">@LanguageUtilities.LangText("lblXemGoiThau", frmCode)</a>
+            </div>
+            @if (question.ListFile.Count > 0)
+            {
+                <div class="file">
+                    @{Html.RenderPartial("ListFile", question.ListFile.Select(x => x.FileUpload).ToList());}
+                </div>
+            }
+
+        </div>
+        @{
+            var lstAnswer = question.ListAnswer.ToList();
+            if (question.IS_ALL)
+            {
+                lstAnswer = question.ListAnswer.Where(x => x.CONTRACTOR_ID == ProfileUtilities.User.CONTRACTOR_ID).ToList();
+            }
+        }
+        @if (lstAnswer.Count > 0)
+        {
+            <div class="answer">
+                @foreach (var answer in question.ListAnswer.OrderByDescending(x => x.CREATE_DATE))
+                {
+                    if (question.TYPE == UserType.NhaThau)
+                    {
+                        <div class="user">CTD</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                    }
+                    else
+                    {
+                        <div class="user">@ProfileUtilities.User.Contractor.TEN_NGAN</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                    }
+                    <div class="content">
+                        @Html.Raw(answer.CONTENTS)
+                    </div>
+
+                    if (answer.ListFile.Count > 0)
+                    {
+                        <div class="file">
+                            @{Html.RenderPartial("ListFile", answer.ListFile.Select(x => x.FileUpload).ToList());}
+                        </div>
+                    }
+
+                    if (number < question.ListAnswer.Count() && question.ListAnswer.Count() > 1)
+                    {
+                        <hr />
+                    }
+                    number++;
+                }
+            </div>
+        }
+    </div>
+    <hr />
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#divTopQuestionContractor .body").slimScroll({
+            height: '400px'
+        });
+    })
+</script>

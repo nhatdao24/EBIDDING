@@ -1,0 +1,125 @@
+﻿@model SMO.Service.AD.UserService
+
+<div class="page-function">
+    <div class="page-function-button m-r-20" style="float:left">
+        @if (AuthorizeUtilities.CheckUserRight("R2001"))
+        {
+            @Html.MyButton("cmdCapNhatQuyen", "Cập nhật quyền", "UpdateRightOfUser();", "Alt+S", "done_all")
+        }
+        @if (Model.ObjDetail.IS_MODIFY_RIGHT && AuthorizeUtilities.CheckUserRight("R2002"))
+        {
+            @Html.MyButton("cmdResetQuyen", "Lấy lại quyền mặc định", "ResetRightOfUser();", "Alt+S", "refresh")
+        }
+    </div>
+    <div class="input-group page-function-search" style="margin-bottom: 7px !important">
+        @Html.DropDownList("ddlRight", SelectListUtilities.GetAllRight(), new { @id = "ddlRight", @data_live_search = "true", @class = "form-control selectpicker show-tick", placeholder = "Tìm theo domain", @data_val = false, @OnChange = "SearchRight(this);" })
+
+        <span class="input-group-addon" title="Tìm kiếm" onclick="SearchRight();"> 
+            <i class="material-icons">search</i>
+        </span>
+    </div>
+</div>
+
+<div class="row">
+    @if (Model.ObjDetail.USER_TYPE == UserType.NB)
+    {
+        <div class="col-sm-4">
+            <div id="divTreeOrgInRight" class="border-grey" style="height: calc(100vh - 230px); overflow:auto; margin-top: 12px;">
+                <input type="hidden" id="hddOrgSelected" value="" />
+                <ul id="treeOrgInRight" class="ztree"></ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <input type="hidden" id="hddOrgSelected" value="" />
+    }
+
+    <div class="col-sm-8">
+        <div id="divTreeUserRight">
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var settingOrgInRight = {
+        view: {
+            selectedMulti: false,
+            nameIsHTML: true,
+            showTitle: false
+        },
+        edit: {
+            enable: false,
+            showRemoveBtn: false,
+            showRenameBtn: false
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        callback: {
+            onClick: OnClickOrganize
+        }
+    };
+
+    var settingRight = {
+        check: {
+            enable: true,
+            chkboxType: { "Y": "ps", "N": "ps" }
+        },
+        view: {
+            selectedMulti: false,
+            nameIsHTML: true,
+            showTitle: false,
+            fontCss: GetFont
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        }
+    };
+
+    function OnClickOrganize(event, treeId, treeNode) {
+        var id = treeNode.id;
+        $("#hddOrgSelected").val(id);
+        BuildTreeRight();
+    };
+
+    function GetFont(treeId, node) {
+        if (node.isRemove == "1") {
+            return { color: "red" };
+        }
+
+        if (node.isAdd == "1") {
+            return { color: "blue" };
+        }
+    }
+
+    function BuildTreeRight() {
+        $('#divTreeUserRight').html("");
+        Forms.ShowLoading();
+        var ajaxParams = {
+            url: '@Url.Action("BuildTreeRight")',
+            type: "GET",
+            data: { userName: '@Model.ObjDetail.USER_NAME', orgId: $("#hddOrgSelected").val() },
+            success: function (response) {
+                $('#divTreeUserRight').html(response);
+            }
+        };
+        Forms.Ajax(ajaxParams);
+    }
+
+
+    $(function () {
+        @if (Model.ObjDetail.USER_TYPE == UserType.NB)
+        {
+            @: var zNodesOrgInRight = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+            @: $.fn.zTree.init($("#treeOrgInRight"), settingOrgInRight, zNodesOrgInRight);
+        }
+        BuildTreeRight();
+        Forms.CompleteUI();
+    });
+</script>

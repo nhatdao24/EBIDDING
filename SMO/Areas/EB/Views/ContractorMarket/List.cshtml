@@ -1,0 +1,6 @@
+﻿@model SMO.Service.EB.ContractorMarketService
+
+@foreach (var item in Model.ObjList.OrderBy(x => x.COUNTRY_CODE))
+{
+    <span class="badge bg-blue">@item.Country.TEXT</span>
+}

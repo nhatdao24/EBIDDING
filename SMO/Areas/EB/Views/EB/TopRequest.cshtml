@@ -1,0 +1,49 @@
+﻿@model SMO.Service.EB.RequestService
+@{
+    var frmCode = "frm_EB_TopRequest";
+}
+@*@{ Html.RenderPartial("Paging", Model); }*@
+
+<div class="table-responsive font-13">
+    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+    {
+        <div class="divLanguage">
+            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+        </div>
+    }
+    <table class="table dashboard-task-infos">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("lblMST", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTenCongTy", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblThongTin", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayYeuCau", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = "";
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <div>
+                            @item.MA_SO_THUE
+                        </div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@item.TEN_NGAN</div>
+                        <div class="col-blue-grey">@item.TEN_DAI</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@item.NGUOI_DAI_DIEN</div>
+                        <div>@item.EMAIL</div>
+                        <div>@item.PHONE</div>
+                    </td>
+                    <td class="align-center">
+                        <span>@(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

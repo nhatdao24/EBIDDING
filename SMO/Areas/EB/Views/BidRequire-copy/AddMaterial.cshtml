@@ -1,0 +1,77 @@
+﻿@model SMO.Service.MD.MaterialService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidRequire_AddMaterial";
+}
+
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListMaterialForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId })) 
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.FormId)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { placeholder = "Tìm kiếm theo mã hoặc tên hàng hóa", @class = "align-center", @data_val = false, @autofocus = "true" })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="page-search-advance row m-l-0 m-r-0 m-b-10">
+                            <div class="col-md-6 col-xs-12">
+                                <label>Nhóm hàng hóa</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetMaterialType(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_container = "body", @data_val = false })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            $(function () {
+                $("#ObjDetail_CODE").focus();
+                Forms.CompleteUI();
+                //Forms.SubmitForm("@Model.FormId");
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+

@@ -1,0 +1,70 @@
+﻿@model SMO.Service.EB.ReviewFinalService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewFinal_AddUser";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" id="close-modal-user" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListUserForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjSearchUser.USER_TYPE)
+            @Html.HiddenFor(m => m.FormId)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">search</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdDone", LanguageUtilities.LangText("cmdDone", frmCode), "$('#close-modal-user').click()", "Alt+N", "done_all")
+                            </div>
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjSearchUser.USER_NAME, new { placeholder = LanguageUtilities.LangText("lblPlaceholder", frmCode), @class = "align-center", @data_val = false, @autofocus = "true" })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            $(function () {
+                $("#ObjSearchUser_USER_NAME").focus();
+                Forms.CompleteUI();
+                Forms.SubmitForm("@Model.FormId");
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+
+
+

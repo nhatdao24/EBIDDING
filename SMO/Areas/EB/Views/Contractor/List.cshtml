@@ -1,0 +1,206 @@
+﻿@model SMO.Service.EB.ContractorService
+@using SMO.Repository.Implement.AD;
+@using SMO.Repository.Implement.MD;
+@{
+    var frmCode = "frm_Contractor_Index";
+
+    var LstOrg = Model.UnitOfWork.Repository<OrganizeRepo>().GetAll();
+    var lstRate = Model.UnitOfWork.Repository<MdRatingRepo>().GetAll();
+    var lstMdContractor = Model.UnitOfWork.Repository<VendorRepo>().GetAll();
+    var lstActiveArea = Model.UnitOfWork.Repository<ActiveAreaRepo>().GetAll();
+    List<string> lstScopTypeName = new List<string>();
+    List<string> lstActiveAreaName = new List<string>();
+}
+@*@{ Html.RenderPartial("Paging", Model); }*@
+
+<div class="table-responsive font-13">
+    <iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportExcel(true);" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th rowspan="2" style="min-width: 150px;">@LanguageUtilities.LangText("thTaiKhoan", frmCode)</th>
+                <th rowspan="2" style="min-width: 250px;">@LanguageUtilities.LangText("thTenCongTy", frmCode)</th>
+                <th rowspan="2" style="min-width: 150px;">@LanguageUtilities.LangText("thNhomNTP", frmCode)</th>
+                <th rowspan="2" style="min-width: 300px;">@LanguageUtilities.LangText("thLinhVucKD", frmCode)</th>
+                <th rowspan="2" style="min-width: 250px;" class="align-center">@LanguageUtilities.LangText("thDiaChiDKKD", frmCode)</th>
+                <th rowspan="2" style="min-width: 150px;">@LanguageUtilities.LangText("thKhuVucHoatDong", frmCode)</th>
+                <th colspan="3" class="align-center">@LanguageUtilities.LangText("thThongTin", frmCode)</th>
+                <th colspan="4" class="align-center">@LanguageUtilities.LangText("thThongTinDanhGiaNangLuc", frmCode)</th>
+                <th rowspan="2" style="min-width: 150px;" class="align-center">@LanguageUtilities.LangText("thNguoiTao", frmCode)</th>
+                <th rowspan="2" style="min-width: 150px;" class="align-center">@LanguageUtilities.LangText("thDonVi", frmCode)</th>
+                <th rowspan="2" class="align-center">@LanguageUtilities.LangText("thNgayYeuCau", frmCode)</th>
+                <th rowspan="2" class="align-center">@LanguageUtilities.LangText("thNgayTao", frmCode)</th>
+                <th rowspan="2" class="align-center">@LanguageUtilities.LangText("thBlackList", frmCode)</th>
+            </tr>
+            <tr> 
+                <th style="min-width: 200px;" class="align-center">@LanguageUtilities.LangText("thHoTen", frmCode)</th>
+                <th style="min-width: 150px;" class="align-center">@LanguageUtilities.LangText("thSDT", frmCode)</th>
+                <th style="min-width: 200px;" class="align-center">@LanguageUtilities.LangText("thEmail", frmCode)</th>
+                <th style="min-width: 50px;" class="align-center">@LanguageUtilities.LangText("thDiemDanhGia", frmCode)</th>
+                <th style="min-width: 50px;" class="align-center">@LanguageUtilities.LangText("thXepHangNTP", frmCode)</th>
+                <th style="min-width: 50px;" class="align-center">@LanguageUtilities.LangText("thNgayDanhGia", frmCode)</th>
+                <th style="min-width: 50px;" class="align-center">@LanguageUtilities.LangText("thMaDanhGia", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.USER_NAME))
+            {
+                if (!string.IsNullOrEmpty(item.ACTIVE_AREA))
+                {
+                    var listActiveAreaID = item.ACTIVE_AREA.Split(',').ToList();
+                    foreach (var activeArea in lstActiveArea.Where(x => listActiveAreaID.Contains(x.CODE)).ToList())
+                    {
+                        lstActiveAreaName.Add(activeArea.TEXT);
+                    }
+                }
+                var contact = item.ListContact.FirstOrDefault(x => x.IS_DEFAULT == true);
+                var rate = lstRate.FirstOrDefault(x => x.RATING == item.XEP_HANG);
+                var vendor = lstMdContractor.FirstOrDefault(x => x.MA_SO_THUE == item.MA_SO_THUE);
+                var url = Url.Action("Detail");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.PKID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Detail", "ReviewFinal", new { id = item.REVIEW_FINAL_CODE }));
+
+                foreach (var scop in item.ListScope)
+                {
+                    try
+                    {
+                        lstScopTypeName.Add(scop.Scope.SCOPE_TYPE.TEXT);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                var parent = string.Empty;
+                if (item.USER_CREATE != null && !string.IsNullOrEmpty(item.USER_CREATE.Organize.PARENT))
+                {
+                    parent = LstOrg.FirstOrDefault(x => x.PKID == item.USER_CREATE.Organize.PARENT).NAME;
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.USER_NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@item.TEN_NGAN</div>
+                        <div class="col-blue-grey">@item.TEN_DAI</div>
+                        <div class="col-blue-grey">
+                            MST:
+                            @item.MA_SO_THUE
+                            &nbsp;&nbsp;
+                            <a href="http://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp?mst=@item.MA_SO_THUE" target="_blank">
+                                <i class="material-icons" style="font-size:20px; float: right;" title="Tra cứu mã số thuế">search</i>
+                            </a>
+                        </div>
+                        <div class="col-blue-grey">
+                            Mã NCC:
+                            @if (vendor != null)
+                            {
+                                <span>@vendor.CODE</span>
+                            }
+                        </div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @foreach (var scopeType in lstScopTypeName.Distinct())
+                        {
+                            <div>- @scopeType</div>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var scope in item.ListScope)
+                        {
+                            try
+                            {
+                                <div>- @scope.Scope.TEXT</div>
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                    </td>
+                    <td class="align-center">
+                        @item.DIA_CHI
+                    </td>
+                    <td>
+                        @foreach (var activeArea in lstActiveAreaName)
+                        {
+                            <div>- @activeArea</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @if (contact != null)
+                        {
+                            <div>@contact.FULL_NAME</div>
+                        }
+                        else
+                        {
+                            <div>@item.NGUOI_NHAN_THONG_BAO</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @if (contact != null)
+                        {
+                            <div>@contact.PHONE</div>
+                        }
+                        else
+                        {
+                            <div>@item.PHONE</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @if (contact != null)
+                        {
+                            <div>@contact.EMAIL</div>
+                        }
+                        else
+                        {
+                            <div>@item.EMAIL</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @(item.DIEM_DANH_GIA>0?item.DIEM_DANH_GIA.ToStringVN() : "0")
+                    </td>
+                    <td class="align-center">
+                        @item.XEP_HANG
+                    </td>
+                    <td class="align-center">
+                        @(item.NGAY_DANH_GIA.HasValue ? item.NGAY_DANH_GIA.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center">
+                        <div><a href="#" onclick="@action">@item.REVIEW_FINAL_CODE</a></div>
+                    </td>
+                    <td class="align-center">
+                        @if (item.USER_CREATE != null)
+                        {
+                            <div>@item.USER_CREATE.FULL_NAME</div>
+                        }
+                    </td>
+                    <td>
+                        @if (item.USER_CREATE != null)
+                        {
+                            <div>- @item.USER_CREATE.Organize.NAME</div>
+                            <div>@(string.IsNullOrEmpty(parent)?"":"- "+parent)</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @(item.REQUEST_DATE.HasValue ? item.REQUEST_DATE.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center">
+                        @(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateToStringFormat) : "")
+                    </td>
+                    <td class="align-center">
+                        @if (rate != null && rate.IS_BLACK_LIST)
+                        {
+                            <i class="material-icons col-fecon" style="cursor:pointer">check</i>
+                        }
+                    </td>
+                </tr>
+                lstScopTypeName = new List<string>();
+                lstActiveAreaName = new List<string>();
+
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

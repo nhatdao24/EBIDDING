@@ -1,0 +1,191 @@
+﻿@model SMO.Service.EB.BidSpecService
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    var frmCode = "frm_BidSpec_Index";
+    var bidId = Model.ObjDetail.BID_ID;
+    var bidService = new SMO.Service.EB.BidService();
+    var bid = bidService.CurrentRepository.Get(bidId);
+
+}
+<div id='@Model.ViewId'>
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exedit-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exhide-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <div class="card border-grey">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @if (bid.STATUS == "01" || bid.STATUS == "04")
+                        {
+                            @Html.MyButton("cmdAdd", LanguageUtilities.LangText("cmdAdd", frmCode), string.Format("CreateSpec();"), "", "add")
+                            @Html.MyButton("cmdChoose", LanguageUtilities.LangText("cmdChoose", frmCode), "AddFromMD();", "", "assignment")
+                        }
+                        @Html.MyButton("cmdUpdateTree", LanguageUtilities.LangText("cmdUpdateTree", frmCode), "UpdateTreeSpec();", "", "done_all")
+                        @Html.MyButton("cmdPreview", LanguageUtilities.LangText("cmdPreview", frmCode), "Preview();", "", "search")
+                    </div>
+                </div>
+
+                <div id="divTreeSpec" style="overflow-x: auto;">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function AddFromMD() {
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var params = {
+                url : "@Url.Action("AddSpecMD")",
+                data: { bidId: bidId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function Preview() {
+            var ajaxParams = {
+                url: "@Url.Action("Preview")",
+                data: { bidId : '@Model.ObjDetail.BID_ID'}
+            };
+            Forms.LoadAjaxModal(ajaxParams);
+        }
+
+        function CreateSpec() {
+            var ajaxParams = {
+                url: "@Url.Action("Create")",
+                data: { parent: $("#hddParentSpec").val(), bidId : '@Model.ObjDetail.BID_ID'}
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        var settingSpec = {
+            check: {
+                enable: false,
+                chkboxType: { "Y": "ps", "N": "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false,
+                showIcon : false
+            },
+            edit: {
+                enable: true,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: OnClick,
+                beforeDrop: BeforeDrop
+            }
+        };
+
+        var settingSpecMD = {
+            check: {
+                enable: true,
+                chkboxType: { "Y": "s", "N": "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false,
+                showIcon: false
+            },
+            edit: {
+                enable: false,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        function BeforeDrop(treeId, treeNodes, targetNode, moveType, isCopy) {
+            //if (!targetNode) {
+            //    return false;
+            //}
+            //} else if (targetNode.id == zNodesSpec[0].id) {
+            //    return false;
+            //}
+            if (targetNode.type != "GROUP" && moveType == "inner") {
+                return false;
+            }
+        }
+
+        function OnClick(event, treeId, treeNode) {
+            $("#hddParentSpec").val(treeNode.pId);
+            var id = treeNode.id;
+            var url = "@Url.Action("Edit")";
+            var ajaxParams = {
+                url: url,
+                data: { id: id }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        };
+
+        function BuildTreeSpec(specSelected, isUpdateOrder) {
+            $('#divTreeSpec').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTree")',
+                type: "GET",
+                data: { specSelected: specSelected, bidId: '@Model.ObjDetail.BID_ID' },
+                success: function (response) {
+                    $('#divTreeSpec').html(response);
+                    if (isUpdateOrder && isUpdateOrder == true) {
+                        UpdateTreeSpec();
+                    }
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function UpdateTreeSpec() {
+            var zTree = $.fn.zTree.getZTreeObj("treeSpec");
+            var nodes = zTree.transformToArray(zTree.getNodes());
+            var data = nodes.map(function (a) { return { id: a.id, pId: a.pId }; });
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateTree")',
+                type: "POST",
+                data: data,
+                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            BuildTreeSpec();
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

@@ -1,0 +1,51 @@
+﻿@model SMO.Service.EB.ReviewFinalService
+@{
+    var number = 1;
+    var frmCode = "frm_ReviewFinal_Index";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div class="table-responsive font-13 dashboard-task-infos">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("lblMaXepHang", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblMota", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayTao", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblNguoiTao", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTrangThai", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Detail", new { id = item.CODE }));
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <div><a href="#" onclick="@vdbclickAction">@item.CODE</a></div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@item.DESCRIPTION</div>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.CREATE_DATE.Value.ToString(Global.DateToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        @item.CREATE_BY
+                    </td>
+                    <td class="align-center">
+                        <span class="badge @Review_Final_Status.GetStatusColor(item.STATUS)">@Review_Final_Status.GetStatusText(item.STATUS)</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+

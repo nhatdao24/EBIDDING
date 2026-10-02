@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{02FEC8F7-5984-48ED-9D60-8808829629BE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SMO.Core</RootNamespace>
+    <AssemblyName>SMO.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\SolutionDll\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpSapRfc, Version=2.0.10.0, Culture=neutral, PublicKeyToken=3a74d6eebd98cdfe, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SolutionDll\SharpSapRfc.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\BaseEntity.cs" />
+    <Compile Include="Common\IEntity.cs" />
+    <Compile Include="Entities\AD\T_AD_COUNT_VISIT.cs" />
+    <Compile Include="Entities\AD\T_AD_REQUEST_RESET_PASS.cs" />
+    <Compile Include="Entities\AD\T_AD_HOSO.cs" />
+    <Compile Include="Entities\AD\T_AD_CONNECTION.cs" />
+    <Compile Include="Entities\AD\T_AD_RIGHT_PROJECT.cs" />
+    <Compile Include="Entities\AD\T_AD_RIGHT_PROJECT_USER.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_HISTORY.cs" />
+    <Compile Include="Entities\AD\T_AD_SYSTEM_CONFIG.cs" />
+    <Compile Include="Entities\AD\T_AD_ORGANIZE.cs" />
+    <Compile Include="Entities\AD\T_AD_LANGUAGE.cs" />
+    <Compile Include="Entities\AD\T_AD_FORM_OBJECT.cs" />
+    <Compile Include="Entities\AD\T_AD_FORM.cs" />
+    <Compile Include="Entities\AD\T_AD_MESSAGE.cs" />
+    <Compile Include="Entities\AD\T_AD_MENU.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_ORG.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_PROJECT.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_RIGHT.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_GROUP_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_USER_GROUP - Copy.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_APPROVE.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_GROUP.cs" />
+    <Compile Include="Entities\AD\T_AD_ROLE_DETAIL.cs" />
+    <Compile Include="Entities\AD\T_AD_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_RIGHT.cs" />
+    <Compile Include="Entities\AD\T_AD_USER.cs" />
+    <Compile Include="Entities\CF\T_CF_TEMPLATE_NOTIFY.cs" />
+    <Compile Include="Entities\CM\T_CM_FILE_UPLOAD.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS_HISTORY.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS_OTP.cs" />
+    <Compile Include="Entities\CM\T_CM_HISTORY_SMO_API.cs" />
+    <Compile Include="Entities\CM\T_CM_COMMENT.cs" />
+    <Compile Include="Entities\CM\T_CM_EMAIL.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS.cs" />
+    <Compile Include="Entities\CM\T_CM_NOTIFY.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_COUNCIL_EMAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_HHDV.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_HISTORY.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_PRICE_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_PRICE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_EMAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_LEADERSHIP_COMMENTS.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE_HISTORY.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SPEC_COUNCIL.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_SCOPE.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_REVENUE.cs" />
+    <Compile Include="Entities\EB\T_EB_REQUEST_REVENUE.cs" />
+    <Compile Include="Entities\EB\T_EB_REQUEST_SCOPE.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL_HISTORY.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL_NOTE.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL_CONTRACTOR_DETAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL_CONTRACTOR.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE_USER.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL_USER.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_FINAL.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_COUNCIL_NOTE.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_RATING.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_SPEC_SCORE.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_COUNCIL.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_CONTRACTOR_DETAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_CONTRACTOR.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_PHASE_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_INTERNAL_ANSWER.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_INTERNAL_ANSWER_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_INTERNAL_QUESTION.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_INTERNAL_QUESTION_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SPEC_COUNCIL_SCORE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SPEC_CONTRACTOR.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SPEC_DETAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SPEC.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE_PR.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE_DETAIL.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SUBMIT_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_SUBMIT.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_QUESTION_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_QUESTION.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_ANSWER_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR_ANSWER.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_NEW.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_FILE.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_COUNCIL.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_CONTRACTOR.cs" />
+    <Compile Include="Entities\EB\T_EB_BID.cs" />
+    <Compile Include="Entities\EB\T_EB_BID_REQUIRE.cs" />
+    <Compile Include="Entities\EB\T_EB_REQUEST.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_FINANCE.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_LOCATION.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_PRODUCT.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_PROJECT.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_MARKET.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR_CONTACT.cs" />
+    <Compile Include="Entities\EB\T_EB_CONTRACTOR.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_SPEC.cs" />
+    <Compile Include="Entities\EB\T_EB_REVIEW_SPEC_DETAIL.cs" />
+    <Compile Include="Entities\MD\T_FAQ_QUESTION.cs" />
+    <Compile Include="Entities\MD\T_MD_HHDV.cs" />
+    <Compile Include="Entities\MD\T_MD_PACKAGE.cs" />
+    <Compile Include="Entities\MD\T_MD_RATING.cs" />
+    <Compile Include="Entities\MD\T_MD_OPTION.cs" />
+    <Compile Include="Entities\MD\T_MD_NUMBER_OF_PROJECT.cs" />
+    <Compile Include="Entities\MD\T_MD_BID_SPEC_DETAIL.cs" />
+    <Compile Include="Entities\MD\T_MD_BID_SPEC.cs" />
+    <Compile Include="Entities\MD\T_FAQ_FREQUENTLY_ASKED.cs" />
+    <Compile Include="Entities\MD\T_MD_ACTIVE_AREA.cs" />
+    <Compile Include="Entities\MD\T_MD_MATERIAL_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_BID_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_CURRENCY.cs" />
+    <Compile Include="Entities\MD\T_MD_COUNTRY.cs" />
+    <Compile Include="Entities\MD\T_MD_DICTIONARY.cs" />
+    <Compile Include="Entities\MD\T_MD_DOMAIN.cs" />
+    <Compile Include="Entities\MD\T_MD_MATERIAL.cs" />
+    <Compile Include="Entities\MD\T_MD_RENT_UNIT.cs" />
+    <Compile Include="Entities\MD\T_MD_REVIEW_SPEC.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT.cs" />
+    <Compile Include="Entities\MD\T_MD_REVIEW_SPEC_DETAIL.cs" />
+    <Compile Include="Entities\MD\T_MD_SCOPE.cs" />
+    <Compile Include="Entities\MD\T_MD_SCOPE_MATERIAL.cs" />
+    <Compile Include="Entities\MD\T_MD_SCOPE_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_TITLE.cs" />
+    <Compile Include="Entities\MD\T_MD_VENDOR.cs" />
+    <Compile Include="Entities\MD\T_MD_UNIT.cs" />
+    <Compile Include="Entities\PR\T_PR_EB_DETAIL.cs" />
+    <Compile Include="Entities\PR\T_PR_EB_FILE.cs" />
+    <Compile Include="Entities\PR\T_PR_EB_HISTORY.cs" />
+    <Compile Include="Entities\PR\T_PR_SAP_DETAIL.cs" />
+    <Compile Include="Entities\PR\T_PR_EB_HEADER.cs" />
+    <Compile Include="Entities\PR\T_PR_SAP_HEADER.cs" />
+    <Compile Include="Entities\RQ\T_RQ_REQUEST_TO.cs" />
+    <Compile Include="Entities\RQ\T_RQ_REQUEST_HISTORY.cs" />
+    <Compile Include="Entities\RQ\T_RQ_REQUEST_DATA.cs" />
+    <Compile Include="Entities\RQ\T_RQ_REQUEST.cs" />
+    <Compile Include="Entities\WF\T_WF_ACTIVITY_LEVEL.cs" />
+    <Compile Include="Entities\WF\T_WF_ACTIVITY_LEVEL_RECEIVER_COM.cs" />
+    <Compile Include="Entities\WF\T_WF_ACTIVITY_LEVEL_RECEIVER.cs" />
+    <Compile Include="Entities\WF\T_WF_ACTIVITY_LEVEL_SENDER.cs" />
+    <Compile Include="Entities\WF\T_WF_ACTIVITY.cs" />
+    <Compile Include="Entities\WF\T_WF_PROCESS.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

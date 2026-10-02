@@ -1,0 +1,604 @@
+﻿@model SMO.Service.EB.BidSpecService
+@using SMO.Core.Entities;
+@using SMO.Service.EB;
+@using SMO.Repository.Implement.MD;
+@using SMO.Repository.Implement.EB;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+    var frmCode = "frm_BidSpec_CouncilScore";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var lstMDRating = Model.UnitOfWork.Repository<MdRatingRepo>().GetAll();
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+
+    var isCheckAll = true;
+}
+<style>
+    .table-thang-diem tbody tr td {
+        padding: 5px 10px;
+    }
+</style>
+<div id='@Model.ViewId' class="content m-b-50">
+    @using (Ajax.BeginForm("UpdateCouncilScore", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+        @Html.HiddenFor(m => m.ObjSpecContractor.BID_ID)
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ViewId)
+        foreach (var item in Model.ObjListSpecCouncilScore)
+        {
+            var index = Model.ObjListSpecCouncilScore.IndexOf(item);
+            <div>
+                @Html.HiddenFor(m => Model.ObjListSpecCouncilScore[index].PKID)
+                @Html.HiddenFor(m => Model.ObjListSpecCouncilScore[index].SPEC_ID)
+                @Html.HiddenFor(m => Model.ObjListSpecCouncilScore[index].CONTRACTOR_ID)
+                @Html.HiddenFor(m => Model.ObjListSpecCouncilScore[index].BID_ID)
+                @Html.HiddenFor(m => Model.ObjListSpecCouncilScore[index].USER_SCORE)
+            </div>
+        }
+
+        <div class="card border-grey m-b-10">
+            <div>
+                <i class="material-icons col-fecon" onclick="DisplayFull();" style="float: right;margin-top: 20px; margin-right: 10px; cursor: pointer;" onclick="">zoom_out_map</i>
+            </div>
+
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                </ul>
+
+                <div class="tab-content row" style="padding-bottom: 0">
+                    <div class="col-xs-12 col-sm-6">
+                        <input checked onclick="OnCheckAll(this);" type="checkbox" class="filled-in" name="chkALLContractor" id="chkALLContractor_@Model.ViewId" style="margin:0;" />
+                        <label for="chkALLContractor_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    @foreach (var item in serviceBidContractor.ObjList)
+                    {
+                        if ((item.STATUS == "AP" || item.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID) > 0)
+                        {
+                            <div class="col-xs-12 col-sm-6">
+                                <input checked onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" name="@Html.NameFor(x => x.ObjSpecContractor.CONTRACTOR_ID)" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                                <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; @item.Contractor.TEN_NGAN
+                            </div>
+                        }
+                        else
+                        {
+                            isCheckAll = false;
+                            <div class="col-xs-12 col-sm-6">
+                                <input onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" name="@Html.NameFor(x => x.ObjSpecContractor.CONTRACTOR_ID)" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                                <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; @item.Contractor.TEN_NGAN
+                            </div>
+                        }
+
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-grey m-b-10">
+            <div class="body">
+                @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "SubmitCouncilScore();", "Alt+N", "done_all")
+            </div>
+        </div>
+
+        <div class="card border-grey m-b-10">
+            <div class="body">
+                <div class="table-responsive font-13">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="align-center">@LanguageUtilities.LangText("thTT", frmCode)</th>
+                                <th style="min-width: 250px;">@LanguageUtilities.LangText("thTieuChi", frmCode)</th>
+                                <th style="min-width: 200px;" class="align-center">@LanguageUtilities.LangText("thNoiDung", frmCode)</th>
+                                <th class="align-center">@LanguageUtilities.LangText("thKetQuaThamDinh", frmCode)</th>
+                                <th class="align-center" style="min-width: 50px;">@LanguageUtilities.LangText("thDiemHoiDong", frmCode)</th>
+                                <th class="align-center">@LanguageUtilities.LangText("thGhiChu", frmCode)</th>
+                                <th class="align-center">@LanguageUtilities.LangText("thXepHang", frmCode)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @BuildSpec(Model.ObjList.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList(), string.Empty, serviceBidContractor.ObjList, Model, lang, lstMDRating, lstSubmit)
+                            <tr>
+                                <td></td>
+                                <td colspan="6">
+                                    <b style="color: red">TỔNG ĐIỂM</b>
+                                </td>
+                            </tr>
+                            @foreach (var contractor in serviceBidContractor.ObjList)
+                            {
+                                decimal sumScore = 0;
+                                foreach (var councilScore in Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID).ToList())
+                                {
+                                    var spec = Model.ObjList.FirstOrDefault(x => x.PKID == councilScore.SPEC_ID);
+                                    sumScore += ((councilScore.SCORE * spec.RATIO) / 100);
+                                }
+                                bool isBlackList = false;
+                                if (!string.IsNullOrEmpty(contractor.Contractor.XEP_HANG) && lstMDRating.Count(x => x.RATING == contractor.Contractor.XEP_HANG) > 0)
+                                {
+                                    var rate = lstMDRating.FirstOrDefault(x => x.RATING == contractor.Contractor.XEP_HANG);
+                                    if (rate.IS_BLACK_LIST)
+                                    {
+                                        isBlackList = true;
+                                    }
+                                }
+                                <tr class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                    <td></td>
+                                    <td>
+                                        <b>
+                                            @contractor.Contractor.TEN_NGAN
+                                            <br />
+                                            @if (isBlackList)
+                                            {
+                                                <span style="color: red">(Nhà thầu nằm trong danh sách Blacklist)</span>
+                                            }
+
+                                            @if (contractor.STATUS != "AP" && contractor.STATUS != "RJ")
+                                            {
+                                                <span class="badge bg-blue-grey">Chưa tham gia</span>
+                                            }
+                                            else
+                                            {
+                                                if (lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                                                {
+                                                    <span class="badge bg-blue">Đã nộp hồ sơ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-blue-grey">Chưa nộp hồ sơ</span>
+                                                }
+                                            }
+                                        </b>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="align-center">
+                                        <div style="width: 100%; text-align:center;">
+                                            <span id="sumScore_@contractor.CONTRACTOR_ID" class="col-red">@sumScore.ToStringVN()</span>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td class="align-center">
+                                        @if (!string.IsNullOrEmpty(contractor.Contractor.XEP_HANG))
+                                        {
+                                            <span>@contractor.Contractor.XEP_HANG</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitCouncilScore() {
+
+            $(".inputMask").inputmask('remove');
+            Forms.SubmitForm('@Model.FormId');
+
+        }
+
+        function DisplayFull() {
+            $("#@Model.ViewId").toggleClass("full-screen");
+            Forms.FloatingScroll(".table-responsive");
+        };
+
+        function OnCheckAll(obj) {
+            $('#@Model.ViewId .chkContractor:checkbox').prop('checked', $(obj).is(':checked'));
+            OnChangeContractor();
+        }
+
+        function OnChangeScore(contractorId) {
+            var sumScore = 0;
+            $(".score_" + contractorId).each(function (index) {
+                var score = $(this).val();
+                var ratio = $(this).data("ratio");
+                var result = parseFloat((score * ratio) / 100);
+                sumScore += parseFloat(result);
+            });
+            $("#sumScore_" + contractorId).text(sumScore.toFixed(2).replace('.', ','));
+        }
+
+        function OnChangeScoreBySelect(indexSpecCouncil, contractorId) {
+            var score = $('#spec_' + indexSpecCouncil + ' option:selected').attr('modelScore');
+            $("#txt_" + indexSpecCouncil).val(score);
+            OnChangeScore(contractorId);
+        }
+
+        function OnChangeContractor(obj) {
+            if (obj != null && $(obj).is(':checked') == false) {
+                $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+            }
+
+            $("#@Model.ViewId .clsContractor").hide();
+
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+        }
+
+        $(function () {
+            $(".inputMask").inputmask('integer', { min: 0});
+
+            var checkAll = '@isCheckAll';
+            if (checkAll == 'False') {
+                $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+            }
+            $("#@Model.ViewId .clsContractor").hide();
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+@helper BuildSpec(List<T_EB_BID_SPEC> ListSpec, string numberParent, List<T_EB_BID_CONTRACTOR> lstContractor, BidSpecService service, string lang, IList<T_MD_RATING> lstMDRating, List<T_EB_BID_SUBMIT> lstSubmit)
+{
+    int number = 0;
+    foreach (var spec in ListSpec)
+    {
+        var sumScore = 0;
+        var indexSpec = Model.ObjList.IndexOf(spec);
+        number++;
+        <tr>
+            <td class="align-center"><b>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString())</b></td>
+            <td colspan="6">
+                <div class="row">
+                    <div class="col-sm-8" style="margin-bottom: 0">
+                        @if (lang == "vi")
+                        {
+                            <b>@spec.NAME</b>
+                            <br />
+                            <a href="#" class="col-blue-grey">(Trọng số: @spec.RATIO %)</a>
+                        }
+                        else
+                        {
+                            <b>@spec.NAME_EN</b>
+                            <br />
+                            <a href="#" class="col-blue-grey">(Ratio @spec.RATIO)</a>
+                        }
+                    </div>
+                    <div class="col-sm-4" style="margin-bottom: 0">
+                        @if (spec.TYPE == SpecType.NUMBER || spec.TYPE == SpecType.SELECT)
+                        {
+                            @*<div style="float: right;">
+                                    <a onclick="$('#divThangDiem_@spec.PKID').toggle();" style="cursor: pointer" class="col-blue-grey">@LanguageUtilities.LangText("lblThangDiem", "frm_BidSpec_CouncilScore")</a>
+                                </div>*@
+                            <div id="divThangDiem_@spec.PKID" style="" class="">
+                                <table class="table table-bordered table-striped table-thang-diem" style="margin-bottom: 0;">
+                                    <tbody>
+                                        @foreach (var detail in spec.ListDetail.OrderBy(x => x.C_ORDER))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @if (spec.TYPE == SpecType.NUMBER)
+                                                    {
+                                                        @(detail.FROM_VALUE.HasValue ? detail.FROM_VALUE.Value.ToStringVN() : "-∞") <text>--></text> @(detail.TO_VALUE.HasValue ? detail.TO_VALUE.Value.ToStringVN() : "+∞")
+                                                    }
+                                                    else
+                                                    {
+                                                        if (lang == "vi")
+                                                        {
+                                                            <div>@detail.VALUE</div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div>@detail.VALUE_EN</div>
+                                                        }
+                                                    }
+                                                </td>
+                                                <td class="align-center">@detail.SCORE</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+    if (spec.TYPE != SpecType.GROUP)
+    {
+        foreach (var contractor in lstContractor)
+        {
+            var findSpecContractor = service.ObjListSpecContractor.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID); 
+            var findSpecCouncil = service.ObjListSpecCouncilScore.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID && x.USER_SCORE == ProfileUtilities.User.USER_NAME);
+            var indexSpecCouncil = service.ObjListSpecCouncilScore.IndexOf(findSpecCouncil);
+            var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+            var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.TYPE == "2");
+
+            sumScore += service.ObjListSpecCouncilScore[indexSpecCouncil].SCORE;
+
+            bool isBlackList = false;
+            if (!string.IsNullOrEmpty(contractor.Contractor.XEP_HANG) && lstMDRating.Count(x => x.RATING == contractor.Contractor.XEP_HANG) > 0)
+            {
+                var rate = lstMDRating.FirstOrDefault(x => x.RATING == contractor.Contractor.XEP_HANG);
+                if (rate.IS_BLACK_LIST)
+                {
+                    isBlackList = true;
+                }
+            }
+
+                <tr class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                    <td></td>
+                    <td>
+                        @contractor.Contractor.TEN_NGAN
+                        <br />
+                        @if (isBlackList)
+                        {
+                            <span style="color: red">(Nhà thầu nằm trong danh sách Blacklist)</span>
+                        }
+
+                        @if (contractor.STATUS != "AP" && contractor.STATUS != "RJ")
+                        {
+                            <span class="badge bg-blue-grey">Chưa tham gia</span>
+                        }
+                        else
+                        {
+                            if (lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                            {
+                                <span class="badge bg-blue">Đã nộp hồ sơ</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-blue-grey">Chưa nộp hồ sơ</span>
+                            }
+                        }
+                    </td>
+                    @if (findSpecContractor != null)
+                    {
+                        if (spec.IS_NOT_SHOW_CONTRACTOR)
+                        {
+                            <td>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <textarea style="font-size: 13px;" class="form-control" cols="20" name="ObjListSpecCouncilScore[@indexSpecCouncil].CONTENTS" placeholder="Nhập thêm nội dung" rows="4">@service.ObjListSpecCouncilScore[indexSpecCouncil].CONTENTS</textarea>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                        else
+                        {
+                            if (spec.TYPE == SpecType.TEXT)
+                            {
+                                <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">@Html.Raw(findSpecContractor.VALUE)</td>
+                            }
+                            else if (spec.TYPE == SpecType.NUMBER)
+                            {
+                                if (string.IsNullOrWhiteSpace(findSpecContractor.VALUE))
+                                {
+                                    <td></td>
+                                }
+                                else
+                                {
+                                    decimal output = 0;
+                                    if (Decimal.TryParse(findSpecContractor.VALUE, out output))
+                                    {
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">@output.ToStringVN()</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                            }
+                            else if (spec.TYPE == SpecType.SELECT)
+                            {
+                                var findDetail = spec.ListDetail.FirstOrDefault(x => x.PKID == findSpecContractor.VALUE);
+                                if (findDetail != null)
+                                {
+                                    <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                        @if (lang == "vi")
+                                        {
+                                            <div>@findDetail.VALUE</div>
+                                        }
+                                        else
+                                        {
+                                            <div>@findDetail.VALUE_EN</div>
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                            else
+                            {
+                                <td></td>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (spec.IS_NOT_SHOW_CONTRACTOR)
+                        {
+                            <td>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <textarea style="font-size: 13px;" class="form-control" cols="20" name="ObjListSpecCouncilScore[@indexSpecCouncil].CONTENTS" placeholder="Nhập thêm nội dung" rows="4">@service.ObjListSpecCouncilScore[indexSpecCouncil].CONTENTS</textarea>
+                                    </div>
+                                </div>
+
+                                @*<textarea id="txtContent_@(indexSpec)_@lstContractor.IndexOf(contractor)" name="ObjListSpecCouncilScore[@indexSpecCouncil].CONTENTS">
+                                        @Model.ObjListSpecCouncilScore[indexSpecCouncil].CONTENTS
+                                    </textarea>*@
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    } 
+                    <td class="align-center  clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                        @if (spec.TYPE == SpecType.NUMBER)
+                        {
+                            <div class="form-group">
+                                <div class="form-line">
+
+
+                                    @if (giaThuongThao != null)
+                                    {
+                                        if (spec.MD_PKID == "a90cb897-0e4a-40c9-8be9-f31005b51c18")
+                                        {
+                                            @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                        }
+                                    }
+                                    @*<input data-val="true" class="form-control inputMask"
+                                        type="text"
+                                        value="@(string.IsNullOrWhiteSpace(Model.ObjListSpecCouncilScore[indexSpecCouncil].VALUE_OF_SPEC) ? "0" : Model.ObjListSpecCouncilScore[indexSpecCouncil].VALUE_OF_SPEC)"
+                                        name="ObjListSpecCouncilScore[@indexSpecCouncil].VALUE_OF_SPEC"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                        data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'radixPoint' :'.', 'autoGroup': true, 'autoUnmask': true, 'rightAlign': false"
+                                    >*@
+                                </div>
+                            </div>
+                        }
+                        else if (spec.TYPE == SpecType.TEXT)
+                        {
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <textarea style="font-size: 13px;" class="form-control" cols="20" name="ObjListSpecCouncilScore[@indexSpecCouncil].VALUE_OF_SPEC" placeholder="Nhập thêm nội dung" rows="4">@service.ObjListSpecCouncilScore[indexSpecCouncil].VALUE_OF_SPEC</textarea>
+                                </div>
+                            </div>
+                        }
+                        else if (spec.TYPE == SpecType.SELECT)
+                        {
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select data-val="true" name="ObjListSpecCouncilScore[@indexSpecCouncil].VALUE_OF_SPEC"
+                                            class="selectpicker show-tick dropdown form-control"
+                                            id="spec_@indexSpecCouncil"
+                                            onchange="OnChangeScoreBySelect('@indexSpecCouncil','@contractor.CONTRACTOR_ID');">
+                                        <option value=""></option>
+                                        @if (lang == "vi")
+                                        {
+                                            foreach (var detail in spec.ListDetail.OrderBy(x => x.C_ORDER))
+                                            {
+                                                if (detail.PKID == Model.ObjListSpecCouncilScore[indexSpecCouncil].VALUE_OF_SPEC)
+                                                {
+                                                    <option selected value="@detail.PKID" modelScore="@detail.SCORE">@detail.VALUE</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@detail.PKID" modelScore="@detail.SCORE">@detail.VALUE</option>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var detail in spec.ListDetail.OrderBy(x => x.C_ORDER))
+                                            {
+                                                if (detail.PKID == Model.ObjListSpecCouncilScore[indexSpecCouncil].VALUE_OF_SPEC)
+                                                {
+                                                    <option selected value="@detail.PKID" modelScore="@detail.SCORE">@detail.VALUE_EN</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@detail.PKID" modelScore="@detail.SCORE">@detail.VALUE_EN</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <span class="field-validation-error" data-valmsg-for="ObjListSpecCouncilScore[@indexSpecCouncil].VALUE_OF_SPEC" data-valmsg-replace="true">
+                                </span>
+                            </div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @*@if (Model.ObjListSpecSystemScore.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+                                {
+                                    var find = service.ObjListSpecSystemScore.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID);
+                                    <span>@find.SCORE</span>
+                                }
+                                else
+                                {
+                                    <span>0</span>
+                         }*@
+                        <div>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control align-center valid input-validation-error score_@contractor.CONTRACTOR_ID" data-ratio="@spec.RATIO" onchange="OnChangeScore('@contractor.CONTRACTOR_ID');" data-val="true" data-val-number="Vui lòng nhập kiểu số." data-val-regex="Hãy nhập điểm không có dấu thập phân!"  data-val-range="Điểm phải từ 0 đến 10." data-val-range-min="0" data-val-range-max="10"  data-val-regex-pattern="([0-9]+)" data-val-required="Hãy nhập điểm." id="txt_@indexSpecCouncil" name="ObjListSpecCouncilScore[@indexSpecCouncil].SCORE" placeholder="Chấm điểm" type="text" value="@service.ObjListSpecCouncilScore[indexSpecCouncil].SCORE">
+                                </div>
+                                <span class="field-validation-valid" data-valmsg-for="ObjListSpecCouncilScore[@indexSpecCouncil].SCORE" data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center" style="min-width: 250px">
+                        <div>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @if (lang == "vi")
+                                    {
+                                        <textarea style="font-size: 13px;" class="form-control" cols="20" id="txta_@indexSpecCouncil" name="ObjListSpecCouncilScore[@indexSpecCouncil].NOTES" placeholder="Ghi chú" rows="2">@service.ObjListSpecCouncilScore[indexSpecCouncil].NOTES</textarea>
+                                    }
+                                    else
+                                    {
+                                        <textarea style="font-size: 13px;" class="form-control" cols="20" id="txta_@indexSpecCouncil" name="ObjListSpecCouncilScore[@indexSpecCouncil].NOTES" placeholder="Notes" rows="2">@service.ObjListSpecCouncilScore[indexSpecCouncil].NOTES</textarea>
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        @if (!string.IsNullOrEmpty(contractor.Contractor.XEP_HANG))
+                        {
+                            <span>@contractor.Contractor.XEP_HANG</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+
+        if (spec.TYPE == SpecType.GROUP && Model.ObjList.Count(x => x.PARENT_ID == spec.PKID) > 0)
+        {
+            <div class="p-l-30">
+                @BuildSpec(Model.ObjList.Where(x => x.PARENT_ID == spec.PKID).OrderBy(x => x.C_ORDER).ToList(), number.ToString(), lstContractor, service, lang, lstMDRating, lstSubmit)
+            </div>
+        }
+    }
+}

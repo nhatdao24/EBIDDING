@@ -1,0 +1,200 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@using SMO.Core.Entities
+@using Newtonsoft.Json
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewContractor_EditDetailReviewContractor";
+    var frmCodeAddNew = "frm_ReviewContractor_AddDetailReviewContractor";
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var lstBid = new List<dynamic>();
+    var lstMaterialType = new List<dynamic>();
+    if (!string.IsNullOrWhiteSpace(Model.ObjReviewContractorDetail.INFO_BID_EBID))
+    {
+        foreach (var bidId in Model.ObjReviewContractorDetail.INFO_BID_EBID.Split(','))
+        {
+            var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+            if (find != null)
+            {
+                lstBid.Add(new { id = find.PKID, name = find.TEN_GOI_THAU });
+            }
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.ObjReviewContractorDetail.MATERIAL_TYPE))
+    {
+        foreach (var typeId in Model.ObjReviewContractorDetail.MATERIAL_TYPE.Split(','))
+        {
+            var find = UnitOfWork.Repository<MaterialTypeRepo>().Get(typeId);
+            if (find != null)
+            {
+                lstMaterialType.Add(new { id = find.CODE, name = find.TEXT });
+            }
+        }
+    }
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("UpdateDetailReviewContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjReviewContractorDetail.PKID)
+        @Html.HiddenFor(m => m.ObjReviewContractorDetail.HEADER_ID)
+        @Html.HiddenFor(m => m.ObjReviewContractorDetail.INFO_BID_EBID, new { id = "hddInfoBidEbid" })
+        @Html.HiddenFor(m => m.ObjReviewContractorDetail.MATERIAL_TYPE, new { id = "hddMaterialType" })
+        @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <span class="page-header-icon" onclick="Forms.CloseRightContent();" style="float:right;">
+                    <i class="material-icons">arrow_forward</i>
+                </span>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">add</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCodeAddNew), "SubmitFormDetail();", "Alt+N", "done_all")
+                            @Html.MyButton("cmdSelectBid", LanguageUtilities.LangText("cmdSelectBid", frmCodeAddNew), string.Format("AddBid('{0}','{1}');", @Model.ObjDetail.CONTRACTOR_ID, Model.ObjDetail.REVIEW_ID), "Alt+N", "add")
+                            @*@Html.MyButton("cmdSelectCommodity", LanguageUtilities.LangText("cmdSelectCommodity", frmCodeAddNew), "AddMaterialType();", "Alt+N", "add")*@
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>@LanguageUtilities.LangText("lblCongViecThucHien", frmCodeAddNew)</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjReviewContractorDetail.INFO_BID)
+                            </div>
+                        </div>
+
+                        <label>@LanguageUtilities.LangText("lblGoiThau", frmCodeAddNew)</label>
+                        <div class="form-group m-t-10 p-l-10" id="divListBid">
+
+                        </div>
+
+                        @*<label>@LanguageUtilities.LangText("lblLoaiHangHoa", frmCodeAddNew)</label>
+                            <div class="form-group m-t-10 p-l-10" id="divListMaterialType">
+
+                            </div>*@
+
+                        <label>@LanguageUtilities.LangText("lblGiaTri", frmCodeAddNew)</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjReviewContractorDetail.GIA_TRI)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjReviewContractorDetail.GIA_TRI)
+                        </div>
+
+                        @*<label>Tỷ lệ % trong DA</label>
+                            <div class="form-group cur">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjReviewContractorDetail.RATIO_IN_PROJECT)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjReviewContractorDetail.RATIO_IN_PROJECT)
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        var lstBidForAdd = @Html.Raw(JsonConvert.SerializeObject(lstBid));
+        var lstMaterialTypeForAdd = @Html.Raw(JsonConvert.SerializeObject(lstMaterialType));
+
+        function SubmitFormDetail() {
+            $("#hddInfoBidEbid").val(lstBidForAdd.map(function(elem){
+                return elem.id;
+            }).join(","));
+
+            $("#hddMaterialType").val(lstMaterialTypeForAdd.map(function(elem){
+                return elem.id;
+            }).join(","));
+
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        function RefreshListBid() {
+            debugger;
+            $("#divListBid").html("");
+            var strTable = "<table class='table'>";
+            $.each( lstBidForAdd, function( key, value ) {
+                strTable += "<tr>";
+                strTable += "<td>";
+                strTable += "<div>";
+                strTable += value.id;
+                strTable += "</div>";
+                strTable += "<div class='font-13'>";
+                strTable += value.name;
+                strTable += "</div>";
+                strTable += "</td>";
+
+                strTable += "<td>";
+                strTable += "<input type=\"hidden\" id=\"" + value.id + "\" class=\"giaTrungThau\" value=\"" + value.price + "\"/>";
+                strTable += "<i class='col-fecon material-icons font-20' style='cursor:pointer;' onclick='RemoveBid(\"" + value.id + "\")'>close</i>";
+                strTable += "</td>";
+                strTable += "</tr>";
+            });
+            strTable += "</table>";
+            $("#divListBid").html(strTable);
+
+            //Tính giá trị
+            var totalBid = $(".giaTrungThau").length;
+            var totalPrice = 0;
+            $.each($(".giaTrungThau"), function () {
+                totalPrice += $(this).val();
+            });
+            var price = 0;
+            if (totalBid>0) {
+                price = totalPrice / totalBid;
+            }
+            $('#ObjReviewContractorDetail_GIA_TRI').val(price);
+        }
+
+        function RefreshListMaterialType() {
+            $("#divListMaterialType").html("");
+            var strTable = "<table class='table'>";
+            $.each( lstMaterialTypeForAdd, function( key, value ) {
+                strTable += "<tr>";
+                strTable += "<td>";
+                strTable += "<div>";
+                strTable += value.id;
+                strTable += "</div>";
+                strTable += "<div class='font-13'>";
+                strTable += value.name;
+                strTable += "</div>";
+                strTable += "</td>";
+
+                strTable += "<td>";
+                strTable += "<i class='col-fecon material-icons font-20' style='cursor:pointer;' onclick='RemoveMaterialType(\"" + value.id + "\")'>close</i>";
+                strTable += "</td>";
+                strTable += "</tr>";
+            });
+            strTable += "</table>";
+            $("#divListMaterialType").html(strTable);
+        }
+
+        function RemoveBid(id) {
+            lstBidForAdd = lstBidForAdd.filter(function (el) { return el.id != id });
+            RefreshListBid();
+        }
+
+        function RemoveMaterialType(id) {
+            lstMaterialTypeForAdd = lstMaterialTypeForAdd.filter(function (el) { return el.id != id });
+            RefreshListMaterialType();
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            RefreshListBid();
+            RefreshListMaterialType();
+        });
+    </script>
+</div>
+

@@ -1,0 +1,171 @@
+﻿@model SMO.Service.CM.FileUploadService
+@{
+    Layout = null;
+    var detail = Model.ObjDetail;
+    string ext = (ViewBag.FileExt ?? "").ToString().ToLower();
+
+    // Danh sách các loại file
+    var officeFormats = new List<string> { "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "txt", "bm3" };
+    var imageFormats = new List<string> { "jpg", "jpeg", "png", "gif", "svg", "webp" };
+
+    bool isOffice = officeFormats.Contains(ext);
+    bool isImage = imageFormats.Contains(ext);
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>@detail.FILE_OLD_NAME</title>
+    <link rel="icon" href="~/Theme/images/icon.png" sizes="32x32">
+
+    <link href="~/Theme/css/google_roboto.css" rel="stylesheet" type="text/css">
+    <link href="~/Theme/css/google_material_icon.css" rel="stylesheet" type="text/css">
+    <link href="~/Theme/plugins/bootstrap-3.4.1/css/bootstrap.css" rel="stylesheet">
+    <link href="~/Theme/css/style.css?v=6" rel="stylesheet">
+    <link href="~/Theme/css/themes/theme-indigo.min.css" rel="stylesheet" />
+    <link href="~/Theme/css/materialize.css" rel="stylesheet" />
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .view-file-online {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .view-file-online__header {
+            height: 60px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Phần chứa nội dung file */
+        #content-preview {
+            flex-grow: 1;
+            width: 100%;
+            height: calc(100vh - 60px);
+            overflow: auto;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #placeholder {
+            width: 100%;
+            height: 100%;
+        }
+
+        .img-preview {
+            width: 100% !important;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .no-preview {
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="theme-indigo">
+
+    <div class="view-file-online">
+        <div class="view-file-online__header">
+            <img src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(detail.FILE_EXT)" style="width:32px; height:32px; margin-right:10px;">
+            <div class="view-file-online__file-info" style="flex-grow:1">
+                <div class="file-name" style="font-weight:bold">@detail.FILE_OLD_NAME</div>
+                <div class="file-size">@SMOUtilities.BytesToSize((double)detail.FILE_SIZE)</div>
+            </div>
+
+            <i class="material-icons col-fecon view-file-online__btn-download" style="cursor:pointer; margin-right:20px;" onclick="DownloadFile('@detail.PKID')">cloud_download</i>
+            <button type="button" class="btn btn-link waves-effect col-fecon" onclick="window.close();" style="font-size:20px;">✖</button>
+        </div>
+
+        <div id="content-preview">
+            @if (isOffice)
+            {
+                <div id="placeholder"></div>
+            }
+            else if (isImage)
+            {
+                <img src="@Html.Raw(ViewBag.PresignedUrl)" class="img-preview" />
+            }
+            else
+            {
+                <div class="no-preview">
+                    <i class="material-icons" style="font-size: 64px; color: #9e9e9e;">insert_drive_file</i>
+                    <h4>Định dạng này không hỗ trợ xem trực tiếp</h4>
+                    <p>Vui lòng tải xuống để xem nội dung.</p>
+                    <button class="btn btn-primary" onclick="DownloadFile('@detail.PKID')">TẢI FILE VỀ</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-1.10.2.js?v=1.1"></script>
+
+    @if (isOffice)
+    {
+        <script type="text/javascript" src="https://smr.d2s.com.vn:1010/web-apps/apps/api/documents/api.js"></script>
+        <script>
+            const detectFileType = (ext) => {
+                ext = ext.replace('.', '').toLowerCase();
+                const wordFormats = ['doc', 'docx', 'docm', 'dot', 'dotx', 'dotm', 'odt', 'fodt', 'ott', 'rtf', 'txt', 'html', 'htm', 'mht', 'pdf', 'djvu', 'fb2', 'epub', 'xps', 'bm3'];
+                const cellFormats = ['xls', 'xlsx', 'xlsm', 'xlt', 'xltx', 'xltm', 'ods', 'fods', 'ots', 'csv'];
+                const slideFormats = ['ppt', 'pptx', 'pptm', 'pot', 'potx', 'potm', 'odp', 'fodp', 'otp'];
+
+                if (wordFormats.includes(ext)) return 'word';
+                if (cellFormats.includes(ext)) return 'cell';
+                if (slideFormats.includes(ext)) return 'slide';
+                return 'word';
+            };
+
+            const config = {
+                "document": {
+                    "fileType": "@ext" === "bm3" ? "docx" : "@ext",
+                    "key": "@ViewBag.FileKey" || "@detail.PKID",
+                    "title": "@detail.FILE_OLD_NAME",
+                    "url": "@Html.Raw(ViewBag.PresignedUrl)"
+                },
+                "documentType": detectFileType("@ext"),
+                "editorConfig": {
+                    "lang": "vi",
+                    "mode": "view",
+                    "customization": {
+                        "uiTheme": "theme-standard",
+                        "compactHeader": true,
+                        "toolbarNoTabs": false,
+                        "hideRightMenu": true,
+                        "logo": { "image": "", "url": "" }
+                    }
+                },
+                "height": "100%",
+                "width": "100%"
+            };
+
+            if (window.DocsAPI) {
+                new DocsAPI.DocEditor("placeholder", config);
+            }
+        </script>
+    }
+
+    <script>
+        function DownloadFile(id) {
+            window.location.href = '/EB/EB/DownloadFile?id=' + id;
+        }
+    </script>
+</body>
+</html>

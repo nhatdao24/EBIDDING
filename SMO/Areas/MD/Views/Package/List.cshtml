@@ -1,0 +1,56 @@
+﻿@model SMO.Service.MD.PackageService
+@{
+    var frmFormCode = "frmUnitIndex";
+    var number = 1;
+}
+
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+
+                @if (lang == "vi")
+                {
+                    <th>Mã</th>
+                    <th>Tên</th>
+                }
+                else
+                {
+                    <th>Code</th>
+                    <th>Text</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.CODE))
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.CODE }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td>@item.TEXT</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

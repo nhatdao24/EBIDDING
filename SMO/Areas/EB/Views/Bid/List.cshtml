@@ -1,0 +1,200 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.EB
+@{
+    var number = 1;
+    var frmCode = "frm_Bid_Index";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    var lstBidContractor = Model.UnitOfWork.Repository<BidContractorRepo>().GetAll().ToList();
+
+
+    if (Model.ObjDetail.GIAI_DOAN == Phase_Status.DongThau)
+    {
+        var lstNewRound = new List<T_EB_BID>();
+        foreach (var item in Model.ObjList.Where(x => x.IS_MULTIL_ROUND == true).ToList())
+        {
+            if (Model.ObjList.Count(x => x.PARENT_BID == item.PARENT_BID) > 1)
+            {
+                var newRound = Model.ObjList.Where(x => x.PARENT_BID == item.PARENT_BID).OrderByDescending(x => x.ROUND).FirstOrDefault();
+                lstNewRound.Add(newRound);
+            }
+        }
+        Model.ObjList = Model.ObjList.Where(x => x.IS_MULTIL_ROUND == false).ToList();
+        Model.ObjList.AddRange(lstNewRound.Distinct());
+    }
+}
+
+<div class="table-responsive font-13 dashboard-task-infos">
+    <iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportExcel(true)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("thTenGoiThau", frmCode)</th>
+                @*ConfigViettinBank: Xoá dự án*@
+                @*<th>Tên dự án</th>*@
+                <th>@LanguageUtilities.LangText("thTrangThai", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thGiaiDoan", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayMoThau", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayDongThau", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayKetThuc", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayTao", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thTGChamThau", frmCode)</th>
+                <th width="120px" class="align-center">@LanguageUtilities.LangText("thConLai", frmCode)</th>
+                @if (Model.ObjDetail.GIAI_DOAN == "05")
+                {
+                    <th class="align-center">Giá trị chọn thầu</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+            {
+                number++;
+                var tongNgay = (int)(item.NGAY_DONG_THAU - item.NGAY_MO_THAU).TotalDays;
+
+                var soNgayDaQua = (int)(DateTime.Now - item.NGAY_MO_THAU).TotalDays;
+
+                var soNgayConLai = (int)(item.NGAY_DONG_THAU - DateTime.Now).TotalDays;
+
+                var ngayChamThau = 0;
+                var gioChamThau = 0;
+                if (item.CLOSE_DATE.HasValue && item.NGAY_DONG_THAU != null)
+                {
+                    ngayChamThau = (int)(item.CLOSE_DATE.Value - item.NGAY_DONG_THAU).TotalDays;
+                    gioChamThau = (int)(item.CLOSE_DATE.Value - item.NGAY_DONG_THAU).TotalHours;
+                }
+
+                var phanTram = 0;
+
+                if (tongNgay != 0)
+                {
+                    phanTram = (int)(soNgayDaQua * 100 / tongNgay);
+                }
+
+                if (tongNgay < 0)
+                {
+                    phanTram = 0;
+                }
+
+                var color = "bg-green";
+                if (phanTram > 20)
+                {
+                    color = "bg-blue";
+                }
+                if (phanTram > 40)
+                {
+                    color = "bg-indigo";
+                }
+                if (phanTram > 60)
+                {
+                    color = "bg-amber";
+                }
+                if (phanTram > 80)
+                {
+                    color = "bg-deep-orange";
+                }
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", new { id = item.PKID }));
+                //var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuEdit", new { id = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <div><a href="#" onclick="@vdbclickAction">@item.PARENT_BID</a></div>
+                        @if (lang == "vi")
+                        {
+                            <div>@item.TEN_GOI_THAU</div>
+                        }
+                        else
+                        {
+                            <div>@item.TEN_GOI_THAU_EN</div>
+                        }
+                    </td>
+                    @*ConfigViettinBank: Xoá dự án*@
+                    @*<td>
+                            <div>@item.Project.NAME</div>
+                        </td>*@
+                    <td>
+                        <span class="badge @EB_Status.GetStatusColor(item.STATUS)">@EB_Status.GetStatusText(item.STATUS)</span>
+                    </td>
+                    <td>
+                        <span class="badge @Phase_Status.GetStatusColor(item.GIAI_DOAN)">@Phase_Status.GetStatusText(item.GIAI_DOAN, lang)</span>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_MO_THAU.ToString(Global.DateToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_DONG_THAU.ToString(Global.DateToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        @if (item.CLOSE_DATE.HasValue)
+                        {
+                            <div>@item.CLOSE_DATE.Value.ToString(Global.DateTimeToStringFormat)</div>
+                        }
+                    </td>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @item.CREATE_DATE.Value.ToString("dd/MM/yyyy HH:mm")
+                        <div class="col-blue-grey">@item.CREATE_BY</div>
+                    </td>
+                    <td class="align-center">
+                        @if (gioChamThau > 0)
+                        {
+                            if (lang == "vi")
+                            {
+                                if (ngayChamThau > 0)
+                                {
+                                    <div>@ngayChamThau Ngày</div>
+                                }
+                                else
+                                {
+                                    <div>@gioChamThau Giờ</div>
+                                }
+                            }
+                            else
+                            {
+                                if (ngayChamThau > 0)
+                                {
+                                    <div>@ngayChamThau Days</div>
+                                }
+                                else
+                                {
+                                    <div>@gioChamThau Hours</div>
+                                }
+                            }
+                        }
+                    </td>
+                    <td style="padding-top: 0px;" class="align-center">
+                        @if (item.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            if (lang == "vi")
+                            {
+                                <div>@soNgayConLai Ngày</div>
+                            }
+                            else
+                            {
+                                <div>@soNgayConLai Days</div>
+                            }
+                            <div class="progress">
+                                <div class="progress-bar @color" role="progressbar" aria-valuenow="@soNgayDaQua" aria-valuemin="0" aria-valuemax="@tongNgay" style="width: @phanTram%"></div>
+                            </div>
+                        }
+                    </td>
+                    @if (Model.ObjDetail.GIAI_DOAN == "05")
+                    {
+
+                        <td>
+                            @(lstBidContractor.Where(x => x.BID_ID == item.PKID).Count() > 0
+                            ? lstBidContractor.Where(x => x.BID_ID == item.PKID).Sum(x => x.PERCENT_WINNING)?.ToStringVN()
+                            : "0")
+                        </td>
+
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

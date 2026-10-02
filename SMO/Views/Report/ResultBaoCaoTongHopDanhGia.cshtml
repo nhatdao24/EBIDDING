@@ -1,0 +1,285 @@
+﻿@model SMO.Service.ReportService
+@using SMO.Service
+@using SMO.Repository.Implement.MD
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Common
+@using SMO.Core.Entities;
+@{
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var listReviewSpec = UnitOfWork.Repository<ReviewSpecRepo>().GetAll().OrderBy(x => x.C_ORDER).ThenBy(x => x.PKID).ToList();
+    var sumMax = (decimal)listReviewSpec.Sum(x => x.MAX_SCORE);
+    var queryReviewContractor = UnitOfWork.Repository<ReviewContractorRepo>().Queryable();
+    var queryReview = UnitOfWork.Repository<ReviewRepo>().Queryable();
+    var queryProject = UnitOfWork.Repository<ProjectRepo>().Queryable();
+    var queryContractor = UnitOfWork.Repository<ContractorRepo>().Queryable();
+    var queryBid = UnitOfWork.Repository<BidRepo>().Queryable();
+    var isQueryContractor = false;
+    var isQueryReviewContractor = false;
+    var isQueryProject = false;
+
+    if (!string.IsNullOrWhiteSpace(Model.MaNhaThau))
+    {
+        var lstMaNhaThau = Model.MaNhaThau.Split(',');
+        queryReviewContractor = queryReviewContractor.Where(x => lstMaNhaThau.Contains(x.CONTRACTOR_ID));
+        isQueryReviewContractor = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.DuAn))
+    {
+        var lstDuAn = Model.DuAn.Split(',');
+        queryReview = queryReview.Where(x => lstDuAn.Contains(x.PROJECT_CODE));
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.DonVi))
+    {
+        queryReview = queryReview.Where(x => x.ORG_CODE == Model.DonVi);
+    }
+
+    //if (!string.IsNullOrWhiteSpace(Model.XepHang))
+    //{
+    //    queryContractor = queryContractor.Where(x => x.XEP_HANG == Model.XepHang);
+    //    isQueryContractor = true;
+    //}
+
+    if (Model.DuAn_TuNgay.HasValue)
+    {
+        queryProject = queryProject.Where(x => x.NGAY_BAT_DAU >= Model.DuAn_TuNgay.Value);
+        isQueryProject = true;
+    }
+
+    if (Model.DuAn_DenNgay.HasValue)
+    {
+        queryProject = queryProject.Where(x => x.NGAY_BAT_DAU < Model.DuAn_DenNgay.Value.AddDays(1));
+        isQueryProject = true;
+    }
+
+    if (isQueryReviewContractor)
+    {
+        var lstReviewId = queryReviewContractor.Select(x => x.REVIEW_ID).Distinct().ToList();
+        queryReview = queryReview.Where(x => lstReviewId.Contains(x.CODE));
+    }
+
+    if (isQueryProject)
+    {
+        var lstProjectId = queryProject.Select(x => x.CODE).ToList();
+        queryReview = queryReview.Where(x => lstProjectId.Contains(x.PROJECT_CODE));
+    }
+
+    queryReview = queryReview.Where(x => x.STATUS == SMO.Review_Status.KetThuc);
+
+    var lstReview = queryReview.ToList();
+    var lstContractor = new List<T_EB_CONTRACTOR>();
+    var lstProject = new List<T_MD_PROJECT>();
+    foreach (var review in lstReview)
+    {
+        foreach (var reviewContractor in review.ListContractor)
+        {
+            if (isQueryReviewContractor)
+            {
+                var lstMaNhaThau = queryReviewContractor.Select(x => x.CONTRACTOR_ID).ToList();
+                if (lstMaNhaThau.Contains(reviewContractor.CONTRACTOR_ID))
+                {
+                    lstContractor.Add(reviewContractor.Contractor);
+                }
+            }
+            else
+            {
+                lstContractor.Add(reviewContractor.Contractor);
+            }
+        }
+
+        if (isQueryProject)
+        {
+            var lstProjectId = queryProject.Select(x => x.CODE).ToList();
+            if (lstProjectId.Contains(review.PROJECT_CODE))
+            {
+                lstProject.Add(review.Project);
+            }
+        }
+        else
+        {
+            lstProject.Add(review.Project);
+        }
+    }
+
+    lstContractor = lstContractor.Distinct().ToList();
+    lstProject = lstProject.Distinct().ToList();
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered">
+        <thead>
+            <tr>
+                <th rowspan="3" class="align-center">STT</th>
+                <th rowspan="3" class="align-center" style="min-width:200px;">Nhà thầu phụ / NCC</th>
+                <th rowspan="3" class="align-center">Công việc thực hiện</th>
+                <th rowspan="3" class="align-center">Giá trị thực hiện</th>
+                <th colspan="" class="align-center">Điểm đánh giá trung bình: các chỉ tiêu đánh giá</th>
+                <th rowspan="3" class="align-center">Tổng điểm</th>
+                <th rowspan="3" class="align-center">Điểm trung bình</th>
+                <th rowspan="3" class="align-center">Xếp loại</th>
+                <th rowspan="3" class="align-center">Ghi chú</th>
+            </tr>
+            <tr>
+                @foreach (var project in lstProject)
+                {
+                    <th rowspan="2" class="align-center">Ngày đánh giá</th>
+                    <th colspan="8" class="align-center">@project.NAME</th>
+                }
+            </tr>
+            <tr>
+                @foreach (var project in lstProject)
+                {
+                    <th class="align-center" style="min-width:150px;">Loại hàng hóa</th>
+                    <th class="align-center" style="min-width:200px;">Công việc thực hiện</th>
+                    <th class="align-center">Giá trị dự án</th>
+                    <th class="align-center">Giá trị thực hiện</th>
+                    <th class="align-center">% Giá trị thực hiện</th>
+                    <th class="align-center">Tổng điểm đánh giá</th>
+                    <th class="align-center">Điểm đạt được</th>
+                    <th class="align-center">Tỷ lệ đạt được</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contractor in lstContractor)
+            {
+                var maxRow = 0;
+                foreach (var project in lstProject)
+                {
+                    var findReview = lstReview.Where(x => x.PROJECT_CODE == project.CODE).ToList();
+                    foreach (var review in findReview)
+                    {
+                        foreach (var reviewContractor in review.ListContractor.Where(x => x.CONTRACTOR_ID == contractor.PKID).ToList())
+                        {
+                            maxRow += reviewContractor.ListDetail.Count();
+                        }
+                    }
+                }
+                if (maxRow == 0)
+                {
+                    maxRow = 1;
+                }
+
+                <tr>
+                    <td rowspan="@maxRow">@contractor.TEN_NGAN</td>
+                    <td rowspan="@maxRow">@contractor.XEP_HANG</td>
+                    @for (int j = 0; j < lstProject.Count * 9; j++)
+                    {
+                        var id = $"td_{contractor.PKID}0{j}";
+                        <td id="@id" rowspan="@if (j == maxRow*9) { @maxRow }"></td>
+                    }
+                    <td id="tdTongDiem_@contractor.PKID" rowspan="@maxRow"></td>
+                    <td id="tdDiemTB_@contractor.PKID" rowspan="@maxRow"></td>
+                    <td id="tdTyLe_@contractor.PKID" rowspan="@maxRow"></td>
+                </tr>
+                for (int i = 1; i < maxRow; i++)
+                {
+                    <tr>
+                        @for (int j = 0; j < lstProject.Count * 8; j++)
+                        {
+                            <td id="td_@contractor.PKID@i@j"></td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        @foreach (var contractor in lstContractor)
+        {
+            int currentColProject = 0;
+            int currentRow = 0;
+            decimal tongDiemTrungBinh = 0;
+            decimal tongDiemDanhGia = 0;
+
+            foreach (var project in lstProject)
+            {
+                var findReview = lstReview.Where(x => x.PROJECT_CODE == project.CODE).ToList();
+                foreach (var review in findReview)
+                {
+                    int currentCol = 0;
+                    var reviewContractor = review.ListContractor.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.PKID);
+                    if (reviewContractor != null)
+                    {
+                        var listReviewSpecScore = new List<T_EB_REVIEW_SPEC_SCORE>();
+                        foreach (var detail in reviewContractor.ListDetail)
+                        {
+                            tongDiemDanhGia += sumMax;
+                            //Tính điểm
+                            decimal sumScore = 0;
+                            listReviewSpecScore.AddRange(UnitOfWork.Repository<ReviewSpecScoreRepo>().Queryable().Where(x => x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID).ToList());
+                            foreach (var spec in listReviewSpec)
+                            {
+                                var findSpecCouncil = listReviewSpecScore.Where(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID).ToList();
+                                decimal value = 0;
+                                if (findSpecCouncil.Count > 0)
+                                {
+                                    value = ((decimal)findSpecCouncil.Sum(x => x.SCORE) / (decimal)findSpecCouncil.Count);
+                                }
+                                sumScore += value;
+                            }
+                            tongDiemTrungBinh += sumScore;
+
+                            var strMaterialType = "";
+                            if (!string.IsNullOrWhiteSpace(detail.MATERIAL_TYPE))
+                            {
+                                foreach (var typeId in detail.MATERIAL_TYPE.Split(','))
+                                {
+                                    var find = UnitOfWork.Repository<MaterialTypeRepo>().Get(typeId);
+                                    if (find != null)
+                                    {
+                                        strMaterialType += "<div>" + find.TEXT + "</div>";
+                                    }
+                                }
+                            }
+                            <text>
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 0)").html("@review.EVALUATE_DATE");
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 1)").html("@Html.Raw(strMaterialType)");
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 2)").html("@detail.INFO_BID");
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 3)").html("@project.GIA_TRI_THUC_HIEN.ToStringVN()");
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 4)").html("@detail.GIA_TRI.ToStringVN()");
+                                @if (project.GIA_TRI_THUC_HIEN > 0)
+                                {
+                                    <text>
+                                        $("#td_@contractor.PKID@currentRow@(currentColProject + 5)").html("@(((detail.GIA_TRI / project.GIA_TRI_THUC_HIEN)* 100).ToStringVN()) %");
+                                    </text>
+
+                                }
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 6)").html("@(sumMax.ToStringVN())");
+                                $("#td_@contractor.PKID@currentRow@(currentColProject + 7)").html("@(sumScore.ToStringVN())");
+                                @if (sumMax > 0)
+                                {
+                                    <text>
+                                        $("#td_@contractor.PKID@currentRow@(currentColProject + 8)").html("@((sumScore / sumMax * 100).ToStringVN()) %");
+                                    </text>
+                                }
+
+                            </text>
+
+                            currentRow++;
+                        }
+                    }
+
+                }
+
+                currentColProject = currentColProject + 9;
+            }
+
+            <text>
+                $("#tdTongDiem_@contractor.PKID").html("@(tongDiemDanhGia.ToStringVN())");
+                $("#tdDiemTB_@contractor.PKID").html("@(tongDiemTrungBinh.ToStringVN())");
+                @if (tongDiemDanhGia > 0)
+                {
+                    <text>
+                        $("#tdTyLe_@contractor.PKID").html("@(((decimal) tongDiemTrungBinh / tongDiemDanhGia * 100).ToStringVN()) %");
+                    </text>
+                }
+            </text>
+        }
+    });
+</script>

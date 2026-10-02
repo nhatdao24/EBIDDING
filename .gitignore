@@ -1,0 +1,22 @@
+# Solution and project folders
+SolutionDll.rar/
+SolutionDll/
+.vs/
+.svn/
+packages/
+
+# SMO project folders
+SMO.Cache/obj/
+SMO.TestConsole/obj/
+SMO.SAPINT/
+SMO/Logs/
+
+# Build output directories
+**/bin/
+**/obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates

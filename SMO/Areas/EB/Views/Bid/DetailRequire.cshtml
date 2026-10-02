@@ -1,0 +1,119 @@
+﻿@model SMO.Service.EB.BidRequireService
+@using System.Configuration
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Bid_DetailRequire";
+    var frmCodeBidRequired = "frm_BidRequire_Detail";
+    var lang = "vi";
+    var url = ConfigurationManager.AppSettings["URL_WEB"];
+    var urlBidRequire = url + "Admin/OpenBidRequire?id=" + Model.ObjHeader.CODE;
+}
+<div id='@Model.ViewId'>
+    @Html.HiddenFor(m => m.ViewId)
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">content_copy</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div role="tabpanel">
+                            <div id="divDetail" class="m-t-20">
+                                <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                    <table class="table table-condensed font-13">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 200px">@LanguageUtilities.LangText("thMatHang", frmCode)</th>
+                                                <th style="min-width: 200px">@LanguageUtilities.LangText("thCongViec", frmCodeBidRequired)</th>
+
+                                                @if (Model.ObjHeader.IS_RENT)
+                                                {
+                                                   <th width="150px" class="align-right">@LanguageUtilities.LangText("thTimeRent", frmCodeBidRequired)</th>
+                                                }
+                                                <th width="150px" class="align-center">@LanguageUtilities.LangText("thSoLuong", frmCode)</th>
+                                                <th width="100px" class="align-center">@LanguageUtilities.LangText("thDonViTinh", frmCode)</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.ObjHeader.ListDetail.OrderBy(x => x.ITEM_NUMBER == null ? 1 : 0).ThenBy(x => x.ITEM_NUMBER))
+                                            {
+                                                <tr>
+                                                    <td>@item.Material.TEXT</td>
+                                                    <td>[@(item.Scope?.CODE ?? "")] @(item.Scope?.TEXT ?? "")</td>
+
+                                                    @if (Model.ObjHeader.IS_RENT)
+                                                    {
+                                                        <td>@(item.Unit != null ? item.TIME_RENT + " " + item.RentUnit.TEXT : "" )</td>
+                                                    }
+                                                    <td class="align-center">@item.QUANTITY.ToStringVN()</td>
+                                                    <td class="align-center">@(item.Unit != null ? item.Unit.TEXT : "")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode) @*: <span class="col-pink">@Model.ObjHeader.CODE</span>*@</a></li>
+                    </ul>
+                    <div class="tab-content po-info">
+                        <ul>
+                            <li>
+                                <span>@Model.ObjHeader.NAME</span>
+                                <div class="col-blue-grey font-13">@Model.ObjHeader.DESCRIPTION</div>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblMaDeNghi", frmCode)</span>
+                                </span>
+                                <span style="float:right">
+                                    <a href="@urlBidRequire" target="_blank">@Model.ObjHeader.CODE</a>
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNgayDeNghi", frmCode)</span>
+                                </span>
+                                <span style="float:right">@(@Model.ObjHeader.CREATE_DATE.HasValue ? Model.ObjHeader.CREATE_DATE.Value.ToString("dd/MM/yyyy") : "")</span>
+                            </li>
+
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">timeline</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblTrangThai", frmCode)</span>
+                                </span>
+                                <span class="badge @EB_Status.GetStatusColor(Model.ObjHeader.STATUS)" style="float:right">@EB_Status.GetStatusText(Model.ObjHeader.STATUS)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

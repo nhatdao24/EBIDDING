@@ -1,0 +1,757 @@
+﻿@model SMO.Service.EB.ContractorService
+@using SMO.Core.Entities
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_User_CreateUserContractor";
+
+    var serviceScopeType = new SMO.Service.MD.ScopeTypeService();
+    serviceScopeType.GetAll();
+    var serviceScope = new SMO.Service.MD.ScopeService();
+    serviceScope.GetAll();
+    var serviceNumberOfProject = new SMO.Service.MD.NumberOfProjectService();
+    serviceNumberOfProject.GetAll();
+    var serviceOption = new SMO.Service.MD.OptionService();
+    serviceOption.GetAll();
+
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("CreateUserContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.RequestId)
+        @Html.HiddenFor(m => m.VendorId)
+        @Html.HiddenFor(m => m.ObjDetail.FILE_GIOI_THIEU_ID)
+        <div class="row">
+            <div class="col-xs-12 col-sm-8">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">person</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdBack", LanguageUtilities.LangText("cmdBack", frmCode), string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                                    @Html.MyButton("cmdCreateNew", LanguageUtilities.LangText("cmdCreateNew", frmCode), "CreateUser();", "Alt+N", "done_all")
+                                    @*@Html.MyButton("cmdSave", "Tạo mới", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")*@
+                                </div>
+                            </div>
+
+                            <div class="row" style="padding: 10px;">
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblTKDangNhap", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.USER_NAME)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblMaSoThue", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MA_SO_THUE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.MA_SO_THUE)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>DMS</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.DMS)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.DMS)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblSoDienThoai", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblTenNguoiNhanTB", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NGUOI_NHAN_THONG_BAO)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NGUOI_NHAN_THONG_BAO)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>Email</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblTenNhaThau", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.TEN_NGAN)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TEN_NGAN)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblTenNhaThauDai", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.TEN_DAI)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TEN_DAI)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblQuocGia", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.QUOC_GIA, SelectListUtilities.GetCountry(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.QUOC_GIA)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblLoaiHinhDN", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.LOAI_HINH_DOANH_NGHIEP, SelectListUtilities.GetDictionary(Domain.LOAI_HINH_DOANH_NGHIEP.ToString()), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.LOAI_HINH_DOANH_NGHIEP)
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblSoLuongNhanVien", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SO_LUONG_NHAN_VIEN)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.SO_LUONG_NHAN_VIEN)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblVonDieuLe", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line" style="width: 70%; float:left;">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.VON_DIEU_LE)
+                                        </div>
+                                        <div style="width: 29%; float: right; padding-top: 1px;">
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.VON_DIEU_LE_UNIT, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.VON_DIEU_LE)
+                                    </div>
+                                </div>
+
+                                @*<div class="col-xs-12">
+            <label>Lĩnh vực chính</label>
+            <div class="form-group">
+                <div class="form-line">
+                    @Html.MyTextBoxFor(m => m.ObjDetail.LINH_VUC_CHINH)
+                </div>
+                @Html.ValidationMessageFor(m => m.ObjDetail.LINH_VUC_CHINH)
+            </div>
+        </div>*@
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblNguoiDaiDien", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NGUOI_DAI_DIEN)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NGUOI_DAI_DIEN)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblWebsite", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.WEBSITE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.WEBSITE)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblDiaChi", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.DIA_CHI)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.DIA_CHI)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblDiaChiVP", frmCode)</label>
+                                    <div>
+                                        @Html.MyButton("cmdAddAddress", LanguageUtilities.LangText("cmdAddAddress", frmCode), "AddDiaChi();", "Alt+N", "add")
+                                    </div>
+                                    <div id="list_address">
+                                        @foreach (var item in Model.ObjListContractorLocation)
+                                        {
+                                            var findAddress = Model.ObjListContractorLocation.FirstOrDefault(x => x.PKID == item.PKID);
+                                            var indexAddress = Model.ObjListContractorLocation.IndexOf(findAddress);
+                                            <div style="display: table; width: 100%; margin-top: 15px;" id="div_@indexAddress">
+                                                <div style="display: table-cell">
+                                                    <div class="form-group">
+                                                        <div class="form-line">
+                                                            <input type="hidden" name="ObjListContractorLocation[@indexAddress].IS_REMOVE" value="@item.IS_REMOVE" id="hddIsDelete_@indexAddress" />
+                                                            <input type="text" class="form-control" name="ObjListContractorLocation[@indexAddress].ADDRESS" value="@item.ADDRESS" placeholder="Nhập địa chỉ văn phòng giao dịch" />
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <div style="display: table-cell; vertical-align: middle; text-align: center">
+                                                    <i class="material-icons col-red" onclick="RemoveAddress(this,'_Index');" style="cursor:pointer">remove_circle_outline</i>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblDoanhThu3Nam", frmCode)</label>
+                                    @if (Model.ObjListContractorRevenue.Count > 0)
+                                    {
+                                        foreach (var item in Model.ObjListContractorRevenue)
+                                        {
+                                            var find = Model.ObjListContractorRevenue.FirstOrDefault(x => x.PKID == item.PKID);
+                                            var index = Model.ObjListContractorRevenue.IndexOf(find);
+                                            <div class="form-group">
+                                                <div class="form-line" style="width: 19%; float:left;">
+                                                    <input class="form-control valid" name="ObjListContractorRevenue[@index].YEAR" type="text" value="@item.YEAR">
+                                                </div>
+                                                <div class="form-line" style="width: 70%; float:left; margin-left: 10px;">
+                                                    <input class="form-control valid" name="ObjListContractorRevenue[@index].VALUE" type="text" value="@item.VALUE">
+                                                </div>
+                                                <div style="width: 9%; float: right; padding-top: 1px;">
+                                                    <select class="form-control  selectpicker show-tick" data-live-search="true"
+                                                            name="ObjListContractorRevenue[@index].UNIT_CODE">
+                                                        @foreach (var unit in SelectListUtilities.GetCurrency(false))
+                                                        {
+                                                            if (unit.Value == item.UNIT_CODE)
+                                                            {
+                                                                <option selected value="@unit.Value">@unit.Text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@unit.Value">@unit.Text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group">
+                                            <div class="form-line" style="width: 19%; float:left;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[0].YEAR" type="text" value="@DateTime.Now.Year">
+                                            </div>
+                                            <div class="form-line" style="width: 70%; float:left; margin-left: 10px;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[0].VALUE" placeholder="Nhập doanh thu" type="text" value="">
+                                            </div>
+                                            <div style="width: 9%; float: right; padding-top: 1px;">
+                                                <select class="form-control  selectpicker show-tick" data-live-search="true"
+                                                        name="ObjListContractorRevenue[0].UNIT_CODE">
+                                                    @foreach (var unit in SelectListUtilities.GetCurrency(false))
+                                                    {
+                                                        <option value="@unit.Value">@unit.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="form-line" style="width: 19%; float:left;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[1].YEAR" type="text" value="@DateTime.Now.AddYears(-1).Year">
+                                            </div>
+                                            <div class="form-line" style="width: 70%; float:left; margin-left: 10px;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[1].VALUE" placeholder="Nhập doanh thu" type="text" value="">
+                                            </div>
+                                            <div style="width: 9%; float: right; padding-top: 1px;">
+                                                <select class="form-control  selectpicker show-tick" data-live-search="true"
+                                                        name="ObjListContractorRevenue[1].UNIT_CODE">
+                                                    @foreach (var unit in SelectListUtilities.GetCurrency(false))
+                                                    {
+                                                        <option value="@unit.Value">@unit.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="form-line" style="width: 19%; float:left;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[2].YEAR" type="text" value="@DateTime.Now.AddYears(-2).Year">
+                                            </div>
+                                            <div class="form-line" style="width: 70%; float:left; margin-left: 10px;">
+                                                <input class="form-control valid" name="ObjListContractorRevenue[2].VALUE" placeholder="Nhập doanh thu" type="text" value="">
+                                            </div>
+                                            <div style="width: 9%; float: right; padding-top: 1px;">
+                                                <select class="form-control  selectpicker show-tick" data-live-search="true"
+                                                        name="ObjListContractorRevenue[2].UNIT_CODE">
+                                                    @foreach (var unit in SelectListUtilities.GetCurrency(false))
+                                                    {
+                                                        <option value="@unit.Value">@unit.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblSLDuAn", frmCode)</label>
+                                    <div class="form-group">
+                                        <select class="form-control  selectpicker show-tick" onchange="ShowText();" data-live-search="true"
+                                                id="so_luong_du_an"
+                                                name="@Html.NameFor(x => x.ObjDetail.SO_LUONG_DU_AN)">
+                                            @foreach (var item in serviceNumberOfProject.ObjList)
+                                            {
+                                                if (item.CODE == Model.ObjDetail.SO_LUONG_DU_AN)
+                                                {
+                                                    <option selected value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                                }
+                                            }
+                                        </select>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.SO_LUONG_DU_AN)
+                                    </div>
+                                    <div class="form-group" id="show_textarea">
+                                        <div class="form-line">
+                                            <input type="text" id="textarea" class="form-control valid" name="@Html.NameFor(x => x.ObjDetail.SO_LUONG_DU_AN_TEXT)" placeholder="Tên các dự án đã làm việc với CTD" value="@Model.ObjDetail.SO_LUONG_DU_AN_TEXT" required title="Trường này bắt buộc nhập (required)" />
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.SO_LUONG_DU_AN_TEXT)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblBietDenFeconTuDau", frmCode)</label>
+                                    <div class="form-group">
+                                        <select class="form-control  selectpicker show-tick" onchange="ShowText3();" data-live-search="true"
+                                                id="tuy_chon"
+                                                name="@Html.NameFor(x => x.ObjDetail.TUY_CHON)">
+                                            @foreach (var item in serviceOption.ObjList)
+                                            {
+                                                if (item.CODE == Model.ObjDetail.TUY_CHON)
+                                                {
+                                                    <option selected value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.CODE" data-act="@item.ACTIVE_TEXT">@item.TEXT</option>
+                                                }
+                                            }
+                                        </select>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TUY_CHON)
+                                    </div>
+                                    <div class="form-group" id="show_textarea3">
+                                        <div class="form-line">
+                                            <input type="text" id="textarea3" class="form-control valid" name="@Html.NameFor(x => x.ObjDetail.TUY_CHON_TEXT)" placeholder="Tên người giới thiệu" value="@Model.ObjDetail.TUY_CHON_TEXT" required title="Trường này bắt buộc nhập (required)" />
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TUY_CHON_TEXT)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblKhuVucThiCong", frmCode)</label>
+                                    <div class="form-group">
+                                        <select class="form-control  selectpicker show-tick" data-live-search="true"
+                                                multiple
+                                                name="@Html.NameFor(x => x.ObjDetail.ACTIVE_AREA)">
+                                            @foreach (var item in SelectListUtilities.GetActiveArea(lang, false))
+                                            {
+                                                if (!string.IsNullOrEmpty(Model.ObjDetail.ACTIVE_AREA) && Model.ObjDetail.ACTIVE_AREA.Contains(item.Value))
+                                                {
+                                                    <option selected value="@item.Value">@item.Text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@item.Value">@item.Text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblGhiChu", frmCode)</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.GHI_CHU)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.GHI_CHU)
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12">
+                                    <label>@LanguageUtilities.LangText("lblLinhVucChinh", frmCode)</label>
+                                    <div class="form-group">
+                                        <select name="@Html.NameFor(m => m.ObjDetail.LINH_VUC_CHINH)" id="dllScope" onchange="ShowText2();"
+                                                multiple="multiple" required title="Trường này bắt buộc nhập (required)">
+                                            @foreach (var item in serviceScopeType.ObjList.OrderBy(x => x.TEXT))
+                                            {
+                                                var lstScope = serviceScope.ObjList.Where(x => x.TYPE_CODE == item.CODE).ToList();
+                                                var lstScopeID = new List<string>();
+
+                                                if (!string.IsNullOrEmpty(Model.ObjDetail.LINH_VUC_CHINH))
+                                                {
+                                                    lstScopeID = Model.ObjDetail.LINH_VUC_CHINH.Split(',').ToList();
+                                                }
+
+                                                <optgroup label="@item.TEXT">
+                                                    @if (lstScopeID.Count > 0 && lstScopeID.Contains(item.CODE))
+                                                    {
+                                                        <option value="@item.CODE" selected>@item.TEXT</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.CODE">@item.TEXT</option>
+                                                    }
+                                                </optgroup>
+                                            }
+                                        </select>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.LINH_VUC_CHINH)
+                                    </div>
+                                    <div class="form-group" id="show_textarea2">
+                                        <div class="form-line">
+                                            <input type="text" id="textarea2" class="form-control valid" name="@Html.NameFor(x => x.ObjDetail.LINH_VUC_CHINH_TEXT)" placeholder="Nhập lĩnh vực chính" value="@Model.ObjDetail.LINH_VUC_CHINH_TEXT" required title="Trường này bắt buộc nhập (required)" />
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.LINH_VUC_CHINH_TEXT)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">image</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div style="display:none">
+                                <input type="file" id="fileLogo" onchange="OnChangeFileLogo(this)" />
+                            </div>
+
+                            <div id="divImageLogo">
+
+                            </div>
+
+                            <div class="align-center">
+                                @Html.MyButton("cmdFileLogo", LanguageUtilities.LangText("cmdFileLogo", frmCode), "$('#fileLogo').click();", "Chọn file logo", "photo_camera")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4 m-t-30">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">attach_file</i> @LanguageUtilities.LangText("lblTitle3", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div style="display:none">
+                                <input type="file" id="fileGioiThieu" onchange="OnChangeFileGioiThieu(this)" />
+                            </div>
+
+                            <div id="divFileGioiThieu">
+                                @try
+                                {
+                                    if (Model.ObjDetail.FileGioiThieu != null)
+                                    {
+                                        Html.RenderPartial("ListFile", new List<T_CM_FILE_UPLOAD>() { Model.ObjDetail.FileGioiThieu });
+
+                                        @*<div class="preview-file" onclick="ClickFile(this);" onmouseover="ClickFile(this);">
+                                                <img src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(Model.ObjDetail.FileGioiThieu.FILE_EXT)">
+                                                <div class="file-info">
+                                                    <div class="file-name">@Model.ObjDetail.FileGioiThieu.FILE_OLD_NAME</div>
+                                                    <div class="file-size">@SMOUtilities.BytesToSize((double)Model.ObjDetail.FileGioiThieu.FILE_SIZE)</div>
+                                                </div>
+                                                <div class="file-function">
+                                                    <div class="file-function-item" onclick="DownloadFile('@file.FILE_ID')">
+                                                        <i class="material-icons col-fecon">cloud_download</i>
+                                                        <div class="font-12 col-blue-grey">Tải về</div>
+                                                    </div>
+                                                </div>
+                                            </div>*@
+                                    }
+                                }
+                                catch
+                                {
+                                }
+
+                            </div>
+
+                            <div class="align-center">
+                                @Html.MyButton("cmdFileGioiThieu", LanguageUtilities.LangText("cmdFileGioiThieu", frmCode), "$('#fileGioiThieu').click();", "Chọn file giới thiệu", "attach_file")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+    <script type="text/javascript">
+        var numberCurrent = @(Model.ObjListContractorLocation.Count);
+
+        function ShowText() {
+            var showText = $('#so_luong_du_an option:selected').attr("data-act");
+            if (showText == "True") {
+                $("#show_textarea").show();
+                $("#textarea").prop('required', true);
+            } else {
+                $("#textarea").removeAttr('required');
+                $("#show_textarea").hide();
+            }
+        }
+
+        function ShowText2() {
+            var showText = $('#dllScope option.show-text:selected').hasClass("show-text");
+            if (showText) {
+                $("#show_textarea2").show();
+                $("#textarea2").prop('required', true);
+            } else {
+                $("#textarea2").removeAttr('required');
+                $("#show_textarea2").hide();
+            }
+        }
+
+        function ShowText3() {
+            var showText = $('#tuy_chon option:selected').attr("data-act");
+            if (showText == "True") {
+                $("#show_textarea3").show();
+                $("#textarea3").prop('required', true);
+            } else {
+                $("#textarea3").removeAttr('required');
+                $("#show_textarea3").hide();
+            }
+        }
+
+        function CloseForm() {
+            Forms.Close('@Model.ViewId');
+        }
+
+        function AddDiaChi() {
+            var html = "";
+            html += '<div style="display: table; width: 100%; margin-top: 15px;" id="div_' + numberCurrent +'">';
+            html += '<div style="display: table-cell">';
+            html += '<div class="form-group">';
+            html += '<div class="form-line">';
+            html += '<input type="hidden" name="ObjListContractorLocation[' + numberCurrent + '].IS_REMOVE" value="" id="hddIsDelete_' + numberCurrent + '" />';
+            html += '<input type="text" class="form-control" name="ObjListContractorLocation[' + numberCurrent +'].ADDRESS" placeholder="Nhập địa chỉ văn phòng giao dịch" />';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+            html += '<div style="display: table-cell; vertical-align: middle; text-align: center">';
+            html += '<i class="material-icons col-red" onclick="RemoveAddress(this,\'' + numberCurrent + '\');" style="cursor:pointer">remove_circle_outline</i>';
+            html += '</div>';
+            html += '</div>';
+            $('#list_address').append(html);
+            numberCurrent++;
+        }
+
+        function RemoveAddress(obj, index) {
+            $('#hddIsDelete_' + index).val('True');
+            $('#div_' + index).hide();
+        }
+
+        function OnChangeFileLogo(obj) {
+            $("#divImageLogo").html('');
+            try {
+                if (obj.files && obj.files.length > 0) {
+                    $.each(obj.files, function (i, v) {
+                        if (v.type.split('/')[0] == 'image') {
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                var img = $('<img class="img-responsive thumbnail" src="' + e.target.result + '" style = "width:100%"/>')
+                                $("#divImageLogo").append(img);
+                            }
+                            reader.readAsDataURL(v);
+                        }
+                    });
+                }
+            } catch (e) {
+                alert("Quá trình thêm ảnh bị lỗi!" + e);
+            }
+        }
+
+
+        function OnChangeFileGioiThieu(obj) {
+            $("#divFileGioiThieu").html('');
+            try {
+                if (obj.files && obj.files.length > 0) {
+                    $.each(obj.files, function (i, v) {
+                        var file = obj.files[i];
+                        var fileExt = file.name.split('.').pop();
+                        var fileIcon = UploadFile.GetIcon(fileExt);
+                        var fileId = Math.floor((Math.random() * 1000) + 1);
+                        var preview = '<div class="preview-file">'
+                        preview += '<img src = "\\Content\\IconFileType\\' + fileIcon + '" />'
+                        preview += '<div class="file-info">';
+                        preview += '<div class="file-name">' + file.name + "</div>"
+                        preview += '<div class="file-size">' + UploadFile.FormatByte(file.size, 2) + "</div>"
+                        preview += '</div>';
+                        preview += '</div>';
+                        $("#divFileGioiThieu").append(preview);
+                    });
+                }
+            } catch (e) {
+                alert("Quá trình thêm file bị lỗi!" + e);
+            }
+        }
+
+        function CreateUser() {
+            if (!$("#@Model.FormId").valid()) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Chưa nhập đầy đủ thông tin vui lòng kiểm tra lại !" } });
+                return;
+            }
+
+
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+            var filesLogo = $('#fileLogo')[0].files;
+            for (var i = 0; i < filesLogo.length; i++) {
+                formData.append("fileLogo", filesLogo[i]);
+            }
+            var filesGioiThieu = $('#fileGioiThieu')[0].files;
+            for (var i = 0; i < filesGioiThieu.length; i++) {
+                formData.append("fileGioiThieu", filesGioiThieu[i]);
+            }
+
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    debugger
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        console.log(evt.lengthComputable);
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            console.log(percentComplete);
+
+                            if (percentComplete === 100) {
+                                //alert("kakalot");
+                            }
+                        }
+                    }, false);
+
+                    return xhr;
+                },
+                type: "POST",
+                url: "@Url.Action("CreateUserContractor")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                    setTimeout(function () {
+                        CloseForm();
+                    }, 2500);
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        }
+
+
+        $(function () {
+            $('#dllScope').multiSelect({
+                selectableHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+                selectionHeader: "<input type='text' class='search-input form-control m-b-10' autocomplete='off' placeholder='Tìm kiếm'>",
+                afterInit: function (ms) {
+                    var that = this,
+                        $selectableSearch = that.$selectableUl.prev(),
+                        $selectionSearch = that.$selectionUl.prev(),
+                        selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
+                        selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
+
+                    that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+                        .on('keydown', function (e) {
+                            if (e.which === 40) {
+                                that.$selectableUl.focus();
+                                return false;
+                            }
+                        });
+
+                    that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+                        .on('keydown', function (e) {
+                            if (e.which == 40) {
+                                that.$selectionUl.focus();
+                                return false;
+                            }
+                        });
+                },
+                afterSelect: function () {
+                    this.qs1.cache();
+                    this.qs2.cache();
+                },
+                afterDeselect: function () {
+                    this.qs1.cache();
+                    this.qs2.cache();
+                }
+            });
+            if (numberCurrent > 0) {
+                numberCurrent -= 1;
+            }
+
+            ShowText();
+            ShowText2();
+            ShowText3();
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

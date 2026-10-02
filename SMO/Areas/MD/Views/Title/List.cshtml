@@ -1,0 +1,40 @@
+﻿@model SMO.Service.MD.TitleService
+@{
+    var number = 1;
+}
+
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên chức danh</th>
+                <th>Tên tiếng anh</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.PKID</a>
+                    </td>
+                    <td>
+                        <a href="#" onclick="@vdbclickAction">@item.NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.NAME_EN</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+
+

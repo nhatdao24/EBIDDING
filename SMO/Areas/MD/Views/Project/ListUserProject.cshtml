@@ -1,0 +1,75 @@
+﻿@model SMO.Service.MD.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var projectCode = ViewBag.ProjectCode;
+    var ObjListUserProject = Model.ObjListUserProject;
+}
+
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("GetUserProject", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => projectCode);
+        <div class="page-function">
+            <div class="page-function-button m-r-20">
+                @Html.MyButton("cmdAddUserGroup", "Thêm người dùng vào dự án", "AddUserProject();", "Alt+S", "add")
+                @Html.MyButton("cmdRemoveUserGroup", "Loại bỏ người dùng khỏi dự án", "RemoveUserProject();", "Alt+S", "delete")
+            </div>
+        </div>
+
+        <div id="divResult">
+          
+        </div>
+    }
+</div>
+
+<script type="text/javascript">
+        var ProjectCode = '@projectCode';
+
+    function AddUserProject() {
+        var ProjectCode = '@projectCode';
+        console.log(ProjectCode)
+        var params = {
+         url: "@Url.Action("AddUserProject")",
+         data: { ProjectCode: ProjectCode }
+        };
+
+     Forms.ShowLoading();
+     Forms.LoadAjaxModal(params);
+    }
+    function RemoveUserProject() {
+
+        var lstSelected = '';
+        $('.chkItemUserProject').each(function () {
+            if (this.checked) {
+                lstSelected += $(this).attr('modelId') + ',';
+            }
+        });
+        if (lstSelected == '') {
+            alert("Bạn hãy chọn ít nhất một nhóm người dùng!");
+            return;
+        }
+
+        lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+          var ajaxParams = {
+              url: "@Url.Action("DeleteUserOfProject")",
+              type: 'POST',
+              dataType: 'json',
+              data: { lstUserProject: lstSelected, ProjectCode: ProjectCode }
+          };
+          Forms.Ajax(ajaxParams);
+       }
+
+    function SubmitGetUserProject() {
+        Forms.SubmitForm('@Model.FormId');
+    }
+
+     $(function () {
+     SubmitGetUserProject();
+     Forms.CompleteUI();
+     Forms.SubmitByEnter("@Model.FormId");
+ });
+
+
+</script>

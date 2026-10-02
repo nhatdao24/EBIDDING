@@ -1,0 +1,148 @@
+﻿@model SMO.Service.AD.ResetPasswordService
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>ĐỔI MẬT KHẨU</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>RESET PASSWORD</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<div id='@Model.ViewId'>
+    <div class="container site-content sidebar-right" style="transform: none;">
+        <div class="row" style="transform: none;">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <div style="margin-top: 30px;">
+                    @if (!Model.State && Model.ErrorMessage == "03")
+                    {
+
+                        if (lang == "vi")
+                        {
+                            <div style="text-align: center;margin-bottom: 10px;">
+                                <span style="color: red; font-size: 25px; text-transform: uppercase;">Yêu cầu đã hết hạn hoặc không tồn tại!</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="text-align: center;margin-bottom: 10px;">
+                                <span style="color: red; font-size: 25px; text-transform: uppercase;">The request has expired or does not exist!</span>
+                            </div>
+                        }
+                    }
+                    else if (!Model.State && Model.ErrorMessage == "04")
+                    {
+                        if (lang == "vi")
+                        {
+                            <div style="text-align: center;margin-bottom: 10px;">
+                                <span style="color: red; font-size: 25px; text-transform: uppercase;">Đã có lỗi xảy ra!</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="text-align: center;margin-bottom: 10px;">
+                                <span style="color: red; font-size: 25px; text-transform: uppercase;">An error has occurred!</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        using (Ajax.BeginForm("ResetPass", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = "frmResetPassword", @class = "form-horizontal" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(x => x.ObjDetail.USER_NAME);
+                            if (lang == "vi")
+                            {
+                                <div>
+                                    <input type="password" name="@Html.NameFor(m => m.ObjDetail.Password)" placeholder="Nhập mật khẩu mới" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                                </div>
+                                <div>
+                                    <input type="password" name="@Html.NameFor(m => m.ObjDetail.Password2)" placeholder="Xác nhận mật khẩu mới" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                                </div>
+                                <button style="width: 100%; color: white !important;" type="submit" class="submit">LƯU LẠI</button>
+                            }
+                            else
+                            {
+                                <div>
+                                    <input type="password" name="@Html.NameFor(m => m.ObjDetail.Password)" placeholder="Enter your new password" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                                </div>
+                                <div>
+                                    <input type="password" name="@Html.NameFor(m => m.ObjDetail.Password2)" placeholder="Confirm new password" required autofocus style="width: 100%; margin-bottom: 5px;" value="">
+                                </div>
+                                <button style="width: 100%; color: white !important;" type="submit" class="submit">SAVE</button>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SavePassSuccess() {
+        @if(lang == "vi")
+        {
+            @:alert("Đổi mật khẩu thành công!");
+        }
+        else
+        {
+            @:alert("Change password successfully!");
+        }
+        window.location.href = "/DangNhap/Index";
+    }
+    function ErrorPassword() {
+        @if(lang == "vi")
+        {
+            @:alert("Mật khẩu không đồng nhất. Nhập lại mật khẩu!");
+        }
+        else
+        {
+            @:alert("Password is inconsistent. Enter the password!");
+        }
+    }
+    function SavePassFail() {
+        @if(lang == "vi")
+        {
+            @:alert("Đã có lỗi xảy ra!");
+        }
+        else
+        {
+            @:alert("An error has occurred!");
+        }
+    }
+</script>

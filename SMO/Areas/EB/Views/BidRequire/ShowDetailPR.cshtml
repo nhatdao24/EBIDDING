@@ -1,0 +1,86 @@
+﻿@using SMO.Service.PR;
+@{
+    var type = ViewBag.Type;
+    var code = ViewBag.Code;
+    var servicePREB = new PREBService();
+    var servicePRSAP = new PRSAPService();
+    if (type == "SAP")
+    {
+        servicePRSAP.Get(code);
+    }
+    else
+    {
+        servicePREB.Get(code);
+    }
+    var frmCode = "frm_BidRequire_ShowDetailPR";
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <div class="content">
+        <div class="card">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="m-b-20">
+                        @if (type == "EB")
+                        {
+                            <div>
+                                <b>[EB-@servicePREB.ObjHeader.CODE] @servicePREB.ObjHeader.REQUIRE_NAME</b>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <b>[SAP-@servicePRSAP.ObjDetail.CODE] @servicePRSAP.ObjDetail.REQUIRE_NAME</b>
+                            </div>
+                        }
+                    </div>
+                    
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>@LanguageUtilities.LangText("thMaItem", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("thTenItem", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("thSoLuong", frmCode)</th>
+                        </tr>
+                        @if (type == "EB")
+                        {
+                            foreach (var item in servicePREB.ObjHeader.ListDetail)
+                            {
+                                <tr>
+                                    <td>@item.MATERIAL_CODE</td>
+                                    <td>@item.Material.TEXT</td>
+                                    <td>@item.QUANTITY.ToStringVN() @item.UNIT_CODE</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            foreach (var item in servicePRSAP.ObjDetail.ListDetail)
+                            {
+                                <tr>
+                                    <td>@item.MATERIAL_CODE</td>
+                                    <td>@item.MATERIAL_NAME</td>
+                                    <td>@item.QUANTITY.ToStringVN() @item.UNIT</td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

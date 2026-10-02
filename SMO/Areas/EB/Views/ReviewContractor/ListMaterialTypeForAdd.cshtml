@@ -1,0 +1,54 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@{
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            @if (lang == "vi")
+            {
+                <tr>
+                    <th width="20px" class="align-center">
+                        <input type="checkbox" id="chkAllMaterialTypeForAdd" onclick="Forms.CheckAll('chkItemMaterialTypeForAdd', '#chkAllMaterialTypeForAdd')" style="margin:0;" class="filled-in" />
+                        <label for="chkAllMaterialTypeForAdd"></label>
+                    </th>
+                    <th class="align-center">Mã loại hàng hóa</th>
+                    <th>Tên loại hàng hóa</th>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <th width="20px" class="align-center">
+                        <input type="checkbox" id="chkAllMaterialTypeForAdd" onclick="Forms.CheckAll('chkItemMaterialTypeForAdd', '#chkAllMaterialTypeForAdd')" style="margin:0;" class="filled-in" />
+                        <label for="chkAllMaterialTypeForAdd"></label>
+                    </th>
+                    <th class="align-center">Material type code</th>
+                    <th>Material name</th>
+                </tr>
+            }
+
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListMaterialType)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemMaterialTypeForAdd" name="chkItemMaterialTypeForAdd" id="@("chkItemMaterialTypeForAdd_" + item.CODE)" modelName="@item.TEXT" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItemMaterialTypeForAdd_" + item.CODE)"></label>
+                    </td>
+                    <td class="align-center">@item.CODE</td>
+                    <td>@item.TEXT</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

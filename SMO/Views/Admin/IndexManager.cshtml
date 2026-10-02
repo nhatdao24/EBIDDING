@@ -1,0 +1,188 @@
+﻿
+<div class="container-fluid child-content">
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
+            <div class="m-b-20">
+                <div class="card border-grey" id="divTopNotify">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('frm_EB_TopNotify')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="header">
+                        <span class="font-15 col-fecon">@LanguageUtilities.LangText("lblTitle", "frm_EB_TopNotify")</span>
+                        <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="#" role="button" title="Xem tất cả" onclick="$('#frmViewAllNotify').remove(); Forms.LoadAjax('/Notify')">
+                                    <i class="material-icons">clear_all</i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="body dropdown-menu all-notify" id="divTopNotifyBody" style="box-shadow: none !important; height: 400px;">
+                        <ul class="menu" data-bind="template: { name: 'RowTemplateNotify', foreach: ObjListNotify }"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+            <div class="card border-grey" id="divTopQuestion">
+                <div class="header">
+                    <span class="font-15 col-fecon">@LanguageUtilities.LangText("lblTitle", "frm_EB_TopQuestion")</span>
+                    <ul class="header-dropdown m-r--5">
+                        <li class="dropdown">
+                            <a href="javascript:void(0);" role="button" title="Tải lại danh sách" onclick="$('#divTopQuestion .body').html(''); GetTopQuestion();">
+                                <i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="body" style="height: 400px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="col-xs-12 col-sm-12">
+            @if (AuthorizeUtilities.CheckUserRight("R501"))
+            {
+                <div class="m-b-20">
+                    <div class="card border-grey" id="divTopRequest">
+                        <div class="header">
+                            <span class="font-15 col-fecon">@LanguageUtilities.LangText("lblTitle", "frm_EB_TopRequest")</span>
+                            <ul class="header-dropdown m-r--5">
+                                <li class="dropdown">
+                                    <a href="javascript:void(0);" role="button" title="Tải lại danh sách" onclick="$('#divTopRequest .body').html(''); GetTopRequest();">
+                                        <i class="material-icons">refresh</i>
+                                    </a>
+                                    <a href="#" role="button" title="Xem tất cả" onclick="Forms.LoadAjax('/EB/Request/Index');">
+                                        <i class="material-icons">clear_all</i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="body">
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="">
+                <div class="card border-grey" id="divTopBid">
+                    <div class="header">
+                        <span class="font-15 col-fecon">@LanguageUtilities.LangText("lblTitle", "frm_EB_TopBid")</span>
+                        <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="javascript:void(0);" role="button" title="Tải lại danh sách" onclick="$('#divTopBid .body').html(''); GetTopBid();">
+                                    <i class="material-icons">refresh</i>
+                                </a>
+                                <a href="#" role="button" title="Xem tất cả" onclick="Forms.LoadAjax('/EB/Bid/Index');">
+                                    <i class="material-icons">clear_all</i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        GetTopBid();
+        GetTopQuestion();
+        @if (AuthorizeUtilities.CheckUserRight("R501"))
+        {
+            @: GetTopRequest();
+        }
+    });
+</script>
+
+@*<script>
+    window.addEventListener('load', function () {
+
+
+        setTimeout(() => {
+            const adUrl = 'https://ebiddingtraining.coteccons.vn/AD/Menu'; // URL kiểm tra
+            fetch(adUrl)
+                .then(response => {
+                    if (response.ok) {
+                        console.log("Trình chặn quảng cáo không hoạt động.");
+                    } else {
+                        showPopup();
+                    }
+                })
+                .catch(error => {
+                    showPopup();
+                });
+        }, 1500); // Thời gian chờ 1.5 giây
+
+    });
+
+    function showPopup() {
+        // Đánh dấu rằng trình chặn quảng cáo đã được phát hiện
+
+
+        // Tạo overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        overlay.style.zIndex = '1000';
+
+        // Tạo popup
+        const popup = document.createElement('div');
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.backgroundColor = 'white';
+        popup.style.borderRadius = '8px';
+        popup.style.padding = '20px';
+        popup.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
+        popup.style.zIndex = '1001';
+        popup.style.textAlign = 'center'; // Căn giữa nội dung
+
+        // Tạo tiêu đề
+        const title = document.createElement('h2');
+        title.innerText = 'Thông báo';
+
+        // Tạo nội dung
+        const message = document.createElement('p');
+        message.innerText = 'Trình chặn quảng cáo đang hoạt động. Vui lòng tắt để trải nghiệm tốt hơn!';
+
+        // Tạo nút đóng
+        const closeBtn = document.createElement('button');
+        closeBtn.innerText = 'Đóng';
+        closeBtn.style.backgroundColor = '#007bff';
+        closeBtn.style.color = 'white';
+        closeBtn.style.border = 'none';
+        closeBtn.style.padding = '10px 15px';
+        closeBtn.style.borderRadius = '5px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.marginTop = '20px'; // Khoảng cách giữa nội dung và nút
+
+        // Thêm sự kiện cho nút đóng
+        closeBtn.addEventListener('click', function () {
+            document.body.removeChild(overlay); // Xóa overlay
+        });
+
+        // Thêm tiêu đề, nội dung và nút vào popup
+        popup.appendChild(title);
+        popup.appendChild(message);
+        popup.appendChild(closeBtn);
+
+        // Thêm popup vào overlay
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay); // Thêm overlay vào body
+    }
+</script>*@

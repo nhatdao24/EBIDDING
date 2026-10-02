@@ -1,0 +1,286 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Service.EB
+
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+
+    var bid = Model.ObjDetail;
+    
+}
+
+<style>
+    body table, body td, body tr {
+        border-color: #FFF !important;
+    }
+
+    table {
+        width: 100%;
+        margin-bottom : 5px;
+    }
+
+    th, td {
+        padding: 5px;
+        text-align: left;
+        font-size: 16px;
+        color: #333;
+    }
+
+    th {
+        padding-left: 20px;
+        width: 35%;
+        color: #333;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 20px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .title-ctd {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin : 0px 0px 10px 0px;
+    }
+   /* .contact-user-send{
+        margin-left : 20px;
+    }*/
+    .contact-user-send p, ul li {
+        font-size: 16px;
+        color: #333;
+    }
+
+    ul li {
+        margin: 5px 0;
+    }
+    .join {
+        font-size: 16px;
+        margin-left : 20px;
+    }
+    .entry-summary{
+        margin-left : 20px;
+    }
+</style>
+
+
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url(&quot;https://fecon.com.vn/wp-content/uploads/2016/01/gioi-thieu-fecon.jpg&quot;); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><a href="/"><span>GÓI THẦU</span></a></li>
+                    <li itemprop="itemListElement"><span>CHI TIẾT</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><a href="/"><span>PROCUREMENT PACKAGES</span></a></li>
+                    <li itemprop="itemListElement"><span>DETAIL BID</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container site-content sidebar-right" style="transform: none;">
+    <div class="row" style="transform: none;">
+        <main id="main" class="site-main col-sm-9 alignleft">
+            <div id="blog-archive" class="blog-content">
+                <div class="row">
+                    <article class="col-sm-12 post type-post status-publish format-standard has-post-thumbnail hentry category-business tag-wordpress pmpro-has-access">
+                        <div class="content-inner">
+                            <div class="entry-content">
+                                <header class="entry-header">
+                                    @if (lang == "vi")
+                                    {
+                                        <h1 style="text-transform: uppercase;">GÓI THẦU : @bid.TEN_GOI_THAU</h1>
+                                        <h3 class="title-ctd">
+                                            Ngân hàng TMCP Công Thương Việt Nam (VietinBank) phát hành Hồ sơ mời thầu như sau:
+                                        </h3>
+                                        <table>
+                                            <tr>
+                                                <th>Dự án:</th>
+                                                <td style="text-transform: uppercase;">@bid.Project.NAME</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Địa điểm:</th>
+                                                <td style="text-transform: uppercase;">@bid.Project.DIA_DIEM</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Gói thầu:</th>
+                                                <td style="text-transform: uppercase;">@bid.TEN_GOI_THAU</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Thời gian bắt đầu nộp thầu:</th>
+                                                <td><i>@bid.NGAY_MO_THAU</i></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Thời gian đóng thầu:</th>
+                                                <td><i>@bid.NGAY_DONG_THAU</i></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Hình thức nộp hồ sơ:</th>
+                                                <td>Excel BOQ kèm scan pdf đóng dấu công ty.</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Hình thức lựa chọn:</th>
+                                                <td>Chào giá cạnh tranh</td>
+                                            </tr>
+                                        </table>
+
+                                    }
+                                    else
+                                    {
+                                        <h1>PACKAGE : @bid.TEN_GOI_THAU_EN</h1>
+                                        <h3 class="title-ctd">
+                                            Coteccons Construction Joint Stock Company issues the bidding documents as follows:
+                                        </h3>
+                                        <table>
+                                            <tr>
+                                                <th>Project:</th>
+                                                <td>@bid.Project.NAME_EN</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Location:</th>
+                                                <td>@bid.Project.DIA_DIEM_EN</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Package:</th>
+                                                <td>@bid.TEN_GOI_THAU_EN</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Bidding Submission Date:</th>
+                                                <td><i>@bid.NGAY_MO_THAU</i></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Bid closing time:</th>
+                                                <td><i>@bid.NGAY_DONG_THAU</i></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Submission Method:</th>
+                                                <td>Excel BOQ with a scanned, stamped PDF copy.</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Selection Method:</th>
+                                                <td>Competitive bidding.</td>
+                                            </tr>
+                                        </table>
+
+                                    }
+                                    @*<div class="entry-contain">
+                                        <h3 class="entry-title">
+                                            <a href="#" rel="bookmark">
+                                                @if (lang == "vi")
+                                                {
+                                                    @Model.ObjDetail.TEN_GOI_THAU
+                                                }
+                                                else
+                                                {
+                                                    @Model.ObjDetail.TEN_GOI_THAU_EN
+                                                }
+                                            </a>
+                                        </h3>
+                                        <ul class="entry-meta">
+                                            @if (lang == "vi")
+                                            {
+                                                <li class="entry-category"> <span>Mời thầu</span> <span class="vcard author author_name"><a href="#">@Model.ObjDetail.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</a></span></li>
+                                                <li class="entry-category"> <span>Đóng thầu</span> <a href="#" rel="category tag">@Model.ObjDetail.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</a></li>
+                                                <li class="entry-category"> <span>Loại</span> <a href="#" rel="category tag">@Model.ObjDetail.BidType.TEXT</a></li>
+                                                <li class="entry-category">
+                                                    <span>Giai đoạn</span>
+                                                    <a href="#" rel="category tag">
+                                                        @Phase_Status.GetStatusText(Model.ObjDetail.GIAI_DOAN, lang)
+                                                    </a>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="entry-category"> <span>Invite</span> <span class="vcard author author_name"><a href="#">@Model.ObjDetail.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</a></span></li>
+                                                <li class="entry-category"> <span>Close</span> <a href="#" rel="category tag">@Model.ObjDetail.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</a></li>
+                                                <li class="entry-category"> <span>Type</span> <a href="#" rel="category tag">@Model.ObjDetail.BidType.TEXT_EN</a></li>
+                                                <li class="entry-category">
+                                                    <span>Status</span>
+                                                    <a href="#" rel="category tag">
+                                                        @Phase_Status.GetStatusText(Model.ObjDetail.GIAI_DOAN, lang)
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                     </div>*@
+                                </header>
+                                <div class="entry-summary">
+                                    @if (lang == "vi")
+                                    {
+                                        @Html.Raw(Model.ObjDetail.ListNew.FirstOrDefault().BAI_VIET)
+                                    }
+                                    else
+                                    {
+                                        @Html.Raw(Model.ObjDetail.ListNew.FirstOrDefault().BAI_VIET_EN)
+                                    }
+
+                                    <div class="contact-user-send">
+                                        @if (lang == "vi")
+                                        {
+                                            <p>Thông tin liên hệ :</p>
+                                            <ul style="list-style: none;">
+                                                <li>- Họ tên : @bid.UserSent.FULL_NAME</li>
+                                                <li>- Số điện thoại : @bid.UserSent.PHONE</li>
+                                                <li>- Email liên hệ : @bid.UserSent.EMAIL</li>
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <p>Contact information :</p>
+                                            <ul style="list-style: none;">
+                                                <li>- Full name : @bid.UserSent.FULL_NAME;</li>
+                                                <li>- Phone : @bid.UserSent.PHONE</li>
+                                                <li>- Email : @bid.UserSent.EMAIL</li>
+                                            </ul>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </main>
+            <div id="sidebar" class="widget-area col-sm-3 sticky-sidebar" role="complementary" style="position: relative; overflow: visible; box-sizing: border-box; min-height: 1px;">
+                <div class="theiaStickySidebar" style="padding-top: 0px; padding-bottom: 1px; position: static; top: 160px; left: 989.5px;">
+                    <a href="/Admin/OpenBid?bidId=@Model.ObjDetail.PKID">
+                        <button style="width: 100%;" type="submit" class="submit">
+                            @if (lang == "vi")
+                            {
+                                <span style="color:white !important;">XEM CHI TIẾT</span>
+                            }
+                            else
+                            {
+                                <span style="color:white !important;">VIEW DETAIL</span>
+                            }
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>

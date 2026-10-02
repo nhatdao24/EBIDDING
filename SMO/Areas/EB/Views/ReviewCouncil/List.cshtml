@@ -1,0 +1,78 @@
+﻿@model SMO.Service.EB.ReviewCouncilService
+@using Newtonsoft.Json
+@{
+    var number = 1;
+    var frmCode = "frm_ReviewCouncil_Index";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered font-13">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllCouncilOfReview_@Model.ViewId" onclick="Forms.CheckAll('chkItemCouncilOfReview_@Model.ViewId', '#chkAllCouncilOfReview_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllCouncilOfReview_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("lblTenNguoiDanhGia", frmCode)</th>
+                <th style="min-width:250px;">@LanguageUtilities.LangText("lblTrangThaiGuiMail", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.USER_NAME))
+            {
+                var index = Model.ObjList.IndexOf(item);
+                @Html.HiddenFor(m => Model.ObjList[index].PKID)
+                @Html.HiddenFor(m => Model.ObjList[index].REVIEW_ID)
+                @Html.HiddenFor(m => Model.ObjList[index].USER_NAME)
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemCouncilOfReview" name="chkItemCouncilOfReview_@Model.ViewId" id="chkItemCouncilOfReview_@Model.ViewId@item.PKID" modelId="@item.PKID" style="margin:0;" />
+                        <label for="chkItemCouncilOfReview_@Model.ViewId@item.PKID"></label>
+                    </td>
+                    <td>
+                        <div>@item.User.USER_NAME @(!string.IsNullOrEmpty(item.EMAIL_ID)?"(ĐÃ GỬI MAIL)":"")</div>
+                        <div class="col-blue-grey">@item.User.FULL_NAME</div>
+                    </td>
+
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.EMAIL_ID))
+                        {
+                            <span class="badge bg-blue">Đã gửi mail</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-red">Chưa gửi mail</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function CheckIsQuyetDinh(obj, id) {
+        $(".hddQuyetDinh").val(false);
+        $(".chkQuyetDinh").not(obj).prop('checked', false);
+        $('#@Model.ViewId #hdd_' + id).val($(obj).is(":checked"));
+    }
+
+    var message = null;
+    @{
+        if (ViewBag.Message != null)
+        {
+            @:message = @Html.Raw(JsonConvert.SerializeObject(ViewBag.Message))
+        }
+    }
+    $(function () {
+        Forms.CompleteUI();
+        if (message != null) {
+            Message.execute(message);
+        }
+    });
+</script>

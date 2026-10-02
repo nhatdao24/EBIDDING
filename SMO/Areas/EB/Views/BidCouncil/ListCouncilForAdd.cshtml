@@ -1,0 +1,38 @@
+﻿@model SMO.Service.AD.UserService
+@{ 
+    var frmCode = "frm_BidCouncil_AddCouncil";
+
+}
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllCouncilForAdd_@Model.ViewId" onclick="Forms.CheckAll('chkItemCouncilForAdd_@Model.ViewId', '#chkAllCouncilForAdd_@Model.ViewId')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllCouncilForAdd_@Model.ViewId"></label>
+                </th>
+                <th>@LanguageUtilities.LangText("thTaiKhoan", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thHoTen", frmCode)</th>
+                <th>Chức danh</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemCouncilForAdd" name="chkItemCouncilForAdd_@Model.ViewId" id="@("chkItemCouncilForAdd_" + Model.ViewId + item.USER_NAME)" modelId="@item.USER_NAME" style="margin:0;" />
+                        <label for="@("chkItemCouncilForAdd_" + Model.ViewId + item.USER_NAME)"></label>
+                    </td>
+                    <td>@item.USER_NAME</td>
+                    <td>@item.FULL_NAME</td>
+                    <td>@(item.Title.NAME ?? "Chưa có thông tin chức danh")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

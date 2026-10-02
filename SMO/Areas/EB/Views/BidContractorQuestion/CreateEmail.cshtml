@@ -1,0 +1,176 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@using SMO.Service.EB
+@using SMO.Service.CF
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+
+    var serviceBid = new BidService();
+    serviceBid.Get(Model.ObjDetail.BID_ID);
+
+    var serviceTemplate = new ConfigTemplateNotifyService();
+    serviceTemplate.GetAll();
+
+    var subject = "";
+    var content = "";
+    var url = System.Configuration.ConfigurationManager.AppSettings["URL_WEB"];
+    if (serviceTemplate.ObjList.Count > 0)
+    {
+        var template = serviceTemplate.ObjList.FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(template.UPDATE_INFO_BID_SUBJECT))
+        {
+            subject = template.UPDATE_INFO_BID_SUBJECT.Replace("{MA_GOI_THAU}", serviceBid.ObjDetail.PKID)
+                        .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+                        .Replace("{TEN_GOI_THAU_EN}", serviceBid.ObjDetail.TEN_GOI_THAU_EN)
+                        .Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+                        .Replace("{DU_AN_EN}", serviceBid.ObjDetail.Project.NAME_EN)
+                        .Replace("{LINK_CHI_TIET}", url + "Index/ChiTiet/" + serviceBid.ObjDetail.PKID);
+        }
+
+        if (!string.IsNullOrWhiteSpace(template.UPDATE_INFO_BID_BODY))
+        {
+            content = template.UPDATE_INFO_BID_BODY.Replace("{MA_GOI_THAU}", serviceBid.ObjDetail.PKID)
+                        .Replace("{TEN_GOI_THAU}", serviceBid.ObjDetail.TEN_GOI_THAU)
+                        .Replace("{TEN_GOI_THAU_EN}", serviceBid.ObjDetail.TEN_GOI_THAU_EN)
+                        .Replace("{DU_AN}", serviceBid.ObjDetail.Project.NAME)
+                        .Replace("{DU_AN_EN}", serviceBid.ObjDetail.Project.NAME_EN)
+                        .Replace("{LINK_CHI_TIET}", url + "Index/ChiTiet/" + serviceBid.ObjDetail.PKID);
+        }
+    }
+
+    var frmCode = "frm_BidContractorQuestion_CreateEmail";
+
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("CreateEmail", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="bidId" value="@Model.ObjDetail.BID_ID" />
+            <input type="hidden" name="typeEmail" value="@Model.ObjDetail.TYPE_EMAIL" />
+            <input type="hidden" name="listContractor" value="" id="hddListContractor" />
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">email</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdCreate", LanguageUtilities.LangText("cmdCreate", frmCode), "CreateEmail();", "Alt+N", "send")
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="m-b-10">
+                                <label>@LanguageUtilities.LangText("lblChonNhaThau", frmCode)</label>
+                            </div>
+                            <div class="col-xs-12 col-sm-6">
+                                <input checked onclick="OnCheckAll(this);" type="checkbox" class="filled-in" name="chkALLContractor" id="chkALLContractor_@Model.ViewId" style="margin:0;" />
+                                <label for="chkALLContractor_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            @foreach (var item in serviceBidContractor.ObjList)
+                            {
+                                <div class="col-xs-12 col-sm-6">
+                                    <input checked onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                                    <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; <span>@item.Contractor.TEN_NGAN <div class="col-blue-grey font-12 m-l-35 ">@item.Contractor.EMAIL</div></span>
+
+                                </div>
+                            }
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        <div>
+                            <div class="form-group">
+                                <label>@LanguageUtilities.LangText("lblTieuDe", frmCode)</label>
+                                <div class="form-line">
+                                    <input name="subject" type="text" class="form-control" value="@subject" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>@LanguageUtilities.LangText("lblNoiDung", frmCode)</label>
+                                <div class="form-line">
+                                    <textarea name="content" id="txtContent">@content</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function OnCheckAll(obj) {
+                $('#@Model.ViewId .chkContractor:checkbox').prop('checked', $(obj).is(':checked'));
+                OnChangeContractor();
+            }
+
+            function OnChangeContractor(obj) {
+                if (obj != null && $(obj).is(':checked') == false) {
+                    $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+                }
+
+                $("#@Model.ViewId .clsContractor").hide();
+
+                var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                    arr.push($(this).val());
+                });
+
+                if (arr.length == 0) {
+                    return;
+                    //$(".clsContractor").show();
+                }
+
+                $.each(arr, function (key, value) {
+                    $("#@Model.ViewId .clsContractor_" + value).show();
+                });
+            }
+
+            function CreateEmail() {
+                var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                    arr.push($(this).val());
+                });
+
+                if (arr.length == 0) {
+                    alert("Bạn cần chọn ít nhất một nhà thầu!");
+                    return;
+                }
+                $("#txtContent").val(CKEDITOR.instances.txtContent.getData());
+                $("#hddListContractor").val(arr.join("|"));
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                CKEDITOR.replace('txtContent', {
+                    //toolbar: 'Basic'
+                });
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>

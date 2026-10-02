@@ -1,0 +1,70 @@
+﻿@model SMO.Service.EB.ContractorService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_User_IndexContractor";
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("ListUserContractor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        
+        <div class="card border-grey">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-b-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", LanguageUtilities.LangText("cmdAdd", frmCode), string.Format("Forms.LoadAjax('{0}');", @Url.Action("CreateUserContractor")), "Alt+N", "person_add")
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { placeholder = LanguageUtilities.LangText("lblPlaceholder", frmCode), @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+    }
+
+    <script type="text/javascript">
+        function ShowHistory(userName) {
+            var params = {
+                url: '/AD/UserHistory',
+                data: { userName: userName }
+            };
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            SubmitIndex();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

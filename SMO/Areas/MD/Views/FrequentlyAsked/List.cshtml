@@ -1,0 +1,46 @@
+﻿@model SMO.Service.MD.FrequentlyAskedService
+@{
+    var number = 0;
+}
+ 
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="align-center" style="width: 50px;">STT</th>
+                <th style="width: 50%">Tiêu đề</th>
+                <th style="width: 50%">Tiêu đề tiếng anh</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.CREATE_DATE))
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.PKID }));
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItem" + item.PKID)"></label>
+                    </td>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@number</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.TIEU_DE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.TIEU_DE_EN</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+

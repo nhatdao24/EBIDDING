@@ -1,0 +1,74 @@
+﻿@model SMO.Service.EB.BidInternalQuestionService
+@{
+    var frmCode = "frm_BidInternalQuestion_ViewListEmail";
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div class="card">
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">history</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive font-13">
+                    <table class="table table-condensed table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>@LanguageUtilities.LangText("thNguoiNhan", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thNoiDung", frmCode)</th>
+                                <th class="align-center">@LanguageUtilities.LangText("thNgayGui", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thTrangThai", frmCode)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ObjListEmail.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <div>@item.User.FULL_NAME</div>
+                                        <div class="col-blue-grey">@item.User.EMAIL</div>
+                                    </td>
+                                    <td>
+                                        <div><b>@item.Email.SUBJECT</b></div>
+                                        <div class="col-blue-grey">@Html.Raw(item.Email.CONTENTS)</div>
+                                    </td>
+                                    <td class="align-center">
+                                        <div>@item.Email.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)</div>
+                                        <div class="col-blue-grey">@item.CREATE_BY</div>
+                                    </td>
+                                    <td>
+                                        @if (item.Email.IS_SEND)
+                                        {
+                                            <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaGui", frmCode)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-red">@LanguageUtilities.LangText("lblChuaGui", frmCode)</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+

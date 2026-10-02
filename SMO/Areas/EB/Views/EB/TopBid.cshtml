@@ -1,0 +1,138 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Core.Entities
+@{
+    var number = 1;
+    var frmCode = "frm_EB_TopBid";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+
+    var lstNewRound = new List<T_EB_BID>();
+    foreach (var item in Model.ObjList.Where(x => x.IS_MULTIL_ROUND == true).ToList())
+    {
+        if (Model.ObjList.Count(x => x.PARENT_BID == item.PARENT_BID) > 1)
+        {
+            var newRound = Model.ObjList.Where(x => x.PARENT_BID == item.PARENT_BID).OrderByDescending(x => x.ROUND).FirstOrDefault();
+            lstNewRound.Add(newRound);
+        }
+    }
+    Model.ObjList = Model.ObjList.Where(x => x.IS_MULTIL_ROUND == false).ToList();
+    Model.ObjList.AddRange(lstNewRound.Distinct());
+}
+
+<div class="table-responsive font-13">
+    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+    {
+        <div class="divLanguage">
+            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+        </div>
+    }
+    <table class="table dashboard-task-infos">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("lblTenGoiThau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblGiaiDoan", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayMoThau", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayDongThau", frmCode)</th>
+                <th width="120px" class="align-center">@LanguageUtilities.LangText("lblConLai", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.Where(x => x.GIAI_DOAN != Phase_Status.DongThau).OrderByDescending(x => x.CREATE_DATE))
+            {
+                number++;
+
+                var tongNgay = (int)(item.NGAY_DONG_THAU - item.NGAY_MO_THAU).TotalDays;
+
+                var soNgayDaQua = (int)(DateTime.Now - item.NGAY_MO_THAU).TotalDays;
+
+                var soNgayConLai = (int)(item.NGAY_DONG_THAU - DateTime.Now).TotalDays;
+
+                var phanTram = 0;
+
+                if (tongNgay != 0)
+                {
+                    phanTram = (int)(soNgayDaQua * 100 / tongNgay);
+                }
+                if (tongNgay < 0)
+                {
+                    phanTram = 0;
+                }
+
+                var color = "bg-green";
+                if (phanTram > 20)
+                {
+                    color = "bg-blue";
+                }
+                if (phanTram > 40)
+                {
+                    color = "bg-indigo";
+                }
+                if (phanTram > 60)
+                {
+                    color = "bg-amber";
+                }
+                if (phanTram > 80)
+                {
+                    color = "bg-deep-orange";
+                }
+
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.PARENT_BID</a>
+                        @if (lang == "vi")
+                        {
+                            <div>@item.TEN_GOI_THAU</div>
+                        }
+                        else
+                        {
+                            <div>@item.TEN_GOI_THAU_EN</div>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge @Phase_Status.GetStatusColor(item.GIAI_DOAN)">@Phase_Status.GetStatusText(item.GIAI_DOAN, lang)</span>
+                        @if (item.IS_MULTIL_ROUND)
+                        {
+                            if (lang == "vi")
+                            {
+                                <p>(Vòng @item.ROUND)</p>
+                            }
+                            else
+                            {
+                                <p>(Round @item.ROUND)</p>
+                            }
+                        }
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_MO_THAU.ToString(Global.DateTimeToStringFormat)</div>
+                    </td>
+                    <td class="align-center">
+                        <div>@item.NGAY_DONG_THAU.ToString(Global.DateTimeToStringFormat)</div>
+                    </td>
+
+                    <td style="padding-top: 0px;" class="align-center">
+                        @if (item.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            if (lang == "vi")
+                            {
+                                <div>@soNgayConLai Ngày</div>
+                            }
+                            else
+                            {
+                                <div>@soNgayConLai Days</div>
+                            }
+                            <div class="progress">
+                                <div class="progress-bar @color" role="progressbar" aria-valuenow="@soNgayDaQua" aria-valuemin="0" aria-valuemax="@tongNgay" style="width: @phanTram%"></div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+

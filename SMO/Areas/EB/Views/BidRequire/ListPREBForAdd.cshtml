@@ -1,0 +1,102 @@
+﻿@model SMO.Service.PR.PREBService
+@{ 
+    var frmCode = "frm_BidRequire_AddPR";
+
+}
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("thChiTiet", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thMaYeuCau", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thTenYeuCau", frmCode)</th>
+                <th>Dự án</th>
+                <th>Gói thầu</th>
+                <th>Phạm vi công việc</th>
+                <th>Loại hình</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayYeuCau", frmCode)</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td class="align-center">
+                        <i class="material-icons col-fecon" onclick="$(this).parent().parent().next().toggle();" style="cursor:pointer">arrow_drop_down_circle</i>
+                    </td>
+                    <td class="align-center">@item.CODE</td>
+                    <td>@item.REQUIRE_NAME</td>
+                    <td>
+                        @(item.Project == null ? "" : item.Project.NAME)
+                    </td>
+                    <td>
+                        @(item.Package == null ? "" : item.Package.TEXT)
+                    </td>
+                    <td>
+                        <div>@(item.ScopeType == null ? "" : item.ScopeType.TEXT)</div>
+                    </td>
+                    <td>
+                        @(item.BidType == null ? "" : item.BidType.TEXT)
+                    </td>
+                    <td class="align-center">@(item.REQUIRE_DATE.HasValue ? item.REQUIRE_DATE.Value.ToString(Global.DateToStringFormat) : "")</td>
+                    <td class="align-center">
+                        @{
+                            var strValue = "";
+                            foreach (var detail in item.ListDetail)
+                            {
+                                strValue += $"{{ MATERIAL_CODE : '{detail.MATERIAL_CODE}', MATERIAL_NAME : '{detail.Material.TEXT}', QUANTITY : {detail.QUANTITY}, UNIT_CODE : '{detail.UNIT_CODE}', SCOPE_CODE: '{detail.SCOPE_CODE}', SCOPE_TEXT : '{(detail.Scope == null ? "" : detail.Scope.TEXT)}', TIME_RENT : '{detail.TIME_RENT}',  RENT_UNIT_CODE : '{detail.RENT_UNIT_CODE}',  NOTE : '{detail.NOTE}'  }},";
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(strValue))
+                            {
+                                strValue = strValue.TrimEnd(',');
+                            }
+
+                            strValue = $"AddPR('{item.CODE}','{item.REQUIRE_NAME}','EB', '{item.Package?.CODE ?? ""}', '{item.ScopeType?.CODE ?? ""}', '{item.BidType?.CODE ?? ""}', [" + strValue + "]);";
+                        }
+                        <i class="material-icons col-fecon" onclick="@strValue ;$(this).html('check');" style="cursor:pointer">add_circle_outline</i>
+                    </td>
+                </tr>
+                <tr style="display: none">
+                    <td colspan="9'">
+                        <table class="table">
+                            <tr>
+                                <th>@LanguageUtilities.LangText("thMaItem", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("thTenItem", frmCode)</th>
+                                <th>Mã công việc</th>
+                                <th>Công việc</th>
+                                <th>Thời gian thuê</th>
+                                <th>Ghi chú</th>
+                                <th>@LanguageUtilities.LangText("thSoLuong", frmCode)</th>
+                            </tr>
+                            @foreach (var detail in item.ListDetail)
+                            {
+                                <tr>
+                                    <td>@detail.MATERIAL_CODE.TrimStart('0')</td>
+                                    <td>@detail.Material.TEXT</td>
+                                    <td>@detail.SCOPE_CODE</td>
+                                    <td>@(detail.Scope != null ? detail.Scope.TEXT : "" )</td>
+                                    <td>@detail.TIME_RENT @(detail.RentUnit != null ? detail.RentUnit.TEXT : "" )</td>
+                                    <td>@detail.QUANTITY.ToStringVN() @(detail.Unit != null ? detail.Unit.TEXT : "" )</td>
+                                    <td>@(detail.NOTE != null ? detail.NOTE : "" )</td>
+
+                                </tr>
+                            }
+                        </table>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>

@@ -1,0 +1,80 @@
+﻿@model SMO.Service.EB.ReviewContractorService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@{
+    var number = 1;
+    var frmCode = "frm_BidContractor_Index";
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+}
+
+@foreach (var item in Model.ObjList)
+{
+    <div class="card border-grey m-b-10">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist" id="ulReviewIndex">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px">@item.Contractor.TEN_DAI (@item.Contractor.TEN_NGAN)</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdRemoveContractor", LanguageUtilities.LangControl("cmdRemoveContractor", frmCode), string.Format("RemoveContractor('{0}');", item.PKID), "", "delete")
+                        @Html.MyButton("cmdAddInfoBid", LanguageUtilities.LangText("cmdAddInfoBid", frmCode), string.Format("AddDetailReviewContractor('{0}', '{1}', '{2}');", item.PKID, item.CONTRACTOR_ID, item.REVIEW_ID), "Alt+N", "add")
+                    </div>
+                </div>
+                <div class="table-responsive font-13">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="align-center">@LanguageUtilities.LangText("lblGoiThau", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblCongViec", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblGiaTri", frmCode)</th>
+                                <th class="align-center">#</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in item.ListDetail)
+                            {
+                                <tr>
+                                    @*<td>
+                                            @detail.INFO_BID
+                                        </td>*@
+                                    <td class="align-center">
+                                        @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                        {
+                                            foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                            {
+                                                var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                if (find != null)
+                                                {
+                                                    var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                    <div><a href="#" onclick="@action">@find.PKID</a> - @find.TEN_GOI_THAU</div>
+                                                    @*<div>@find.TEN_GOI_THAU</div>*@
+                                                }
+                                            }
+                                        }
+
+                                    </td>
+                                    <td>
+                                        @detail.INFO_BID
+                                    </td>
+                                    <td>
+                                        @detail.GIA_TRI.ToStringVN()
+                                    </td>
+                                    <td class="align-center">
+                                        <i class='col-fecon material-icons font-17' style='cursor:pointer;' onclick="@string.Format("EditDetailReviewContractor('{0}','{1}', '{2}')", detail.PKID, item.CONTRACTOR_ID, item.REVIEW_ID)" title="Chỉnh sửa">edit</i>
+                                        &nbsp;&nbsp;&nbsp;
+                                        <i class='col-fecon material-icons font-17' style='cursor:pointer;' onclick="@string.Format("DeleteDetailReviewContractor('{0}')", detail.PKID)" title="Xóa">delete</i>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

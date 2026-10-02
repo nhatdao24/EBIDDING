@@ -1,0 +1,88 @@
+﻿@model SMO.Service.MD.HhdvService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.CODE)
+        <div class="card border-grey">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> CHỈNH SỬA HÀNG HÓA</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                            @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-20">
+                        <div class="col-xs-1"></div>
+                        <div class="col-lg-7 col-xs-10">
+                            <label>CODE</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
+                                </div>
+                            </div>
+
+                            <label>NAME</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                            </div>
+
+                            @*<label>ACTIVE</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.RadioButtonFor(m => m.ObjDetail.ACTIVE, "Y", new { id = "activeYes" })
+                                    <label for="activeYes">YES</label>
+
+                                    @Html.RadioButtonFor(m => m.ObjDetail.ACTIVE, "N", new { id = "activeNo" })
+                                    <label for="activeNo">NO</label>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.ACTIVE)
+                            </div>*@
+
+
+
+
+                            @*<label>Công việc</label>
+        <div class="form-group">
+           <select name="@Html.NameFor(m => m.ObjDetail.SCOPE_CODE)"
+                data-live-search="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+                @foreach (var item in SelectListUtilities.GetScope())
+                {
+                    var selected = Model.ObjDetail.SCOPE_CODE != null && Model.ObjDetail.SCOPE_CODE.Contains(item.Value) ? "selected" : "";
+                    <option value="@item.Value" @selected>
+                        @item.Text
+                    </option>
+                }
+            </select>
+            @Html.ValidationMessageFor(m => m.ObjDetail.SCOPE_CODE)
+        </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

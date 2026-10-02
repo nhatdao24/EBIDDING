@@ -1,0 +1,145 @@
+﻿@model SMO.Service.EB.BidSubmitService
+@{
+    var frmCode = "frm_BidSubmit_Index";
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.BID_ID);
+}
+
+@if (Model.ObjList.Count(x => x.TYPE == FileGroupType.NangLuc) > 0)
+{
+    <div class="m-t-20">
+        <span class="col-fecon">@LanguageUtilities.LangText("lblTitle2", frmCode)</span>
+
+        <div class="table-responsive" style="overflow: inherit;">
+            <table class="table font-13">
+                @*<thead>
+                    <tr>
+                        <th width="120px" class="align-center">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                        <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                        @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            <th width="50px" class="align-center">#</th>
+                        }
+                    </tr>
+                </thead>*@
+                <tbody>
+                    @foreach (var item in Model.ObjList.Where(x => x.TYPE == FileGroupType.NangLuc).OrderByDescending(x => x.CREATE_DATE))
+                    {
+                        <tr>
+                            <td class="align-center" width="120px" >
+                                @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                {
+                                    <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                }
+                                @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                            </td>
+                            @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && DateTime.Now < serviceBid.ObjDetail.NGAY_DONG_THAU)
+                            {
+                                <td width="120px">
+                                    @Html.MyButton("cmdXoaDuLieu", LanguageUtilities.LangText("cmdXoaDuLieu", frmCode), $"DeleteSubmit('{item.PKID}')", "", "delete_forever", "border")
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.ObjList.Count(x => x.TYPE == FileGroupType.KyThuat) > 0)
+{
+    <div class="m-t-20">
+        <span class="col-fecon">@LanguageUtilities.LangText("lblTitle3", frmCode)</span>
+
+        <div class="table-responsive" style="overflow: inherit;">
+            <table class="table font-13">
+                @*<thead>
+                    <tr>
+                        <th width="120px" class="align-center">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                        <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                        @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            <th width="50px" class="align-center">#</th>
+                        }
+                    </tr>
+                </thead>*@
+                <tbody>
+                    @foreach (var item in Model.ObjList.Where(x => x.TYPE == FileGroupType.KyThuat).OrderByDescending(x => x.CREATE_DATE))
+                    {
+                        <tr>
+                            <td class="align-center" width="120px" >
+                                @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                {
+                                    <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                }
+                                @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                            </td>
+                            @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && DateTime.Now < serviceBid.ObjDetail.NGAY_DONG_THAU)
+                            {
+                                <td width="120px">
+                                    @Html.MyButton("cmdXoaDuLieu", LanguageUtilities.LangText("cmdXoaDuLieu", frmCode), $"DeleteSubmit('{item.PKID}')", "", "delete_forever", "border")
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+
+@if (Model.ObjList.Count(x => x.TYPE == FileGroupType.Gia) > 0)
+{
+    <div class="m-t-20">
+        <span class="col-fecon">@LanguageUtilities.LangText("lblTitle4", frmCode)</span>
+
+        <div class="table-responsive" style="overflow: inherit;">
+            <table class="table font-13">
+                @*<thead>
+                    <tr>
+                        <th width="120px" class="align-center">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                        <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                        @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo)
+                        {
+                            <th width="50px" class="align-center">#</th>
+                        }
+                    </tr>
+                </thead>*@
+                <tbody>
+                    @foreach (var item in Model.ObjList.Where(x => x.TYPE == FileGroupType.Gia).OrderByDescending(x => x.CREATE_DATE))
+                    {
+                        <tr>
+                            <td class="align-center" width="120px" >
+                                @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                {
+                                    <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                }
+                                @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                            </td>
+                            @if (serviceBid.ObjDetail.GIAI_DOAN == Phase_Status.NopHoSo && DateTime.Now < serviceBid.ObjDetail.NGAY_DONG_THAU)
+                            {
+                                <td width="120px">
+                                    @Html.MyButton("cmdXoaDuLieu", LanguageUtilities.LangText("cmdXoaDuLieu", frmCode), $"DeleteSubmit('{item.PKID}')", "", "delete_forever", "border")
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+
+

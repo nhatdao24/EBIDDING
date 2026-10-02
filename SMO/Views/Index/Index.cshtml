@@ -1,0 +1,185 @@
+﻿@model SMO.Service.EB.BidService
+
+@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+
+    var lstCompany = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.T_AD_ORGANIZE>().Where(x => x.TYPE == "CP" && x.COMPANY_CODE != "FG")
+        .OrderBy(x => x.C_ORDER)
+        .ToList();
+}
+
+<div class="top_heading  _out">
+    <div class="top_site_main" style="background-color: rgb(255, 255, 255); color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        @* <span class="overlay-top-header" style="background: rgba(131, 124, 124, 0.5); box-shadow: 0 3px 10px rgba(214, 207, 207, 0.2);"></span> *@
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>GÓI THẦU</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>PROCUREMENT PACKAGES</span></li>
+                </ul>
+            }
+
+        </div>
+    </div>
+</div>
+<div class="container site-content sidebar-right" style="transform: none;" id="@Model.ViewId">
+    @using (Ajax.BeginForm("SearchPortal", null, FormDataUtils.GetAjaxOptions(Model.ViewId, "#blog-archive"), new { @id = Model.FormId, @class = "search-form" }))
+    {
+        @Html.HiddenFor(m => m.FormId)
+        <div class="row" style="transform: none;">
+            <main id="main" class="site-main col-sm-9 alignleft">
+                <div id="blog-archive" class="blog-content">
+                </div>
+            </main>
+            <div id="sidebar" class="widget-area col-sm-3 sticky-sidebar" role="complementary" style="position: relative; overflow: visible; box-sizing: border-box; min-height: 1px;">
+                <div class="theiaStickySidebar" style="padding-top: 0px; padding-bottom: 1px; position: static; top: 160px; left: 989.5px;">
+                    <aside id="search-4" class="widget widget_search">
+                        @if (lang == "vi")
+                        {
+                            <h4 class="widget-title">TÊN GÓI THẦU</h4>
+                        }
+                        else
+                        {
+                            <h4 class="widget-title">FIND WITH NAME</h4>
+                        }
+                        <label><input onchange="$('#@Model.FormId').submit();" type="text" class="search-field" placeholder="Search …" value="" name="ObjDetail.TEN_GOI_THAU"></label> <span class="search-submit"></span>
+                    </aside>
+
+                    <aside id="categories-2" class="widget widget_categories">
+                        @if (lang == "vi")
+                        {
+                            <h4 class="widget-title">DỰ ÁN</h4>
+                        }
+                        else
+                        {
+                            <h4 class="widget-title">PROJECT</h4>
+                        }
+                        <select onchange="$('#@Model.FormId').submit();" name="@Html.NameFor(x=>x.ObjDetail.PROJECT_CODE)" style="max-width: 100%; width: 100%;">
+                            @foreach (var item in SelectListUtilities.GetAllProject(true))
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </aside>
+
+                    <aside id="categories-2" class="widget widget_categories">
+                        @if (lang == "vi")
+                        {
+                            <h4 class="widget-title">CÔNG TY</h4>
+                        }
+                        else
+                        {
+                            <h4 class="widget-title">COMPANY</h4>
+                        }
+                        <select onchange="$('#@Model.FormId').submit();" name="@Html.NameFor(x=>x.ObjDetail.COMPANY_CODE)" style="max-width: 100%; width: 100%;">
+                            <option value="">-</option>
+                            @foreach (var item in lstCompany)
+                            {
+                                <option value="@item.COMPANY_CODE">@item.NAME</option>
+                            }
+                        </select>
+                    </aside>
+
+                    <aside id="search-4" class="widget widget_search">
+                        @if (lang == "vi")
+                        {
+                            <h4 class="widget-title">TRẠNG THÁI</h4>
+                        }
+                        else
+                        {
+                            <h4 class="widget-title">STATUS</h4>
+                        }
+                    <ul>
+                        @if (lang == "en")
+                        {
+                            if (Request.IsAuthenticated && ProfileUtilities.User != null && ProfileUtilities.User.USER_TYPE == UserType.NhaThau)
+                            {
+                                <li class="cat-item cat-item-9">
+                                    <input onchange="$('#@Model.FormId').submit();" type="checkbox" name="@Html.NameFor(m => m.ObjDetail.SEARCH_TRANG_THAI)" value="DuocMoi" />
+                                    <a href="#">BIDDINGS ARE INVITED</a>
+                                </li>
+                            }
+                            <select onchange="$('#@Model.FormId').submit();" name="@Html.NameFor(m => m.ObjDetail.SEARCH_TRANG_THAI)" style="max-width: 100%; width: 100%;">
+                                <option value="">-</option>
+                                <option value="DangThau">Currently bidding</option>
+                                <option value="KetThuc">End of bidding</option>
+                            </select>
+                        }
+                        else
+                        {
+                            if (Request.IsAuthenticated && ProfileUtilities.User != null && ProfileUtilities.User.USER_TYPE == UserType.NhaThau)
+                            {
+                                <li class="cat-item cat-item-9">
+                                    <input onchange="$('#@Model.FormId').submit();" type="checkbox" name="@Html.NameFor(m => m.ObjDetail.SEARCH_TRANG_THAI)" value="DuocMoi" />
+                                    <a href="#">GÓI THẦU ĐƯỢC MỜI</a>
+                                </li>
+                            }
+                            <select onchange="$('#@Model.FormId').submit();" name="@Html.NameFor(m => m.ObjDetail.SEARCH_TRANG_THAI)" style="max-width: 100%; width: 100%;">
+                                <option value="">-</option>
+                                <option value="DangThau">ĐANG THẦU</option>
+                                <option value="KetThuc">KẾT THÚC</option>
+                            </select>
+
+                        }
+                    </ul>
+                    </aside>
+
+                    <aside id="categories-2" class="widget widget_categories">
+                        @if (lang == "vi")
+                        {
+                            <h4 class="widget-title">LOẠI HÌNH</h4>
+                        }
+                        else
+                        {
+                        <h4 class="widget-title">PACKAGE TYPE</h4>
+                        }
+                        <ul>
+                            @foreach (var item in SelectListUtilities.GetBidType(lang))
+                            {
+                                <li class="cat-item cat-item-9">
+                                    <input onchange="$('#@Model.FormId').submit();" type="checkbox" value="@item.Value" name="@Html.NameFor(m => m.ObjDetail.TYPE)" />
+                                    <a href="#">@item.Text.ToUpper()</a>
+                                </li>
+                            }
+                        </ul>
+                    </aside>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        Forms.defaultLoading = "#preload";
+        Forms.SubmitForm('@Model.FormId');
+        $("#menu-item-goithau").attr("class", "menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-125 current_page_item current_page_parent menu-item-127 tc-menu-item tc-menu-depth-0 tc-menu-align-left tc-menu-layout-default");
+        $("#mobile-menu-goithau a").attr("class", "active");
+    });
+</script>

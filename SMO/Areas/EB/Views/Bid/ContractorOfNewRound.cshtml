@@ -1,0 +1,276 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Service.EB
+@using SMO.Service
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var serviceSpec = new BidSpecService();
+    serviceSpec.ObjDetail.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.ObjSpecContractor.BID_ID = Model.ObjDetail.PKID; 
+    serviceSpec.GetListViewSpecScore();
+
+    var lstScore = new List<T_EB_CONTRACTOR_SCORE>();
+
+    foreach (var item in Model.ObjDetail.ListContractor)
+    {
+        var sumSystemScore = serviceSpec.ObjListSpecSystemScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        var sumUserScore = serviceSpec.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        lstScore.Add(new T_EB_CONTRACTOR_SCORE()
+        {
+            BidContractor = item,
+            SYSTEM_SCORE = sumSystemScore,
+            USER_SCORE = sumUserScore
+        });
+    }
+    var selected = false;
+    if (Model.ObjDetail.ListContractor.Count(x => x.IS_SELECTED == true) > 0)
+    {
+        selected = true;
+    }
+
+    var frmCode = "frm_ContractorOfNewRoundContractor";
+
+    var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+}
+
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @if (!selected)
+        {
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+
+                        <div style="text-align: center;margin-top: 10px;">
+                            <span style="color: red; font-size: 20px; text-transform: uppercase;">@LanguageUtilities.LangText("lblAlert", frmCode)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.ObjDetail.PKID)
+                @Html.HiddenFor(m => m.ObjDetail.IS_NEW_ROUND, new { @value = "True" })
+                <div class="card">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdSelect", @LanguageUtilities.LangText("btnSelect", frmCode), "Submit();", "Alt+N", "done_all")
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped font-13">
+                                    <thead>
+                                        <tr>
+                                            <th class="align-center">#</th>
+                                            <th style="min-width: 250px;">@LanguageUtilities.LangText("thNhaThau", frmCode)</th>
+                                            <th class="align-center">@LanguageUtilities.LangText("thTrangThaiDauThau", frmCode)</th>
+                                            <th class="align-center">@LanguageUtilities.LangText("thDiemHoiDong", frmCode)</th>
+                                            <th>@LanguageUtilities.LangText("thGiaChaoThau", frmCode)</th>
+                                            <th>@LanguageUtilities.LangText("thGiaHieuChinh", frmCode)</th>
+                                            <th>@LanguageUtilities.LangText("thGiaThuongThao", frmCode)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="7" style="background-color: #F4F4F4 !important">
+                                                <b class="col-red">@LanguageUtilities.LangText("lblDSSoBo", frmCode)</b>
+                                            </td>
+                                        </tr>
+                                        @foreach (var item in lstScore.Where(x => x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+                                        {
+                                            var index = Model.ObjDetail.ListContractor.IndexOf(item.BidContractor);
+                                            var contractor = Model.ObjDetail.ListContractor.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                                            var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");
+                                            var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                                            var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                                            <tr>
+                                                <td>
+                                                    @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].CONTRACTOR_ID)
+                                                    <input type="checkbox" class="filled-in" name="chkContractor" id="chkItem_@Model.ViewId@index" style="margin:0;" @(item.BidContractor.IS_SELECTED ? "checked" : "" ) onchange="$('#hdd_@Model.ViewId@index').val($(this).is(':checked'));" value="@Model.ObjDetail.ListContractor[index].CONTRACTOR_ID" />
+                                                    <label for="chkItem_@Model.ViewId@index"></label>
+                                                    <input id="hdd_@Model.ViewId@index" name="ObjDetail.ListContractor[@index].IS_SELECTED" type="hidden" value="@(item.BidContractor.IS_SELECTED ? "true" : "false" )">
+                                                </td>
+                                                <td>
+                                                    <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                                                    <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                                                </td>
+                                                <td class="align-center">
+                                                    @if (contractor.STATUS == "AP")
+                                                    {
+                                                        <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                                                    }
+                                                </td>
+                                                <td class="align-center">
+                                                    @item.USER_SCORE.ToStringVN()
+                                                </td>
+
+                                                <td>
+                                                    @if (giaChaoThau != null)
+                                                    {
+                                                        @(giaChaoThau.PRICE > 0 ? giaChaoThau.PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaHieuChinh != null)
+                                                    {
+                                                        @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaThuongThao != null)
+                                                    {
+                                                        @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td colspan="7" style="background-color: #F4F4F4 !important">
+                                                <b class="col-blue">@LanguageUtilities.LangText("lblDSConLai", frmCode)</b>
+                                            </td>
+                                        </tr>
+                                        @foreach (var item in lstScore.Where(x => !x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+                                        {
+                                            var index = Model.ObjDetail.ListContractor.IndexOf(item.BidContractor);
+                                            var contractor = Model.ObjDetail.ListContractor.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                                            if ((contractor.STATUS == "AP" || contractor.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                                            {
+                                                var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");
+                                                var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                                                var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                                                <tr>
+                                                    <td>
+                                                        @Html.HiddenFor(m => Model.ObjDetail.ListContractor[index].CONTRACTOR_ID)
+                                                        <input type="checkbox" class="filled-in" name="chkContractor" id="chkItem_@Model.ViewId@index" style="margin:0;" @(item.BidContractor.IS_SELECTED ? "checked" : "" ) onchange="$('#hdd_@Model.ViewId@index').val($(this).is(':checked'));" value="@Model.ObjDetail.ListContractor[index].CONTRACTOR_ID" />
+                                                        <label for="chkItem_@Model.ViewId@index"></label>
+                                                        <input id="hdd_@Model.ViewId@index" name="ObjDetail.ListContractor[@index].IS_SELECTED" type="hidden" value="@(item.BidContractor.IS_SELECTED ? "true" : "false" )">
+                                                    </td>
+                                                    <td>
+                                                        <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                                                        <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                                                    </td>
+                                                    <td class="align-center">
+                                                        @if (contractor.STATUS == "AP")
+                                                        {
+                                                            <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                                                        }
+                                                    </td>
+                                                    <td class="align-center">
+                                                        @item.USER_SCORE.ToStringVN()
+                                                    </td>
+
+                                                    <td>
+                                                        @if (giaChaoThau != null)
+                                                        {
+                                                            @(giaChaoThau.PRICE > 0 ? giaChaoThau.PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (giaHieuChinh != null)
+                                                        {
+                                                            @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (giaThuongThao != null)
+                                                        {
+                                                            @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        <script type="text/javascript">
+            function Submit() {
+                var bidId = '@Model.ObjDetail.PKID';
+                var arrContractorId = [];
+                $.each($("input[name='chkContractor']:checked"), function () {
+                    arrContractorId.push($(this).val());
+                });
+                var contractorId = arrContractorId.join("|");
+                var params = {
+                    url: "@Url.Action("Create", "Bid")",
+                    data: { bidID: bidId, contractorID: contractorId, isNewRound: true },
+                    success: function (response) {
+                        debugger;
+                        console.log(response);
+                        response = JSON.parse(response);
+                        $("#btnClose").click();
+
+                        if (response.Type == "ALERTSUCCESS_JSCOMMAND") {
+                            Message.func.AlertSuccess({ Message: { Code: "", Message: "Đấu thầu vòng tiếp theo thành công !" } });
+                        } else {
+                            Message.func.AlertDanger({ Message: { Code: "", Message: "Đấu thầu lại vòng tiếp theo thất bại !" } });
+                        }
+                        Forms.HideLoading();
+                    },
+                };
+                Forms.ShowLoading();
+                Forms.Ajax(params);
+            }
+
+            $(function () {
+                $(".inputMask").inputmask();
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+

@@ -1,0 +1,187 @@
+﻿@model SMO.Service.ReportService
+@using SMO.Service
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@using SMO.Repository.Common
+@using SMO.Core.Entities
+@{
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    List<T_EB_REVIEW_SPEC_SCORE> ListReviewSpecScore = new List<T_EB_REVIEW_SPEC_SCORE>();
+    var queryReview = UnitOfWork.Repository<ReviewRepo>().Queryable();
+    var queryReviewContractor = UnitOfWork.Repository<ReviewContractorRepo>().Queryable();
+    var queryReviewContractorDetail = UnitOfWork.Repository<ReviewContractorDetailRepo>().Queryable();
+    var queryContractor = UnitOfWork.Repository<ContractorRepo>().Queryable();
+    var queryReviewSpecScore = UnitOfWork.Repository<ReviewSpecScoreRepo>().Queryable();
+    var queryReviewSpec = UnitOfWork.Repository<ReviewSpecRepo>().Queryable();
+    var queryReviewCouncil = UnitOfWork.Repository<ReviewCouncilRepo>().Queryable();
+    var lstMdRating = UnitOfWork.Repository<MdRatingRepo>().GetAll();
+
+    var isQueryContractor = false;
+    var isQueryReview = false;
+    if (!string.IsNullOrEmpty(Model.MaNhaThau))
+    {
+        queryContractor = queryContractor.Where(
+            x => x.MA_SO_THUE.Contains(Model.MaNhaThau) ||
+            x.TEN_DAI.Contains(Model.MaNhaThau) ||
+            x.TEN_NGAN.Contains(Model.MaNhaThau) ||
+            x.EMAIL.Contains(Model.MaNhaThau)
+            );
+        isQueryContractor = true;
+    }
+    //if (!string.IsNullOrEmpty(Model.XepHang))
+    //{
+    //    var MdRate = lstMdRating.FirstOrDefault(x => x.RATING == Model.XepHang);
+    //    queryReviewSpecScore = queryReviewSpecScore.Where(x => MdRate.FROM_VALUE <= x.SCORE);
+    //    //var lstContractorId = queryReviewContractor.Select(x => x.CONTRACTOR_ID).ToList();
+    //    //queryContractor = queryContractor.Where(x => lstContractorId.Contains(x.PKID));
+    //    //isQueryContractor = true;
+    //}
+
+    if (!string.IsNullOrEmpty(Model.DuAn))
+    {
+        queryReview = queryReview.Where(x => x.PROJECT_CODE == Model.DuAn);
+        isQueryReview = true;
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.DonVi))
+    {
+        queryReview = queryReview.Where(x => x.ORG_CODE == Model.DonVi);
+    }
+
+    if (Model.NgayKetThucDanhGia_TuNgay.HasValue)
+    {
+        queryReview = queryReview.Where(x => x.END_DATE.Date >= Model.NgayKetThucDanhGia_TuNgay.Value.Date);
+        isQueryReview = true;
+    }
+
+    if (Model.NgayKetThucDanhGia_DenNgay.HasValue)
+    {
+        queryReview = queryReview.Where(x => x.END_DATE.Date <= Model.NgayKetThucDanhGia_DenNgay.Value.Date);
+        isQueryReview = true;
+    }
+
+    if (!string.IsNullOrEmpty(Model.XepHang))
+    {
+        queryReviewContractorDetail = queryReviewContractorDetail.Where(x => x.RATE == Model.XepHang);
+        var lstHeaderId = queryReviewContractorDetail.Select(x => x.HEADER_ID).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstHeaderId.Contains(x.PKID));
+        //isQueryContractor = true;
+    }
+
+    if (isQueryContractor)
+    {
+        var lstContractorId = queryContractor.Select(x => x.PKID).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstContractorId.Contains(x.CONTRACTOR_ID));
+    }
+
+    if (isQueryReview)
+    {
+        var lstAllReviewId = queryReview.Select(x => x.CODE).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstAllReviewId.Contains(x.REVIEW_ID));
+    }
+    else
+    {
+        var lstAllReview = queryReview.ToList();
+        var lstAllReviewId = lstAllReview.Select(x => x.CODE).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstAllReviewId.Contains(x.REVIEW_ID));
+    }
+
+    var lstReviewContractor = queryReviewContractor.OrderBy(x => x.CONTRACTOR_ID).ToList();
+    var lstReview = queryReview.ToList();
+    var lstReviewId = lstReview.Select(x => x.CODE).ToList();
+    var lstReviewSpec = queryReviewSpec.Where(x => lstReviewId.Contains(x.REVIEW_ID)).ToList();
+    var lstReviewCouncil = queryReviewCouncil.Where(x => lstReviewId.Contains(x.REVIEW_ID)).ToList();
+    var lstCouncilId = lstReviewCouncil.Select(x => x.USER_NAME).ToList();
+    var stt = 0;
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="align-center">STT</th>
+                <th class="align-center" style="min-width: 200px;">Mã số đợt đánh giá</th>
+                <th class="align-center" style="min-width: 200px;">Tên đợt đánh giá</th>
+                <th class="align-center" style="min-width: 200px;">Tên nhà thầu</th>
+                <th class="align-center" style="min-width: 200px;">Dự án</th>
+                <th class="align-center" style="min-width: 200px;">Tên công việc</th>
+                <th class="align-center" style="min-width: 200px;">Gói thầu</th>
+                <th class="align-center" style="min-width: 200px;">Tổng điểm</th>
+                <th class="align-center" style="min-width: 200px;">Điểm trung bình</th>
+                <th class="align-center" style="min-width: 150px;">Xếp hạng</th>
+                <th class="align-center" style="min-width: 150px;">Ngày kết thúc đánh giá</th>
+                <th class="align-center" style="min-width: 150px;">Đơn vị</th>
+                <th class="align-center" style="min-width: 200px;">Người lập</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lstReviewContractor.OrderByDescending(x => x.Review.CREATE_DATE).ToList())
+            {
+                stt++;
+                var review = lstReview.FirstOrDefault(x => x.CODE == item.REVIEW_ID);
+                var lstCurrentReviewSpec = lstReviewSpec.Where(x => x.REVIEW_ID == item.REVIEW_ID).ToList();
+                if (!string.IsNullOrEmpty(Model.XepHang))
+                {
+                    item.ListDetail = item.ListDetail.Where(x => x.RATE == Model.XepHang).ToList();
+                }
+
+                var url = Url.Action("MenuDetail", "Review", new { area = "EB" });
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.REVIEW_ID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                foreach (var detail in item.ListDetail)
+                {
+                    <tr>
+                        <td class="align-center">@stt</td>
+                        <td ondblclick="@vdbclickAction" class="align-center">
+                            <a href="#" onclick="@vdbclickAction">@item.REVIEW_ID</a>
+                        </td>
+                        <td class="align-center" ondblclick="@vdbclickAction">
+                            @review.DESCRIPTION
+                        </td>
+                        <td class="align-center">
+                            @item.Contractor.TEN_NGAN
+                        </td>
+                        <td class="align-center">
+                            @review.Project.NAME
+                        </td>
+                        <td class="align-center">
+                            @detail.INFO_BID
+                        </td>
+                        <td class="align-center">
+                            @if (!string.IsNullOrEmpty(detail.INFO_BID_EBID))
+                            {
+                                foreach (var bidId in detail.INFO_BID_EBID.Split(',').ToList())
+                                {
+                                    <div>@bidId</div>
+                                }
+                            }
+                        </td>
+                        <td class="align-center">
+                            @detail.TOTAL_SCORE.ToStringVN()
+                        </td>
+                        <td class="align-center">
+                            @detail.MEDIUM_SCORE.ToStringVN()
+                        </td>
+                        <td class="align-center">
+                            @detail.RATE
+                        </td>
+                        <td class="align-center">
+                            <div>@review.END_DATE.ToString(Global.DateToStringFormat)</div>
+                        </td>
+                        <td class="align-center">
+                            @review.Organize.NAME
+                        </td>
+                        <td class="align-center">
+                            @review.USER_CREATE.FULL_NAME
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+

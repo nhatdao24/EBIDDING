@@ -1,0 +1,871 @@
+﻿@model SMO.Service.EB.BidSpecService
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.MD
+@using SMO.Service.EB
+
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var serviceBidContractor = new BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+    var frmCode = "frm_BidSpec_ViewSpecScore";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+
+    var isCheckAll = true;
+}
+
+<div id='@Model.ViewId' class="content m-b-50">
+    <div class="card border-grey m-b-10">
+        <div>
+            <i class="material-icons col-fecon" onclick="DisplayFull();" style="float: right;margin-top: 20px; margin-right: 10px; cursor: pointer;" onclick="">zoom_out_map</i>
+        </div>
+
+        @if (ProfileUtilities.User.IS_CHANGE_LANG)
+        {
+            <div class="divLanguage">
+                <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+            </div>
+        }
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content row" style="padding-bottom: 0">
+                <div class="col-xs-12 col-sm-6">
+                    <input checked onclick="OnCheckAll(this);" type="checkbox" class="filled-in" name="chkALLContractor" id="chkALLContractor_@Model.ViewId" style="margin:0;" />
+                    <label for="chkALLContractor_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                </div>
+
+                <div class="clearfix"></div>
+                @foreach (var item in serviceBidContractor.ObjList)
+                {
+                    if ((item.STATUS == "AP" || item.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID) > 0)
+                    {
+                        <div class="col-xs-12 col-sm-6">
+                            <input checked onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" name="@Html.NameFor(x => x.ObjSpecContractor.CONTRACTOR_ID)" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                            <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; @item.Contractor.TEN_NGAN
+                        </div>
+                    }
+                    else
+                    {
+                        isCheckAll = false;
+            <div class="col-xs-12 col-sm-6">
+                <input onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" name="@Html.NameFor(x => x.ObjSpecContractor.CONTRACTOR_ID)" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp;
+                @try
+                {
+                    @item.Contractor.TEN_NGAN
+                }
+                catch (Exception ex)
+                {
+                    <span style="color: red;">Không có nhà thầu</span>
+                }
+            </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-grey m-b-10">
+
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#divChieuNgang" data-toggle="tab" style="padding-left:0px"><i class="material-icons col-fecon">view_headline</i> @LanguageUtilities.LangText("lblChieuNgang", frmCode)</a></li>
+                <li role="presentation"><a href="#divChieuDoc" style="padding-left:0px" data-toggle="tab"><i class="material-icons col-fecon">format_line_spacing</i> @LanguageUtilities.LangText("lblChieuDoc", frmCode)</a></li>
+            </ul>
+
+            @*<div class="tab-content">
+                    <div class="page-function">
+                        <div style="float: right;">
+                            @Html.MyButton("cmdCompare", @LanguageUtilities.LangControl("cmdCompare", frmCode), "CompareContractor();", "", "compare")
+                        </div>
+                    </div>
+                </div>*@
+
+            <div class="tab-content" style="padding-bottom: 0">
+                <div class="page-function">
+                    @Html.MyButton("cmdCompare", @LanguageUtilities.LangText("cmdCompare", frmCode), "CompareContractor();", "", "compare")
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade in active" id="divChieuNgang">
+                    <div class="table-responsive font-13">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="align-center">@LanguageUtilities.LangText("thTT", frmCode)</th>
+                                    <th rowspan="2" style="min-width: 250px;">@LanguageUtilities.LangText("thTieuChi", frmCode)</th>
+                                    <th rowspan="2" class="align-center">@LanguageUtilities.LangText("thTrongSo", frmCode)</th>
+                                    @foreach (var item in serviceBidContractor.ObjList)
+                                    {
+                                        <th colspan="4" class="align-center clsContractor clsContractor_@item.CONTRACTOR_ID">
+                                            <div>
+                                                @try
+                                                {
+                                                    @item.Contractor.TEN_NGAN
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    <span style="color: red;">Không có nhà thầu</span>
+                                                }
+                                            </div>
+                                            @*<div style="color: #2196F3;">
+                                                (Xếp hạng: @item.Contractor.XEP_HANG)
+                                            </div>*@
+                                        </th>
+                                    }
+                                </tr>
+                                <tr>
+                                    @foreach (var item in serviceBidContractor.ObjList)
+                                    {
+                                        <th style="min-width: 200px;" class="align-center clsContractor clsContractor_@item.CONTRACTOR_ID">@LanguageUtilities.LangText("thNoiDung", frmCode)</th>
+                                        <th style="min-width: 200px;" class="align-center clsContractor clsContractor_@item.CONTRACTOR_ID">@LanguageUtilities.LangText("thKQThamDinh", frmCode)</th>
+                                        <th style="min-width: 200px;" class="align-center clsContractor clsContractor_@item.CONTRACTOR_ID">@LanguageUtilities.LangText("thDiemHD", frmCode)</th>
+                                        <th style="min-width: 100px;" class="align-center clsContractor clsContractor_@item.CONTRACTOR_ID">@LanguageUtilities.LangText("thTongDiem", frmCode)</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @BuildSpecChieuNgang(Model.ObjList.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList(), string.Empty, serviceBidContractor.ObjList, lang)
+
+                                <tr>
+                                    <td></td>
+                                    <td><b class="col-red">@LanguageUtilities.LangText("lblTongDiem", frmCode)</b></td>
+                                    <td></td>
+                                    @foreach (var contractor in serviceBidContractor.ObjList)
+                                    {
+                                        <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID"></td>
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID col-red">
+                                        </td>
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID col-red">
+                                        </td>
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID col-red">
+                                            <b>
+                                                @Math.Round(Model.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY), 2).ToStringVN()
+                                            </b>
+                                        </td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div role="tabpanel" class="tab-pane fade" id="divChieuDoc">
+                    <div class="table-responsive font-13">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="align-center">@LanguageUtilities.LangText("thTT", frmCode)</th>
+                                    <th style="min-width: 250px;">@LanguageUtilities.LangText("thTieuChi", frmCode)</th>
+                                    <th class="align-center">@LanguageUtilities.LangText("thTrongSo", frmCode)</th>
+                                    <th style="min-width: 200px" class="align-center">@LanguageUtilities.LangText("thNoiDung", frmCode)</th>
+                                    <th class="align-center">@LanguageUtilities.LangText("thKQThamDinh", frmCode)</th>
+                                    <th class="align-center">@LanguageUtilities.LangText("thDiemHD", frmCode)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @BuildSpecChieuDoc(Model.ObjList.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList(), string.Empty, serviceBidContractor.ObjList, lang)
+                                <tr>
+                                    <td></td>
+                                    <td><b class="col-red">@LanguageUtilities.LangText("lblTongDiem", frmCode)</b></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                @foreach (var contractor in serviceBidContractor.ObjList)
+                                {
+                                    <tr class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                        <td></td>
+                                        <td class="col-red">
+                                            @try
+                                            {
+                                                @contractor.Contractor.TEN_NGAN
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                <span style="color: red;">Không có nhà thầu</span>
+                                            }
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td class="align-center col-red">
+                                        </td>
+                                        <td class="align-center col-red">
+                                            <b>
+                                                @Model.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY).ToStringVN()
+                                            </b>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function CompareContractor() {
+            var params = {
+                url: "@Url.Action("DebutContractor", "Bid")",
+                data: { id: '@Model.ObjDetail.BID_ID', isSelect: false }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function DisplayFull() {
+            $("#@Model.ViewId").toggleClass("full-screen");
+            Forms.FloatingScroll(".table-responsive");
+        };
+
+        function OnCheckAll(obj) {
+            $('#@Model.ViewId .chkContractor:checkbox').prop('checked', $(obj).is(':checked'));
+            OnChangeContractor(null);
+        }
+
+        function OnChangeContractor(obj) {
+            if (obj != null && $(obj).is(':checked') == false) {
+                $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+            }
+            $("#@Model.ViewId .clsContractor").hide();
+
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+        }
+
+        $(function () {
+            var checkAll = '@isCheckAll';
+            if (checkAll == 'False') {
+                $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+            }
+            $("#@Model.ViewId .clsContractor").hide();
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+            Forms.FloatingScroll(".table-responsive");
+        });
+    </script>
+</div>
+
+@helper BuildSpecChieuDoc(List<T_EB_BID_SPEC> ListSpec, string numberParent, List<T_EB_BID_CONTRACTOR> lstContractor, string lang)
+{
+int number = 0;
+
+foreach (var spec in ListSpec)
+{
+    number++;
+    spec.Dictionary = Model.UnitOfWork.Repository<DictionaryRepo>().Queryable().FirstOrDefault(x => x.CODE == spec.ROLE);
+
+        <tr>
+            <td class="align-center"><b>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString())</b></td>
+            <td>
+                @if (lang == "vi")
+                {
+                    <b>@spec.NAME</b>
+                    <b style="color: #f24b3f;">
+                        @(spec?.Dictionary?.C_VALUE ?? "")
+                    </b>
+                }
+                else
+                {
+                    <b>@spec.NAME_EN</b>
+                }
+            </td>
+            <td class="align-center">
+                @if (spec.TYPE != SpecType.GROUP)
+                {
+                    <b>@spec.RATIO.ToStringVN() %</b>
+                }
+            </td>
+            <td colspan="3"></td>
+        </tr>
+
+    if (spec.TYPE != SpecType.GROUP)
+    {
+        foreach (var contractor in lstContractor)
+        {
+            var findSpecContractor = Model.ObjListSpecContractor.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID);
+            var findSpecCouncil = Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+            var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+            var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.TYPE == "2");
+                <tr class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                    <td></td>
+                    <td>
+                        @*@contractor.Contractor.TEN_NGAN*@
+                        <div>
+
+                            @try
+                            {
+                                @contractor.Contractor.TEN_NGAN
+                            }
+                            catch (Exception ex)
+                            {
+                                <span style="color: red;">Không có nhà thầu</span>
+                            }
+                        </div>
+                        @*<div style="color: #2196F3;">
+                            (XẾP HẠNG: @contractor.Contractor.XEP_HANG)
+                        </div>*@
+                    </td>
+                    <td></td>
+                    @if (findSpecContractor != null)
+                    {
+                        if (spec.IS_NOT_SHOW_CONTRACTOR)
+                        {
+                            <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                @foreach (var item in Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(item.CONTENTS))
+                                    {
+                                        <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                            <div class="col-blue font-13" style="float:right">
+                                                @item.USER_SCORE
+                                            </div>
+                                            <div style="white-space: pre-line">
+                                                @item.CONTENTS
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                        }
+                        else
+                        {
+                            if (spec.TYPE == SpecType.TEXT)
+                            {
+                                <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">@Html.Raw(findSpecContractor.VALUE)</td>
+                            }
+                            else if (spec.TYPE == SpecType.NUMBER)
+                            {
+                                if (string.IsNullOrWhiteSpace(findSpecContractor.VALUE))
+                                {
+                                    <td></td>
+                                }
+                                else
+                                {
+                                    decimal output = 0;
+                                    if (Decimal.TryParse(findSpecContractor.VALUE, out output))
+                                    {
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">@output.ToStringVN()</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                            }
+                            else if (spec.TYPE == SpecType.SELECT)
+                            {
+                                var findDetail = spec.ListDetail.FirstOrDefault(x => x.PKID == findSpecContractor.VALUE);
+                                if (findDetail != null)
+                                {
+                                    <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                        @if (lang == "vi")
+                                        {
+                                            <span>@findDetail.VALUE</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@findDetail.VALUE_EN</span>
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                            else
+                            {
+                                <td></td>
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        if (spec.TYPE == SpecType.TEXT)
+                        {
+                            <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                @foreach (var item in Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(item.CONTENTS))
+                                    {
+                                        <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                            <div class="col-blue font-13" style="float:right">
+                                                @item.USER_SCORE
+                                            </div>
+                                            <div style="white-space: pre-line">
+                                                @item.CONTENTS
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    }
+                <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                    @if (Model.ObjListSpecCouncil.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+                    {
+                        var find = Model.ObjListSpecCouncil.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+                        if (spec.TYPE == SpecType.NUMBER)
+                        {
+                            if (giaThuongThao != null)
+                            {
+                                if (spec.MD_PKID == "a90cb897-0e4a-40c9-8be9-f31005b51c18")
+                                {
+                                    @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                }
+                            }
+                            @*decimal sumValue = 0;
+                decimal average = 0;
+                foreach (var user in find)
+                {
+                    decimal output = 0;
+                    if (Decimal.TryParse(user.VALUE, out output))
+                    {
+                        sumValue += output;
+                    }
+                }
+                average = sumValue / find.Count;
+
+                <div style="width: 100%; text-align:center;">@average.ToStringVN()</div>
+
+                foreach (var user in find)
+                {
+                    <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                        @if (string.IsNullOrWhiteSpace(user.VALUE))
+                        {
+                        }
+                        else
+                        {
+                            decimal output = 0;
+                            if (Decimal.TryParse(user.VALUE, out output))
+                            {
+                                <div class="col-blue">@user.USER_SCORE : @output.ToStringVN()</div>
+                            }
+                            else
+                            {
+                            }
+                        }
+                    </div>
+                }*@
+                        }
+                        else if (spec.TYPE == SpecType.TEXT)
+                        {
+                            foreach (var user in find)
+                            {
+                                <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                    <div class="col-blue">@user.USER_SCORE : @user.VALUE</div>
+                                </div>
+                            }
+
+                        }
+                        else if (spec.TYPE == SpecType.SELECT)
+                        {
+                            foreach (var user in find.OrderBy(x => x.USER_SCORE))
+                            {
+                                var findDetail = spec.ListDetail.FirstOrDefault(x => x.PKID == user.VALUE);
+                                if (findDetail != null)
+                                {
+                                    <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                        @if (lang == "vi")
+                                        {
+                                            <span class="col-blue">@user.USER_SCORE : @findDetail.VALUE</span>
+                                        }
+                                        else
+                                        {
+                                            <spanb class="col-blue">@user.USER_SCORE : @findDetail.VALUE_EN</spanb>
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+                </td>
+                    <td style="min-width: 200px">
+                        @if (Model.ObjListSpecCouncilScore.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+                        {
+                            var find = Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+                            decimal average = 0;
+                            decimal sum = 0;
+                            if (find.Count > 0)
+                            {
+                                average = (decimal)find.Sum(x => x.SCORE) / (decimal)find.Count;
+                                sum = average * (spec.RATIO / 100);
+                            }
+                            <div style="width: 100%; text-align:center;">@average.ToStringVN() | <span class="col-red">@sum.ToStringVN()</span></div>
+
+                            <div>
+                                @foreach (var user in find)
+                                {
+                                    <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                        <div class="col-blue">
+                                            <div>@user.USER_SCORE : @user.SCORE</div>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(user.NOTES))
+                                        {
+                                            <div class="col-blue-grey font-12" style="white-space: pre-line">@user.NOTES</div>
+                                        }
+                                    </div>
+
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="width: 100%; text-align:center;">
+                                <span>0 | <span class="col-red">0</span></span>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+
+
+
+        if (spec.TYPE == SpecType.GROUP && Model.ObjList.Count(x => x.PARENT_ID == spec.PKID) > 0)
+        {
+            <div class="p-l-30">
+                @BuildSpecChieuDoc(Model.ObjList.Where(x => x.PARENT_ID == spec.PKID).OrderBy(x => x.C_ORDER).ToList(), number.ToString(), lstContractor, lang)
+            </div>
+        }
+    }
+}
+
+@helper BuildSpecChieuNgang(List<T_EB_BID_SPEC> ListSpec, string numberParent, List<T_EB_BID_CONTRACTOR> lstContractor, string lang)
+{
+int number = 0;
+
+foreach (var spec in ListSpec)
+{
+    number++;
+    spec.Dictionary = Model.UnitOfWork.Repository<DictionaryRepo>().Queryable().FirstOrDefault(x => x.CODE == spec.ROLE);
+
+        <tr>
+            <td class="align-center"><b>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString())</b></td>
+            <td>
+                @if (lang == "vi")
+                {
+                    <b>@spec.NAME</b>  
+                    <b style="color: #f24b3f;">
+                        @(spec?.Dictionary?.C_VALUE ?? "")
+                    </b>
+                    
+
+                }
+                else
+                {
+                    <b>@spec.NAME_EN</b>
+                }
+            </td>
+            <td class="align-center">
+                @if (spec.TYPE != SpecType.GROUP)
+                {
+                    <b>@spec.RATIO.ToStringVN() %</b>
+                }
+            </td>
+
+            @if (spec.TYPE != SpecType.GROUP)
+            {
+                foreach (var contractor in lstContractor)
+                {
+                    var findSpecContractor = Model.ObjListSpecContractor.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID);
+                    //var findSpecCouncil = Model.ObjListSpecCouncil.FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID);
+                    var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.BID_ID).ToList();
+                    var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.TYPE == "2");
+
+                    if (findSpecContractor != null)
+                    {
+                        if (spec.IS_NOT_SHOW_CONTRACTOR)
+                        {
+                            <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                @foreach (var item in Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(item.CONTENTS))
+                                    {
+                                        <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                            <div class="col-blue font-13" style="float:right">
+                                                @item.USER_SCORE
+                                            </div>
+                                            <div style="white-space: pre-line">
+                                                @item.CONTENTS
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                        }
+                        else
+                        {
+                            if (spec.TYPE == SpecType.TEXT)
+                            {
+                                <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">@Html.Raw(findSpecContractor.VALUE)</td>
+                            }
+                            else if (spec.TYPE == SpecType.NUMBER)
+                            {
+                                if (string.IsNullOrWhiteSpace(findSpecContractor.VALUE))
+                                {
+                                    <td></td>
+                                }
+                                else
+                                {
+                                    decimal output = 0;
+                                    if (Decimal.TryParse(findSpecContractor.VALUE, out output))
+                                    {
+                                        <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">@output.ToStringVN()</td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                            }
+                            else if (spec.TYPE == SpecType.SELECT)
+                            {
+                                var findDetail = spec.ListDetail.FirstOrDefault(x => x.PKID == findSpecContractor.VALUE);
+                                if (findDetail != null)
+                                {
+                                    <td class="align-center clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                        @if (lang == "vi")
+                                        {
+                                            <span>@findDetail.VALUE</span>
+                                        }
+                                        else
+                                        {
+                                            <spanb>@findDetail.VALUE_EN</spanb>
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                            else
+                            {
+                                <td></td>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (spec.IS_NOT_SHOW_CONTRACTOR)
+                        {
+                            <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                @foreach (var item in Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(item.CONTENTS))
+                                    {
+                                        <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                            <div class="col-blue font-13" style="float:right">
+                                                @item.USER_SCORE
+                                            </div>
+                                            <div style="white-space: pre-line">
+                                                @item.CONTENTS
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID"></td>
+                        }
+                    }
+
+        <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+            @if (Model.ObjListSpecCouncil.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+            {
+                var find = Model.ObjListSpecCouncil.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+                if (spec.TYPE == SpecType.NUMBER)
+                {
+
+                    if (giaThuongThao != null)
+                    {
+                        if (spec.MD_PKID == "a90cb897-0e4a-40c9-8be9-f31005b51c18")
+                        {
+                            @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                        }
+                    }
+
+                    @*decimal sumValue = 0;
+                decimal average = 0;
+                foreach (var user in find)
+                {
+                    decimal output = 0;
+                    if (Decimal.TryParse(user.VALUE, out output))
+                    {
+                        sumValue += output;
+                    }
+                }
+                average = sumValue / find.Count;
+
+                <div style="width: 100%; text-align:center;">@average.ToStringVN()</div>
+
+                foreach (var user in find)
+                {
+                    <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                        @if (string.IsNullOrWhiteSpace(user.VALUE))
+                        {
+                        }
+                        else
+                        {
+                            decimal output = 0;
+                            if (Decimal.TryParse(user.VALUE, out output))
+                            {
+                                <div class="col-blue">@user.USER_SCORE : @output.ToStringVN()</div>
+                            }
+                            else
+                            {
+                            }
+                        }
+                    </div>
+                }*@
+                }
+                else if (spec.TYPE == SpecType.TEXT)
+                {
+                    foreach (var user in find)
+                    {
+                        <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                            <div class="col-blue">@user.USER_SCORE : @user.VALUE</div>
+                        </div>
+                    }
+
+                }
+                else if (spec.TYPE == SpecType.SELECT)
+                {
+                    foreach (var user in find.OrderBy(x => x.USER_SCORE))
+                    {
+                        var findDetail = spec.ListDetail.FirstOrDefault(x => x.PKID == user.VALUE);
+                        if (findDetail != null)
+                        {
+                            <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                @if (lang == "vi")
+                                {
+                                    <span class="col-blue">@user.USER_SCORE : @findDetail.VALUE</span>
+                                }
+                                else
+                                {
+                                    <spanb class="col-blue">@user.USER_SCORE : @findDetail.VALUE_EN</spanb>
+                                }
+                            </div>
+                        }
+                    }
+                }
+            }
+        </td>
+                    <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                        @if (Model.ObjListSpecCouncilScore.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+                        {
+                            var find = Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+
+                            decimal average = 0;
+                            decimal sum = 0;
+                            if (find.Count > 0)
+                            {
+                                average = (decimal)find.Sum(x => x.SCORE) / (decimal)find.Count;
+                                sum = average * (spec.RATIO / 100);
+                            }
+
+                            <div style="width: 100%; text-align:center;">@average.ToStringVN()</div>
+
+                            <div>
+                                @foreach (var user in find)
+                                {
+                                    <div style="border-bottom: 1px dotted #D7D7D7" class="p-t-5 p-b-5">
+                                        <div class="col-blue">
+                                            <div>@user.USER_SCORE : @user.SCORE</div>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(user.NOTES))
+                                        {
+                                            <div class="col-blue-grey font-12" style="white-space: pre-line">@user.NOTES</div>
+                                        }
+                                    </div>
+
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="width: 100%; text-align:center;">
+                                <span>0</span>
+                            </div>
+                        }
+                    </td>
+                    <td class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                        @if (Model.ObjListSpecCouncilScore.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID) > 0)
+                        {
+                            var find = Model.ObjListSpecCouncilScore.Where(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID && x.SPEC_ID == spec.PKID).ToList();
+
+                            decimal average = 0;
+                            decimal sum = 0;
+                            if (find.Count > 0)
+                            {
+                                average = (decimal)find.Sum(x => x.SCORE) / (decimal)find.Count;
+                                sum = average * (spec.RATIO / 100);
+                            }
+
+                            <div style="width: 100%; text-align:center;"><span class="col-red">@sum.ToStringVN()</span></div>
+                        }
+                        else
+                        {
+                            <div style="width: 100%; text-align:center;">
+                                <span class="col-red">0</span>
+                            </div>
+                        }
+                    </td>
+                }
+            }
+
+        </tr>
+
+        if (spec.TYPE == SpecType.GROUP && Model.ObjList.Count(x => x.PARENT_ID == spec.PKID) > 0)
+        {
+            <div class="p-l-30">
+                @BuildSpecChieuNgang(Model.ObjList.Where(x => x.PARENT_ID == spec.PKID).OrderBy(x => x.C_ORDER).ToList(), number.ToString(), lstContractor, lang)
+            </div>
+        }
+    }
+}

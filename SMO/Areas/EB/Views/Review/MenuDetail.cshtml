@@ -1,0 +1,152 @@
+﻿@model SMO.Service.EB.ReviewService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Review_MenuDetail";
+
+    var randomNumber = new Random().Next(1, 1000);
+
+    var serviceReviewCouncil = new SMO.Service.EB.ReviewCouncilService();
+    serviceReviewCouncil.ObjDetail.REVIEW_ID = Model.ObjDetail.CODE;
+    serviceReviewCouncil.Search();
+}
+<div id='@Model.ViewId' class="container-fluid child-content" type="typeInfoReview">
+    <style>
+        /* Note: Try to remove the following lines to see the effect of CSS positioning */
+        .affix {
+            top: 20px;
+            z-index: 9999 !important;
+        }
+    </style>
+    <div class="row">
+        <div class="col-xs-12 col-sm-3 m-b-10">
+            <div class="sub-sidebar">
+                <div class="menu">
+                    <ul class="list">
+                        <li>
+                            <a href="javascript:void(0);" onclick="Forms.Close('@Model.ViewId');">
+                                <i class="material-icons">arrow_back</i>
+                                <span>@LanguageUtilities.LangText("cmdBack", frmCode)</span>
+                            </a>
+                        </li>
+
+                        <li class="active">
+                            <a id="mnuThongTin" href="javascript:void(0);" class="menu-toggle sub-menu-toggle" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("Detail", "Review", new { id = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                <i class="material-icons">description</i>
+                                <span>@LanguageUtilities.LangText("cmdTTBangDanhGia", frmCode)</span>
+                            </a>
+                            <ul class="ml-menu">
+                                <li>
+                                    <a id="mnuHoiDong" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListCouncil", "Review", new { @id = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">people</i>
+                                        <span>@LanguageUtilities.LangText("mnuHoiDong", frmCode)</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id="mnuDSNhaThau" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListContractor", "Review", new { @id = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">people_outline</i>
+                                        <span>@LanguageUtilities.LangText("mnuDSNhaThau", frmCode)</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id="mnuTieuChi" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("DetailListSpec", "Review", new { @id = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">insert_chart</i>
+                                        <span>@LanguageUtilities.LangText("mnuTieuChi", frmCode)</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+                        @if (Model.ObjDetail.STATUS == Review_Status.KhoiTao)
+                        {
+                            if (serviceReviewCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME) > 0 && AuthorizeUtilities.CheckUserRight("R905"))
+                            {
+                                <li>
+                                    <a id="mnuThongTin" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("Review", "ReviewSpecCouncil", new { reviewId = Model.ObjDetail.CODE})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                        <i class="material-icons">format_list_numbered</i>
+                                        <span>@LanguageUtilities.LangText("mnuDanhGia", frmCode)</span>
+                                    </a>
+                                </li>
+                            }
+                        }
+
+                        <li>
+                            <a id="mnuThongTin" href="javascript:void(0);" onclick="OnClickSubMenu_@(randomNumber)(this); Forms.LoadAjax({url:'@Url.Action("Summary", "ReviewSpecCouncil", new { reviewId = Model.ObjDetail.CODE, viewId = Model.ViewId})',  htmlTarget: '#@Model.ViewId #divContentDetail'})">
+                                <i class="material-icons">insert_chart</i>
+                                <span>@LanguageUtilities.LangText("mnuKQDanhGia", frmCode)</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-9">
+            <div id="divContentDetail">
+                @{Html.RenderAction("Detail", "Review", new { @id = Model.ObjDetail.CODE });}
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        function OnClickSubMenu_@(randomNumber)(obj) {
+            $("#@Model.ViewId .sub-sidebar li").removeClass("active");
+            $(obj).parent().addClass("active");
+            //$(".sub-sidebar").affix({ offset: { top: 60 } });
+        }
+
+        $(function () {
+            // Đóng các màn hình info bid khác
+            try {
+                $("div[type=typeInfoReview]").each(function () {
+                    if ($(this).attr("id") != '@Model.ViewId') {
+                        $(this).remove();
+                    }
+                });
+            } catch (e) {
+
+            }
+
+
+            // Mở menu theo notify
+            @*try {
+                if ("@ViewBag.IdMenu" == "") {
+                    $("#@Model.ViewId #mnuThongTin").click();
+                } else {
+                    if ($("#@Model.ViewId #@ViewBag.IdMenu").length == 1) {
+                        $("#@Model.ViewId #@ViewBag.IdMenu").click();
+                    } else {
+                        $("#@Model.ViewId #mnuThongTin").click();
+                    }
+                }
+            } catch (e) {
+
+            }*@
+
+
+            $('#@Model.ViewId .sub-menu-toggle').on('click', function (e) {
+                var $this = $(this);
+                var $content = $this.next();
+
+                if ($($this.parents('ul')[0]).hasClass('list')) {
+                    var $not = $(e.target).hasClass('menu-toggle') ? e.target : $(e.target).parents('.menu-toggle');
+
+                    $.each($('.menu-toggle.toggled').not($not).next(), function (i, val) {
+                        if ($(val).is(':visible')) {
+                            $(val).prev().toggleClass('toggled');
+                            $(val).slideUp();
+                        }
+                    });
+                }
+
+                $this.toggleClass('toggled');
+                $content.slideToggle(320);
+            });
+        });
+    </script>
+</div>

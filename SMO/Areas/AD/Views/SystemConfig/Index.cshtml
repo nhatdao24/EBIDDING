@@ -1,0 +1,278 @@
+﻿@model SMO.Service.AD.SystemConfigService
+@{
+     ViewBag.Title = "System Info";
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("UpdateConfig", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+        @Html.HiddenFor(m => m.ObjDetail.MAIL_IS_SSL, new { @id = "hddIsSSL" })
+
+        //Tránh chrome tự fill username mật khẩu vào
+        <input style="display:none">
+        <input type="password" style="display:none">
+
+        <div class="card border-grey">
+            <div class="body">
+                @Html.MyButton("cmdSave", "Cập nhật thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+            </div>
+        </div>
+
+        <div class="system-info">
+    </div>
+
+
+        <div class="row m-t-20">
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN KẾT NỐI SAP</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>Host</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_HOST)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.SAP_HOST)
+
+                            </div>
+
+                            <label>Client</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_CLIENT)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.SAP_CLIENT)
+
+                            </div>
+
+                            <label>System number</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_NUMBER)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.SAP_NUMBER)
+
+                            </div>
+
+                            <label>User SAP</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_USER_NAME)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.SAP_USER_NAME)
+
+                            </div>
+
+                            <label>Password SAP</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_PASSWORD, new { @type = "password" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.SAP_PASSWORD)
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN CONNECTION FILE</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>Chọn connection</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.CURRENT_CONNECTION, SelectListUtilities.GetAllConnectionFile())
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN ACTIVE DIRECTORY</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>Đường dẫn LDAP</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.AD_CONNECTION)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.AD_CONNECTION)
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           <div class="col-sm-4 col-xs-12 p-b-10">
+    <div class="card border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN PHẦN CỨNG CỦA MÁY CHỦ</a>
+                </li>
+            </ul>
+          
+            <div class="tab-content">
+                <label>Thông tin RAM</label>
+                <div class="form-group">
+                    <div class="form-line">
+                        @ViewBag.SystemInfo.MemoryInfo
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content">
+                <label>Thông tin CPU</label>
+                <div class="form-group">
+                    <div class="form-line">
+                        @ViewBag.SystemInfo.CpuInfo
+                    </div>
+                </div>
+            </div>
+              <div class="tab-content">
+                <label>Thông tin ổ cứng</label>
+                <div class="form-group">
+                    <div class="form-line">
+                        @if (ViewBag.SystemInfo.DiskInfo != null)
+                        {
+                            <ul>
+                                @foreach (var disk in ViewBag.SystemInfo.DiskInfo)
+                                {
+                                    <li>@disk</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>Không có thông tin ổ cứng.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN EMAIL</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>SMTP Host</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_HOST)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.MAIL_HOST)
+
+                            </div>
+
+                            <label>Port</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PORT)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.MAIL_PORT)
+
+                            </div>
+
+                            <label>User name</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_USER)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.MAIL_USER)
+
+                            </div>
+
+                            <label>Password</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PASSWORD, new { @type = "password" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.MAIL_PASSWORD)
+
+                            </div>
+
+                            <div class="form-group m-t-20">
+                                @if (Model.ObjDetail.MAIL_IS_SSL)
+                                {
+                                    <input type="checkbox" id="chkIsSSL" onchange="OnChangeIsSSL(this);" style="margin:0;" class="filled-in" checked />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkIsSSL" onchange="OnChangeIsSSL(this);" style="margin:0;" class="filled-in" />
+                                }
+                                <label for="chkIsSSL"></label> &nbsp;&nbsp;<b>Có kết nối SSL</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+@* <script>
+    function updateSystemInfo() {
+        $.ajax({
+            url: '@Url.Action("GetSystemInfo", "SystemConfigController")', // Thay "YourControllerName" bằng tên controller của bạn
+            type: 'GET',
+            success: function (data) {
+                $('#diskInfo').html(data.diskInfo);
+                $('#memoryInfo').html(data.memoryInfo);
+                $('#cpuInfo').html(data.cpuInfo);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching system info: ", error);
+            }
+        });
+    }
+
+    // Cập nhật mỗi 5 giây
+    setInterval(updateSystemInfo, 2);
+</script> *@
+    <script type="text/javascript">
+        function OnChangeIsSSL(obj) {
+            $("#hddIsSSL").val($(obj).is(":checked"));
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+
+
+</div>

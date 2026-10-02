@@ -1,0 +1,76 @@
+﻿@model SMO.Service.AD.CountVisitService
+@{
+    var frmCode = "frm_CountVisit_Index";
+    var recordsByMonth = Model.ObjList
+        .GroupBy(x => new { Year = x.CREATE_DATE.Value.Year, Month = x.CREATE_DATE.Value.Month })
+        .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+        .OrderByDescending(g => g.Year)
+        .ThenByDescending(g => g.Month)
+        .ToList();
+
+    var recordsByYear = Model.ObjList
+        .GroupBy(x => x.CREATE_DATE.Value.Year)
+        .Select(g => new { Year = g.Key, Count = g.Count() })
+        .OrderByDescending(g => g.Year)
+        .ToList();
+}
+
+<style>
+    .bootstrap-select .dropdown-menu {
+        max-height: 403.139px !important;
+        overflow: hidden;
+        min-height: 132px;
+        min-width: 500px;
+    }
+</style>
+
+<div class="table-responsive">
+    <div class="col-md-6">
+
+        <h3>Tổng số bản ghi theo tháng</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Tháng</th>
+                    <th>Năm</th>
+                    <th>Số lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in recordsByMonth)
+                {
+                    <tr>
+                        <td>@item.Month</td>
+                        <td>@item.Year</td>
+                        <td>@item.Count</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h3>Tổng số bản ghi theo năm</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Năm</th>
+                    <th>Số lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in recordsByYear)
+                {
+                    <tr>
+                        <td>@item.Year</td>
+                        <td>@item.Count</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>

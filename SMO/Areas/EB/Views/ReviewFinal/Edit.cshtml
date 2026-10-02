@@ -1,0 +1,602 @@
+﻿@model SMO.Service.EB.ReviewFinalService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewFinal_Detail";
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var lstRating = Model.ObjListRating.Select(x => x.RATING).Distinct().ToList();
+    var randomNumber = new Random().Next(1, 1000);
+    var fromDate = Model.ObjDetail.FROM_DATE.Value.ToString("dd/MM/yyyy HH:mm");
+    var toDate = Model.ObjDetail.TO_DATE.Value.ToString("dd/MM/yyyy HH:mm");
+
+    //Kiểm tra user cần phê duyệt hay không
+    var checkApprove = false;
+    if (Model.ObjDetail.STATUS == Review_Final_Status.ChoPheDuyet || Model.ObjDetail.STATUS == Review_Final_Status.DangPheDuyet)
+    {
+        var userApprove = Model.ObjDetail.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == false);
+        if (userApprove == null)
+        {
+            checkApprove = false;
+        }
+        else
+        {
+            // Kiểm tra user level thấp hơn đã phê duyệt hay chưa
+            if (Model.ObjDetail.ListUser.FirstOrDefault(x => x.C_LEVEL < userApprove.C_LEVEL && x.IS_APPROVED == false) != null)
+            {
+                checkApprove = false;
+            }
+            else
+            {
+                checkApprove = true;
+            }
+        }
+
+    }
+
+    //Check user có đc hủy phê duyệt hay ko
+    var checkApprove2 = false;
+    if (Model.ObjDetail.STATUS == Review_Final_Status.DaPheDuyet || Model.ObjDetail.STATUS == Review_Final_Status.DangPheDuyet)
+    {
+        var userApprove = Model.ObjDetail.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == true);
+        if (userApprove == null)
+        {
+            checkApprove2 = false;
+        }
+        else
+        {
+            // Kiểm tra user level cao hơn đã phê duyệt hay chưa
+            if (Model.ObjDetail.ListUser.FirstOrDefault(x => x.C_LEVEL > userApprove.C_LEVEL && x.IS_APPROVED == false) != null)
+            {
+                checkApprove2 = false;
+            }
+            else
+            {
+                checkApprove2 = true;
+            }
+        }
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(x => x.ObjDetail.CODE);
+        @Html.HiddenFor(x => x.ObjDetail.STATUS);
+        <div class="row clearfix">
+            <div class="col-xs-12 col-sm-8">
+                <div class="card border-grey">
+                    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                    {
+                        <div class="divLanguage">
+                            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                        </div>
+                    }
+                    <div class="body div-po-detail" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">edit</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdBack", LanguageUtilities.LangText("cmdBack", frmCode), string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                                    @if (AuthorizeUtilities.CheckUserRight("R2103"))
+                                    {
+                                        @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "SubmitForm();", "Alt+S", "save")
+                                    }
+                                </div>
+                            </div>
+
+                            <div id="divDetail" class="m-t-20">
+                                <div class="m-b-10">
+                                    <span class="waves-effect btn-outline-primary btn" onclick="ShowDialogContractor();">
+                                        <span>@LanguageUtilities.LangText("cmdAddItem", frmCode)</span>
+                                    </span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered font-13" style="margin-bottom:0px;">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 200px">@LanguageUtilities.LangText("lblItem", frmCode)</th>
+                                                <th width="50px" class="align-center">@LanguageUtilities.LangText("lblMaBangDanhGia", frmCode)</th>
+                                                <th width="150px" class="align-center">@LanguageUtilities.LangText("lblCongViec", frmCode)</th>
+                                                <th width="150px" class="align-center">@LanguageUtilities.LangText("lblGiaTri", frmCode)</th>
+                                                <th width="100px" class="align-center">@LanguageUtilities.LangText("lblDiemTB", frmCode)</th>
+                                                <th width="50px" class="align-center">@LanguageUtilities.LangText("lblXepHang", frmCode)</th>
+                                                <th width="200px" class="align-center">@LanguageUtilities.LangText("lblGhiChu", frmCode)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.ObjListContractor)
+                                            {
+                                                var findContractor = Model.ObjListContractor.FirstOrDefault(x => x.PKID == item.PKID);
+                                                var indexContractor = Model.ObjListContractor.ToList().IndexOf(findContractor);
+                                                //var rate = Model.ObjListRating.FirstOrDefault(x => x.FROM_VALUE <= Model.ObjListContractor[indexContractor].SCORE && Model.ObjListContractor[indexContractor].SCORE <= x.TO_VALUE);
+                                                <tr>
+                                                    <td colspan="4">
+                                                        <div class="col-md-1">
+                                                            @Html.MyButton("cmdDelete", "", "DeleteContractor('" + item.CONTRACTOR_ID + "', '" + Model.ObjDetail.CODE + "');", "Alt+D", "delete")
+                                                        </div>
+                                                        <div class="col-md-11">
+                                                            <b>@item.Contractor.TEN_NGAN</b>
+                                                            <div>
+                                                                <a onclick="$('.detail_edit_@item.PKID').toggle();" style="cursor: pointer" class="col-blue-grey">@LanguageUtilities.LangText("lblChiTiet", frmCode)</a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-center">
+                                                        <div class="form-group">
+                                                            <div class="form-line">
+                                                                <input type="hidden" name="ObjListContractor[@indexContractor].PKID" value="@Model.ObjListContractor[indexContractor].PKID" />
+                                                                <input type="hidden" name="ObjListContractor[@indexContractor].REVIEW_ID" value="@Model.ObjListContractor[indexContractor].REVIEW_ID" />
+                                                                <input type="hidden" name="ObjListContractor[@indexContractor].CONTRACTOR_ID" value="@Model.ObjListContractor[indexContractor].CONTRACTOR_ID" />
+                                                                <input class="form-control align-center valid input-validation-error" data-val="true" data-val-number="Vui lòng nhập kiểu số." data-val-required="Hãy nhập điểm." id="txt_@indexContractor" onchange="OnChangeScore(this,'@indexContractor');" name="ObjListContractor[@indexContractor].SCORE" placeholder="Chấm điểm" type="number" min="0" value="@Model.ObjListContractor[indexContractor].SCORE">
+                                                            </div>
+                                                            <span class="field-validation-valid" data-valmsg-for="ObjListContractor[@indexContractor].SCORE" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-center">
+                                                        <div class="form-group">
+                                                            @*<select name="ObjListContractor[@indexContractor].RATE" id="rate_@indexContractor"
+                                                                        data-live-search="true" class="selectpicker show-tick form-control"
+                                                                        data-virtual-scroll="false" data-container="body">
+                                                                    <option value=""> - </option>
+                                                                    @foreach (var rate in lstRating)
+                                                                    {
+                                                                        var lstUserApprove = new List<string>();
+                                                                        if (!string.IsNullOrEmpty(Model.ObjDetail.USER_APPROVE))
+                                                                        {
+                                                                            lstUserApprove = Model.ObjDetail.USER_APPROVE.Split(',').ToList();
+                                                                        }
+
+                                                                        if (lstRating.Count > 0 && rate == item.RATE)
+                                                                        {
+                                                                            <option value="@rate" selected>@rate</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@rate">@rate</option>
+                                                                        }
+                                                                    }
+                                                                </select>*@
+                                                            <div class="form-line">
+                                                                <input class="form-control align-center valid input-validation-error" data-val="true" id="rate_@indexContractor" name="ObjListContractor[@indexContractor].RATE" placeholder="Xếp loại" type="text" value="@Model.ObjListContractor[indexContractor].RATE" readonly>
+                                                            </div>
+                                                            <span class="field-validation-valid" data-valmsg-for="ObjListContractor[@indexContractor].RATE" data-valmsg-replace="true"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-group">
+                                                            <div class="form-line">
+                                                                <input class="form-control" id="txtReview_@indexContractor" name="ObjListContractor[@indexContractor].COMMENT" placeholder="Ghi chú" type="text" value="@Model.ObjListContractor[indexContractor].COMMENT">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                foreach (var detail in item.ListDetail)
+                                                {
+                                                    var findDetail = item.ListDetail.FirstOrDefault(x => x.PKID == detail.PKID);
+                                                    var indexDetail = item.ListDetail.IndexOf(findDetail);
+                                                    var actionReview = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetail", "Review", new { id = detail.REVIEW_ID }));
+                                                    <tr style="background-color: #f9f9f9; display: none;" class="detail_edit_@item.PKID">
+                                                        @if (indexDetail == 0)
+                                                        {
+                                                            <td rowspan="@item.ListDetail.Count">
+                                                                @if (detail.Project != null)
+                                                                {
+                                                                    <div>
+                                                                        @detail.Project.NAME
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                        }
+
+                                                        <td class="align-center">
+                                                            <div><a href="#" onclick="@actionReview">@detail.REVIEW_ID</a></div>
+                                                        </td>
+
+                                                        <td class="align-center">
+                                                            <div>@detail.INFO_BID</div>
+                                                            @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                                            {
+                                                                foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                                                {
+                                                                    var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                                    if (find != null)
+                                                                    {
+                                                                        var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                                        <div><a href="#" onclick="@action">@find.PKID</a></div>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @detail.GIA_TRI.ToStringVN()
+                                                        </td>
+                                                        <td class="align-center">
+                                                            @detail.SCORE.ToStringVN()
+                                                        </td>
+                                                        <td class="align-center">
+                                                            @detail.RATE
+                                                        </td>
+                                                        @if (item.ListDetail.IndexOf(detail) == 0)
+                                                        {
+                                                            <td rowspan="@(item.ListDetail.Count)">
+                                                                <div>
+                                                                    @foreach (var note in item.ListNote)
+                                                                    {
+                                                                        if (!string.IsNullOrEmpty(note.NOTES))
+                                                                        {
+                                                                            <div class="col-red">@note.CREATE_BY : @note.NOTES</div>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <div class="card m-b-30 p-b-30 border-grey">
+                    <div class="body" id="divHeader" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                        </ul>
+                        @if (Model.ObjDetail.CREATE_BY == ProfileUtilities.User.USER_NAME)
+                        {
+                            <div class="tab-content">
+                                <label>@LanguageUtilities.LangText("lblMoTa", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.DESCRIPTION)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblTuNgay", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.FROM_DATE, new { @class = "datetimepicker", @data_val = false, @id = "fromDate" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.FROM_DATE)
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblDenNgay", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.TO_DATE, new { @class = "datetimepicker", @data_val = false, @id = "toDate" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.TO_DATE)
+                                </div>
+
+                                @if (Model.ObjDetail.STATUS == Review_Final_Status.KhoiTao)
+                                {
+                                    <label>@LanguageUtilities.LangText("lblChonNguoiPheDuyet", frmCode)</label>
+                                    <div class="m-b-10">
+                                        <span class="waves-effect btn-outline-primary btn" onclick="ShowDialogUser();">
+                                            <span>@LanguageUtilities.LangText("cmdAddUser", frmCode)</span>
+                                        </span>
+                                    </div>
+
+                                    <div class="row m-t-20">
+                                        <div class="col-xs-12">
+                                            <table class="table font-13">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="align-center">@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</th>
+                                                        <th class="align-center">@LanguageUtilities.LangText("lblThuTuPheDuyet", frmCode)</th>
+                                                        <th class="align-center">#</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="body_user_approve">
+                                                    @foreach (var item in Model.ObjDetail.ListUser.OrderBy(x => x.C_LEVEL))
+                                                    {
+                                                        var findUser = Model.ObjDetail.ListUser.FirstOrDefault(x => x.PKID == item.PKID);
+                                                        var indexUser = Model.ObjDetail.ListUser.IndexOf(findUser);
+                                                        <tr id="user_@indexUser">
+                                                            <td>
+                                                                <input type="hidden" id="pkid_@item.USER_NAME" name="ObjDetail.ListUser[@indexUser].PKID" value="@Model.ObjDetail.ListUser[indexUser].PKID" />
+                                                                <input type="hidden" id="reviewId_@item.USER_NAME" name="ObjDetail.ListUser[@indexUser].REVIEW_ID" value="@Model.ObjDetail.ListUser[indexUser].REVIEW_ID" />
+                                                                <input type="hidden" id="isApprove_@item.USER_NAME" name="ObjDetail.ListUser[@indexUser].IS_APPROVED" value="@Model.ObjDetail.ListUser[indexUser].IS_APPROVED" />
+                                                                <input type="hidden" class="hddUser" name="ObjDetail.ListUser[@indexUser].USER_NAME" value="@item.USER_NAME" id="chk_@item.USER_NAME" order="0">
+                                                                <label for="chk_@item.USER_NAME" style="font-size: 14px;">&nbsp;&nbsp;@item.USER_NAME</label>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" name="ObjDetail.ListUser[@indexUser].C_LEVEL" class="form-control user_@item.USER_NAME" id="txtLevel_@indexUser" value="@item.C_LEVEL">
+                                                            </td>
+                                                            <td style="vertical-align:middle;">
+                                                                <input type="hidden" id="hddIsDelete_@indexUser" name="ObjDetail.ListUser[@indexUser].IS_DELETE" value="" />
+                                                                <i class="material-icons col-red" onclick="RemoveUser(this,'@indexUser','@item.USER_NAME');" style="cursor:pointer">remove_circle_outline</i>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="@Html.NameFor(x => x.ObjDetail.USER_APPROVE)" value="@Model.ObjDetail.USER_APPROVE" />
+                            <div class="tab-content">
+                                <label>@LanguageUtilities.LangText("lblMoTa", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.DESCRIPTION, new { @readonly = "readonly" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblTuNgay", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.FROM_DATE, new { @class = "datetimepicker", @data_val = false, @readonly = "readonly", @id = "fromDate" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.FROM_DATE)
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblDenNgay", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.TO_DATE, new { @class = "datetimepicker", @data_val = false, @readonly = "readonly", @id = "toDate" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.TO_DATE)
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="body" id="divHeader" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">timeline</i> LỊCH SỬ XẾP HẠNG @*: <span class="col-pink">@Model.ObjDetail.CODE</span>*@</a></li>
+                        </ul>
+                        <div class="tab-content po-info table-responsive">
+                            <table class="table table-condensed" style="font-size: 13px">
+                                <tbody>
+                                    @foreach (var item in Model.ObjDetail.ListHistory.OrderByDescending(x => x.STATUS_DATE))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <label>@item.USER_CREATE.FULL_NAME</label><br />
+                                                <span>@(item.STATUS_DATE.HasValue ? item.STATUS_DATE.Value.ToString("dd/MM/yyyy HH:mm") : string.Empty)</span>
+                                            </td>
+                                            <td>
+                                                <a href="#" onclick="Forms.LoadAjaxModal('@Url.Action("ViewHistory", new { id = Model.ObjDetail.CODE})')">
+                                                    <span class="badge @Review_Final_Status.GetStatusColor(item.STATUS)">@Review_Final_Status.GetStatusText(item.STATUS)</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/html" id="RowUserTemplate">
+        <tr id="user__Index">
+            <td>
+                <input type="hidden" readonly name="ObjDetail.ListUser[_Index].USER_NAME" class="hddUser form-control" value="_USER_NAME" />
+                <label for="chk__USER_NAME" style="font-size: 14px;">&nbsp;&nbsp;_USER_NAME</label>
+            </td>
+            <td>
+                <input type="number" name="ObjDetail.ListUser[_Index].C_LEVEL" class="form-control" value="_C_LEVEL" />
+            </td>
+            <td style="vertical-align:middle;">
+                <input type="hidden" id="hddIsDelete__Index" name="ObjDetail.ListUser[_Index].IS_DELETE" class="form-control" value="" />
+                <i class="material-icons col-red" onclick="RemoveUser(this, '_Index','_USER_NAME');" style="cursor:pointer">remove_circle_outline</i>
+            </td>
+        </tr>
+    </script>
+
+    <script type="text/javascript">
+        var numberCurrent = @(Model.ObjDetail.ListUser.Count());
+        var lstUser = @Html.Raw(JsonConvert.SerializeObject(Model.ObjDetail.ListUser, serializerSetting));
+        var ListRating = @Html.Raw(JsonConvert.SerializeObject(Model.ObjListRating, serializerSetting));
+        function CloseFormEdit(){
+            Forms.Close('@Model.ViewId');
+        }
+
+        function ShowDialogUser(){
+            var params = {
+                url : "@Url.Action("AddUser")"
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function SubmitForm() {
+            debugger;
+            var FromDate = $('#fromDate').val();
+            var ToDate = $('#toDate').val();
+            if (new Date(FromDate) > new Date(ToDate)) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "(Từ ngày) phải nhỏ hơn hoặc bằng (Đến ngày) !" } });
+                return;
+            }
+            if (FromDate != '@fromDate' || ToDate != '@toDate') {
+                if (!confirm("Thông tin khoảng ngày đã bị thay đổi, dữ liệu sẽ bị xóa hết. Bạn có chắc chắn ko?")) {
+                    return;
+                }
+            }
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            console.log(percentComplete);
+
+                            if (percentComplete === 100) {
+                                //alert("kakalot");
+                            }
+                        }
+                    }, false);
+
+                    return xhr;
+                },
+                type: "POST",
+                url: "@Url.Action("Update")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    if (response.State == true) {
+                        try {
+                            SubmitIndex();
+                        } catch (e) {
+
+                        }
+                        Forms.LoadAjax('@Url.Action("Detail", new { id = Model.ObjDetail.CODE})');
+                        Forms.Close('@ViewBag.ViewIdDetail');
+                        Forms.Close('@Model.ViewId');
+                        Forms.AjaxLoadSuccessHandler(response);
+                    }
+                    Forms.HideLoading();
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        }
+
+        function DeleteContractor(contractorId, reviewId) {
+            if (confirm("Bạn có chắc chắn xóa nhà thầu này?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("DeleteContractor")",
+                    type: "POST",
+                    data: { contractorId: contractorId, reviewId: reviewId, viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function ShowDialogContractor(){
+            var reviewId = '@Model.ObjDetail.CODE';
+            var params = {
+                url: "@Url.Action("AddContractor")",
+                data: { reviewId: reviewId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddUser(userName, c_level) {
+            debugger;
+            var html = $('#RowUserTemplate').html();
+            html = html.replace(/_USER_NAME/g, userName);
+            html = html.replace(/_C_LEVEL/g, c_level);
+            html = html.replace(/_Index/g, numberCurrent);
+            $("#body_user_approve").append(html);
+            numberCurrent++;
+        }
+
+        function RemoveUser(obj, index, userName) {
+            debugger;
+            $("#user_" + index).hide();
+            $("#hddIsDelete_" + index).val("1");
+            //lstUser.splice(index, 1);
+            lstUser = $.grep(lstUser, function (e) { return e.USER_NAME != userName });
+        }
+
+        function OnChangeUser() {
+            debugger;
+            var arr = [];
+            var html_level = "";
+            var old_html = $('#user_approve').find('.hddUser');
+            if (old_html.length > 0) {
+                $('.hddUser').each(function () {
+                    var user_name = $(this).val();
+                    var level = $(".user_" + user_name).val();
+                    var pkid = $("#pkid_" + user_name).val();
+                    var reviewId = $("#reviewId_" + user_name).val();
+                    var isApprove = $("#isApprove_" + user_name).val();
+                    arr.push({ user: user_name, user_level: level, pkId: pkid, review_id: reviewId, is_approve: isApprove });
+                });
+            }
+            $('#user_approve').html("");
+            var html = "";
+            $('#dllUserApprove option:selected').each(function (index) {
+                var value = $(this).val();
+                var text = $(this).text();
+                html += '<tr>';
+                html += '<td>';
+                html += '<input type="hidden" class="hddUser" name="ObjDetail.ListUser[' + index + '].USER_NAME" value="' + value + '" id="chk_' + value + '" order="' + index + '" />';
+                html += '<label for= "chk_' + value + '" style = "font-size: 14px;" >&nbsp;&nbsp;' + text + '</label>';
+                html += '</td>';
+                html += '<td>';
+                var myInfo = arr.find(function (current_user) {
+                    return current_user.user == value;
+                });
+                if (arr.length > 0 && myInfo != null) {
+                    if (myInfo.pkId == null) {
+                        myInfo.pkId = '';
+                    }
+                    html += '<input type="hidden" name="ObjDetail.ListUser[' + index + '].PKID" class="form-control" id="pkid_' + value + '" value="' + myInfo.pkId + '" />';
+                    html += '<input type="hidden" name="ObjDetail.ListUser[' + index + '].REVIEW_ID" class="form-control" id="reviewId_' + value + '" value="' + myInfo.review_id + '" />';
+                    html += '<input type="hidden" name="ObjDetail.ListUser[' + index + '].IS_APPROVED" class="form-control" id="isApprove_' + value + '" value="' + myInfo.is_approve + '" />';
+                    html += '<input type="number" name="ObjDetail.ListUser[' + index + '].C_LEVEL" class="form-control user_' + value + '" id="txtLevel_' + index + '" value="' + myInfo.user_level + '" />';
+                } else {
+                    html += '<input type="number" name="ObjDetail.ListUser[' + index + '].C_LEVEL" class="form-control user_' + value + '" id="txtLevel_' + index + '" value="1" />';
+                }
+
+                html += '</td>';
+                html += '</tr>';
+            });
+            $('#user_approve').append(html);
+        }
+
+        function OnChangeScore(obj, index) {
+            debugger;
+            var score = $(obj).val();
+            var rating = "";
+            $.each(ListRating, function () {
+                if (this.FROM_VALUE <= score && score <= this.TO_VALUE) {
+                    rating = this.RATING;
+                }
+            });
+            $('#@Model.ViewId #rate_' + index).val(rating);
+            Forms.CompleteUI();
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+

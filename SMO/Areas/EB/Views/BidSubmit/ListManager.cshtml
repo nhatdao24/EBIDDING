@@ -1,0 +1,322 @@
+﻿@model SMO.Service.EB.BidSubmitService
+@{
+    var frmCode = "frm_BidSubmit_IndexManager";
+    var serviceBid = new SMO.Service.EB.BidService();
+    serviceBid.Get(Model.ObjDetail.BID_ID);
+
+    var serviceBidContractor = new SMO.Service.EB.BidContractorService();
+    serviceBidContractor.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidContractor.Search();
+
+    var serviceBidCouncil = new SMO.Service.EB.BidCouncilService();
+    serviceBidCouncil.ObjDetail.BID_ID = Model.ObjDetail.BID_ID;
+    serviceBidCouncil.Search();
+
+    var lstHoSoTongHop = Model.ObjList.Where(x => x.TYPE == FileGroupType.TongHop).ToList();
+    var lstHoSoNangLuc = Model.ObjList.Where(x => x.TYPE == FileGroupType.NangLuc).ToList();
+    var lstHoSoGia = Model.ObjList.Where(x => x.TYPE == FileGroupType.Gia).ToList();
+    var lstHoSoKyThuat = Model.ObjList.Where(x => x.TYPE == FileGroupType.KyThuat).ToList();
+    var lstHoSoPhapLy = Model.ObjList.Where(x => x.TYPE == FileGroupType.PhapLy).ToList();
+
+    if (ViewBag.IS_NEW == "1")
+    {
+        lstHoSoNangLuc = new List<SMO.Core.Entities.T_EB_BID_SUBMIT>();
+        lstHoSoGia = new List<SMO.Core.Entities.T_EB_BID_SUBMIT>();
+        lstHoSoKyThuat = new List<SMO.Core.Entities.T_EB_BID_SUBMIT>();
+        lstHoSoPhapLy = new List<SMO.Core.Entities.T_EB_BID_SUBMIT>();
+
+        foreach (var contractor in serviceBidContractor.ObjList)
+        {
+            var findNangLuc = Model.ObjList.Where(x => x.TYPE == FileGroupType.NangLuc && x.CONTRACTOR_ID == contractor.CONTRACTOR_ID)
+                .OrderByDescending(x => x.CREATE_DATE).FirstOrDefault();
+            if (findNangLuc != null)
+            {
+                lstHoSoNangLuc.Add(findNangLuc);
+            }
+
+            var findGia = Model.ObjList.Where(x => x.TYPE == FileGroupType.Gia && x.CONTRACTOR_ID == contractor.CONTRACTOR_ID)
+                .OrderByDescending(x => x.CREATE_DATE).FirstOrDefault();
+            if (findGia != null)
+            {
+                lstHoSoGia.Add(findGia);
+            }
+
+            var findKyThuat = Model.ObjList.Where(x => x.TYPE == FileGroupType.KyThuat && x.CONTRACTOR_ID == contractor.CONTRACTOR_ID)
+                .OrderByDescending(x => x.CREATE_DATE).FirstOrDefault();
+            if (findKyThuat != null)
+            {
+                lstHoSoKyThuat.Add(findKyThuat);
+            }
+
+            var findPhapLy = Model.ObjList.Where(x => x.TYPE == FileGroupType.PhapLy && x.CONTRACTOR_ID == contractor.CONTRACTOR_ID)
+                .OrderByDescending(x => x.CREATE_DATE).FirstOrDefault();
+            if (findPhapLy != null)
+            {
+                lstHoSoPhapLy.Add(findPhapLy);
+            }
+        }
+    }
+}
+
+<div class="card m-b-10 border-grey">
+    <div class="body" style="padding-top: 0px;">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a style="padding-left:0px"><i class="material-icons col-fecon">description</i> HỒ SƠ TỔNG HỢP</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="table-responsive" style="overflow: inherit;">
+                <table class="table font-13">
+                    <thead>
+                        <tr>
+                            <th style="width: 200px;">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                            <th>Người nộp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in lstHoSoTongHop.OrderByDescending(x => x.CREATE_DATE))
+                        {
+                            <tr>
+                                <td>
+                                    <div class="col-blue-grey font-12 m-t-10">
+                                        @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                    {
+                                        <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                    }
+                                    @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                                </td>
+
+                                <td>
+                                    @item.CREATE_BY
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.IS_SHOW_ONLY_TONG_HOP == "1")
+{
+    return;
+}
+
+@*ConfigViettinBank:ẩn HỒ SƠ PHÁP LÝ, HỒ SƠ KỸ THUẬT, HỒ SƠ NĂNG LỰC*@
+@*BA request upgrade thêm hồ sơ Pháp lý, Tính hợp lệ*@
+@*<div class="card m-b-10 border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">description</i> HỒ SƠ PHÁP LÝ</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive" style="overflow: inherit;">
+                    <table class="table font-13">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                                <th>Người nộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lstHoSoPhapLy.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="col-indigo">
+                                            @item.Contractor.TEN_NGAN
+                                        </div>
+                                        <div class="col-blue-grey font-12 m-t-10">
+                                            @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                        {
+                                            <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                        }
+                                        @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                                    </td>
+
+                                    <td>
+                                        @item.CREATE_BY
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+@*<div class="card m-b-10 border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">description</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive" style="overflow: inherit;">
+                    <table class="table font-13">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                                <th>Người nộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lstHoSoNangLuc.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="col-indigo">
+                                            @item.Contractor.TEN_NGAN
+                                        </div>
+                                        <div class="col-blue-grey font-12 m-t-10">
+                                            @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                        {
+                                            <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                        }
+                                        @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                                    </td>
+
+                                    <td>
+                                        @item.CREATE_BY
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+@*<div class="card m-b-10 border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">devices</i> @LanguageUtilities.LangText("lblTitle3", frmCode)</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive" style="overflow: inherit;">
+                    <table class="table font-13">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                                <th>Người nộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lstHoSoKyThuat.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="col-indigo">
+                                            @item.Contractor.TEN_NGAN
+                                        </div>
+                                        <div class="col-blue-grey font-12 m-t-10">
+                                            @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                        {
+                                            <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                        }
+                                        @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                                    </td>
+
+                                    <td>
+                                        @item.CREATE_BY
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+@if (serviceBid.ObjDetail.GIAI_DOAN != Phase_Status.NopHoSo && serviceBidCouncil.ObjList.Count(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && ((!string.IsNullOrEmpty(x.VAI_TRO) && (x.VAI_TRO.Contains("TDG") || x.VAI_TRO.Contains("XG"))) || x.IS_QUYET_DINH == true)) > 0)
+{
+    <div class="card m-b-10 border-grey">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons col-fecon">attach_money</i> @LanguageUtilities.LangText("lblTitle4", frmCode)</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="table-responsive" style="overflow: inherit;">
+                    <table class="table font-13">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">@LanguageUtilities.LangText("lblNgayNop", frmCode)</th>
+                                <th>@LanguageUtilities.LangText("lblDSHoSo", frmCode)</th>
+                                <th>Người nộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lstHoSoGia.OrderByDescending(x => x.CREATE_DATE))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="col-indigo">
+                                            @item.Contractor.TEN_NGAN
+                                        </div>
+                                        <div class="col-blue-grey font-12 m-t-10">
+                                            @item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.DESCRIPTION))
+                                        {
+                                            <div class="m-b-10">@Html.Raw(item.DESCRIPTION)</div>
+                                        }
+                                        @{Html.RenderPartial("ListFile", item.ListFile.Select(x => x.FileUpload).ToList());}
+                                    </td>
+
+                                    <td>
+                                        @item.CREATE_BY
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

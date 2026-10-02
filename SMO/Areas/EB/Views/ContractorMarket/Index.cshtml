@@ -1,0 +1,45 @@
+﻿@model SMO.Service.EB.ContractorMarketService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ContractorMarket_Index";
+
+}
+<div id='@Model.ViewId'>
+    @if (ProfileUtilities.User.IS_CHANGE_LANG)
+    {
+        <div class="divLanguage">
+            <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+        </div>
+    }
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.CONTRACTOR_ID)
+
+        <div class="page-function">
+            <div class="page-function-button m-r-20">
+                @if (AuthorizeUtilities.CheckUserRight("R702"))
+                {
+                    @Html.MyButton("cmdEdit", @LanguageUtilities.LangText("cmdEdit", frmCode), string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Edit", new { contractorId = Model.ObjDetail.CONTRACTOR_ID })), "Alt+N", "edit")
+                }
+            </div>
+        </div>
+        <div id="divResult" style="padding: 20px;">
+
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitIndexMarket() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            SubmitIndexMarket();
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+

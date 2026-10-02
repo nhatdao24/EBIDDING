@@ -1,0 +1,91 @@
+﻿@model SMO.Service.EB.BidRequireService
+@{
+    var number = 1;
+    var frmCode = "frm_BidRequire_Index_CreateByMe";
+
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-striped table-bordered font-13">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("thCode", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thNoiDung", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thMatHang", frmCode)</th>
+                <th>Dự án</th>
+                <th>Gói thầu</th>
+                <th>Phạm vi công việc</th>
+                <th>Loại hình</th>
+                <th class="align-center">@LanguageUtilities.LangText("thNgayTao", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thNguoiPheDuyet", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thTrangThai", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("thGoiThau", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", new { id = item.CODE }));
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.NAME
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @foreach (var detail in item.ListDetail)
+                        {
+                            <div>@detail.Material.TEXT - @detail.QUANTITY.ToStringVN() @(detail.Unit != null ? detail.Unit.TEXT : "" )</div>
+                        }
+                    </td>
+
+                    <td ondblclick="@vdbclickAction">
+                        @(item.Project == null ? "" : item.Project.NAME)
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @(item.Package == null ? "" : item.Package.TEXT)
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <div>@(item.ScopeType == null ? "" : item.ScopeType.TEXT)</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @(item.BidType == null ? "" : item.BidType.TEXT)
+                    </td>
+
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @item.CREATE_DATE.Value.ToString("dd/MM/yyyy HH:mm")
+                        <div class="col-blue-grey">@item.CREATE_BY</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @foreach (var user in item.ListUser)
+                        {
+                            <div>@(user.User == null ? "" : user.User.FULL_NAME)</div>
+                        }
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <span class="badge @EB_Status.GetStatusColor(item.STATUS)">@EB_Status.GetStatusText(item.STATUS)</span>
+                    </td>
+                    <td class="align-center">
+                        @if (item.STATUS == EB_Status.DaPheDuyet && string.IsNullOrWhiteSpace(item.BID_ID))
+                        {
+                            if (AuthorizeUtilities.CheckUserRightProject("RP302", item.PROJECT_CODE).Item1)
+                            {
+                                @Html.MyButton("cmdCreateBid", LanguageUtilities.LangText("cmdCreateBid", frmCode), string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create", "Bid", new { @area = "EB", requireCode = item.CODE, isNewRound = false })), "Alt+N", "add", "border")
+                            }
+                        }
+                        else if (!string.IsNullOrWhiteSpace(item.BID_ID))
+                        {
+                            <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}');", Url.Action("MenuDetailBidManager", "Bid", new { id = item.BID_ID }))">
+                                @item.BID_ID
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

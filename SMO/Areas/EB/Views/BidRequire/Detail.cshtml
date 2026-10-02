@@ -1,0 +1,531 @@
+﻿@model SMO.Service.EB.BidRequireService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_BidRequire_Detail";
+    var user_Approve = string.Join(" | ", Model.ObjHeader.ListUser.Select(x => x.USER_NAME).ToList());
+
+    //Kiểm tra user cần phê duyệt hay không
+    var checkApprove = false;
+    if (Model.ObjHeader.STATUS == EB_Status.ChoPheDuyet || Model.ObjHeader.STATUS == EB_Status.DangPheDuyet)
+    {
+        var userApprove = Model.ObjHeader.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == false);
+        if (userApprove == null)
+        {
+            checkApprove = false;
+        }
+        else
+        {
+            // Kiểm tra user level thấp hơn đã phê duyệt hay chưa
+            if (Model.ObjHeader.ListUser.FirstOrDefault(x => x.C_LEVEL < userApprove.C_LEVEL && x.IS_APPROVED == false) != null)
+            {
+                checkApprove = false;
+            }
+            else
+            {
+                checkApprove = true;
+            }
+        }
+
+    }
+
+    //Check user có đc hủy phê duyệt hay ko
+    var checkApprove2 = false;
+    if ((Model.ObjHeader.STATUS == EB_Status.DaPheDuyet || Model.ObjHeader.STATUS == EB_Status.DangPheDuyet) && string.IsNullOrEmpty(Model.ObjHeader.BID_ID))
+    {
+        var userApprove = Model.ObjHeader.ListUser.FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.IS_APPROVED == true);
+        if (userApprove == null)
+        {
+            checkApprove2 = false;
+        }
+        else
+        {
+            // Kiểm tra user level cao hơn đã phê duyệt hay chưa
+            if (Model.ObjHeader.ListUser.FirstOrDefault(x => x.C_LEVEL > userApprove.C_LEVEL && x.IS_APPROVED == false) != null)
+            {
+                checkApprove2 = false;
+            }
+            else
+            {
+                checkApprove2 = true;
+            }
+        }
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @Html.HiddenFor(m => m.ViewId)
+    <div class="row clearfix">
+        <div class="col-xs-12 col-sm-8">
+            <div class="card border-grey">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body div-po-detail" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">content_copy</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div role="tabpanel">
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdBack", LanguageUtilities.LangText("cmdBack", frmCode), string.Format("Forms.Close('{0}');", Model.ViewId), "", "arrow_back")
+
+                                    @if ((Model.ObjHeader.STATUS == EB_Status.KhoiTao || Model.ObjHeader.STATUS == EB_Status.ChoCapNhat))
+                                    {
+
+                                        @*ConfigViettinBank: Xóa phân quyền dự án*@
+
+                                        @*if (AuthorizeUtilities.CheckUserRightProject("RP203", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdEdit", LanguageUtilities.LangText("cmdEdit", frmCode), string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = Model.ObjHeader.CODE, viewIdDetail = Model.ViewId })), "Chỉnh sửa", "edit")
+                                            }
+
+                                            if (AuthorizeUtilities.CheckUserRightProject("RP205", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdSent", LanguageUtilities.LangText("cmdSent", frmCode), "Send();", "", "send")
+                                            }
+                                            if (AuthorizeUtilities.CheckUserRightProject("RP206", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdCancel", LanguageUtilities.LangText("cmdCancel", frmCode), "Cancel();", "", "delete")
+                                            }*@
+
+                                        @Html.MyButton("cmdEdit", LanguageUtilities.LangText("cmdEdit", frmCode), string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = Model.ObjHeader.CODE, viewIdDetail = Model.ViewId })), "Chỉnh sửa", "edit")
+
+
+
+                                        @Html.MyButton("cmdSent", LanguageUtilities.LangText("cmdSent", frmCode), "Send();", "", "send")
+
+
+                                        @Html.MyButton("cmdCancel", LanguageUtilities.LangText("cmdCancel", frmCode), "Cancel();", "", "delete")
+
+                                    }
+
+
+                                    @*@if (Model.ObjHeader.STATUS == EB_Status.ChoPheDuyet && Model.ObjHeader.USER_APPROVE == ProfileUtilities.User.USER_NAME)
+                                        {
+                                            if (AuthorizeUtilities.CheckUserRight("R607"))
+                                            {
+                                                @Html.MyButton("cmdApprove", LanguageUtilities.LangText("cmdApprove", frmCode), "Approve();", "", "done_all")
+                                                @Html.MyButton("cmdCapNhat", LanguageUtilities.LangText("cmdCapNhat", frmCode), "RequireUpdate();", "", "backspace")
+                                            }
+                                            if (AuthorizeUtilities.CheckUserRight("R608"))
+                                            {
+                                                @Html.MyButton("cmdReject", LanguageUtilities.LangText("cmdReject", frmCode), "Reject();", "", "cancel")
+                                            }
+                                        }*@
+
+                                    @if (checkApprove)
+                                    {
+
+
+                                        @*ConfigViettinBank: Xóa phân quyền dự án*@
+
+
+                                        @*if (AuthorizeUtilities.CheckUserRightProject("RP207", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdApprove", LanguageUtilities.LangText("cmdApprove", frmCode), "Approve();", "", "done_all")
+                                                @Html.MyButton("cmdCapNhat", LanguageUtilities.LangText("cmdCapNhat", frmCode), "RequireUpdate();", "", "backspace")
+                                            }
+                                            <text> </text>
+                                            if (AuthorizeUtilities.CheckUserRightProject("RP207", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdReject", LanguageUtilities.LangText("cmdReject", frmCode), "Reject();", "", "cancel")
+                                            }*@
+
+                                        @Html.MyButton("cmdApprove", LanguageUtilities.LangText("cmdApprove", frmCode), "Approve();", "", "done_all")
+                                        @Html.MyButton("cmdCapNhat", LanguageUtilities.LangText("cmdCapNhat", frmCode), "RequireUpdate();", "", "backspace")
+
+                                        <text> </text>
+
+                                        @Html.MyButton("cmdReject", LanguageUtilities.LangText("cmdReject", frmCode), "Reject();", "", "cancel")
+
+                                    }
+
+                                    @if (checkApprove2)
+                                    {
+
+                                        @*ConfigViettinBank: Xóa phân quyền dự án*@
+
+                                        @*if (AuthorizeUtilities.CheckUserRightProject("RP207", Model.ObjHeader.PROJECT_CODE).Item1)
+                                            {
+                                                @Html.MyButton("cmdCancelApprove", LanguageUtilities.LangText("cmdCancelApprove", frmCode), "CancelApprove();", "", "cancel")
+                                            }*@
+
+                                        @Html.MyButton("cmdCancelApprove", LanguageUtilities.LangText("cmdCancelApprove", frmCode), "CancelApprove();", "", "cancel")
+
+                                    }
+
+                                </div>
+                            </div>
+                            <div id="divDetail" class="m-t-20">
+                                <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                    <table class="table table-condensed font-13">
+                                        <thead>
+                                            <tr>
+                                                <th style="min-width: 200px">Mã hàng hóa</th>
+                                                <th style="min-width: 200px">Tên hàng hóa</th>
+                                                <th style="min-width: 200px">Công việc</th>
+                                                @if (Model.ObjHeader.IS_RENT)
+                                                {
+                                                    <th>Thời gian thuê</th>
+                                                }
+                                                <th width="150px" class="align-center">Số lượng</th>
+                                                <th width="100px" class="align-center">ĐVT</th>
+                                                <th width="100px" class="align-center">Ghi chú</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.ObjHeader.ListDetail.OrderBy(x => x.ITEM_NUMBER == null ? 1 : 0).ThenBy(x => x.ITEM_NUMBER))
+                                            {
+                                                <tr>
+                                                    <td>@item.Material.CODE</td>
+                                                    <td>@item.Material.TEXT</td>
+                                                    <td>[@(item.Scope?.CODE ?? "")] @(item.Scope?.TEXT ?? "")</td>
+                                                    @if (Model.ObjHeader.IS_RENT)
+                                                    {
+                                                        <td>
+                                                            @(item.TIME_RENT != null ? item.TIME_RENT.ToString() : "")
+                                                            @(item.RentUnit != null ? (item.RentUnit.TEXT != null ? item.RentUnit.TEXT : " ") : "")
+                                                        </td>
+                                                    }
+                                                    <td class="align-center">@item.QUANTITY.ToStringVN()</td>
+                                                    <td class="align-center">@(item.Unit != null ? item.Unit.TEXT : "")</td>
+                                                    <td class="align-center">@(item.NOTE != null ? item.NOTE : "")</td>
+
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="row m-t-20">
+                                <div class="col-xs-12">
+                                    <div>
+                                        <label>Mô tả</label>
+                                        <div>
+                                            @Html.Raw(Model.ObjHeader.NOTES)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row m-t-20">
+                                <div class="col-xs-12">
+                                    <div>
+                                        <label>Mô tả tiếng anh</label>
+                                        <div>
+                                            @Html.Raw(Model.ObjHeader.NOTES_EN)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">history</i> LỊCH SỬ HOẠT ĐỘNG</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <table class="table table-condensed font-13">
+                                <thead>
+                                    <tr>
+                                        <th>Người thực hiện</th>
+                                        <th class="align-center">Thời gian</th>
+                                        <th>Hành động</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.ObjHeader.ListHistory.OrderByDescending(x => x.CREATE_DATE).ToList())
+                                    {
+                                        <tr>
+                                            <td>
+                                                @(item.ActionUser == null
+                                                ? "Chưa có thông tin người dùng"
+                                                : $"{item.ActionUser.FULL_NAME} - {item.ActionUser.Title?.NAME ?? "Chưa có thông tin chức vụ"}")
+                                            </td>
+                                            <td class="align-center">@item.ACTION_DATE.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge @SMO.Action.GetActionColor(item.ACTION)">@SMO.Action.GetActionText(item.ACTION)</span>
+                                            </td>
+                                            <td>@Html.Raw(item.NOTES)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="col-xs-12 col-sm-4">
+            <div class="card m-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode) @*: <span class="col-pink">@Model.ObjHeader.CODE</span>*@</a></li>
+                    </ul>
+                    <div class="tab-content po-info">
+                        <ul>
+                            <li>
+                                <span>@Model.ObjHeader.NAME</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblMaDeNghi", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjHeader.CODE</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblMaGoiThau", frmCode)</span>
+                                </span>
+                                <span style="float:right">
+                                    <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}');", Url.Action("MenuDetailBidManager", "Bid", new { id = Model.ObjHeader.BID_ID }))">
+                                        @Model.ObjHeader.BID_ID
+                                    </a>
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;Gói thầu</span>
+                                </span>
+                                <span style="float:right">@(Model.ObjHeader.Package == null ? "" : Model.ObjHeader.Package.TEXT)</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;Phạm vi công việc</span>
+                                </span>
+                                <span style="float:right">@(Model.ObjHeader.ScopeType == null ? "" : Model.ObjHeader.ScopeType.TEXT)</span>
+                            </li>
+
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;Loại hình</span>
+                                </span>
+                                <span style="float:right">@(Model.ObjHeader.BidType == null ? "" : Model.ObjHeader.BidType.TEXT)</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">settings_ethernet</i><span>&nbsp;&nbsp;Ghi chú</span>
+                                </span>
+                                <span style="float:right">@Model.ObjHeader.DESCRIPTION</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">date_range</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNgayDeNghi", frmCode)</span>
+                                </span>
+                                <span style="float:right">@Model.ObjHeader.CREATE_DATE.Value.ToString("dd/MM/yyyy")</span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">person</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNguoiTrinhDuyet", frmCode)</span>
+                                </span>
+                                <span style="float:right">
+                                    @(Model.ObjHeader.UserSent == null
+                                     ? "Chưa có thông tin người gửi"
+                                     : $"{Model.ObjHeader.UserSent.FULL_NAME} - {Model.ObjHeader.UserSent.Title?.NAME ?? "Chưa có thông tin chức vụ"}")
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">person</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblNguoiPheDuyet", frmCode)</span>
+                                </span>
+                                @foreach (var user in Model.ObjHeader.ListUser.OrderBy(x => x.C_LEVEL).ThenBy(x => x.USER_NAME))
+                                {
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            &nbsp;&nbsp;@user.USER_NAME
+                                            &nbsp; - &nbsp; @(user.User.Title?.NAME ?? "Chưa có thông tin chức danh")
+
+                                        </div>
+                                        <div class="col-sm-4">
+                                            @if (user.IS_APPROVED)
+                                            {
+                                                <span class="badge bg-blue">Đã phê duyệt</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-deep-orange">Chưa phê duyệt</span>
+                                            }
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span>@(user.DATE_APPROVE.HasValue ? user.DATE_APPROVE.Value.ToString(Global.DateTimeToStringFormat) : "")</span>
+                                        </div>
+                                    </div>
+                                }
+                            </li>
+
+                            <li>
+                                <span class="group-addon col-blue-grey">
+                                    <i class="material-icons">timeline</i><span>&nbsp;&nbsp;@LanguageUtilities.LangText("lblTrangThai", frmCode)</span>
+                                </span>
+                                <span class="badge @EB_Status.GetStatusColor(Model.ObjHeader.STATUS)" style="float:right">@EB_Status.GetStatusText(Model.ObjHeader.STATUS)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card m-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle3", frmCode)</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <table class="table table-condensed" style="margin-bottom:0px;">
+                            @foreach (var item in Model.ObjHeader.ListPR)
+                            {
+                                <tr>
+                                    <td style="cursor: pointer;" onclick="@($"ShowDetailPR('{item.TYPE}','{item.PR_CODE}')")">
+                                        <div><b>@item.PR_CODE</b></div>
+                                        <div style="font-size: 12px; color: dimgrey;"><i>@item.TYPE</i>  <i>@item.PR_NAME</i></div>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card m-b-30 border-grey">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> HỒ SƠ ĐÍNH KÈM</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        @{
+                            var sortedFiles = Model.ObjHeader.ListFile
+                                                  .Select(x => x.File)
+                                                  .OrderBy(x => x.FILE_OLD_NAME) // Giả sử file.Name là thuộc tính chứa tên file
+                                                  .ToList();
+
+                            Html.RenderPartial("ListFile", sortedFiles, new ViewDataDictionary { new KeyValuePair<string, object>("isRemoveFile", false) });
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card m-b-30 border-grey">
+                <div class="body" id="divHeader" style="padding-top: 0px;">
+                    <div id="divComment">
+                        @Html.Action("Index", "Comment", new { @Area = "", referenceId = Model.ObjHeader.COMMENT_ID })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function ReloadDetailPR() {
+            var param = {
+                url: "@Url.Action("Detail", new { id = Model.ObjHeader.CODE})",
+                success: function (response) {
+                    $('#@Model.ViewId').replaceWith(response);
+                }
+            };
+            Forms.Ajax(param);
+        }
+
+        function ShowDetailPR(type, code){
+            var params = {
+                url : "@Url.Action("ShowDetailPR")",
+                data : {type: type, code: code}
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+        function Send() {
+            if (confirm("Bạn có chắc chắn trình duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Send")",
+                    type: "POST",
+                    data: { code: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function CancelApprove() {
+            if (confirm("Bạn có chắc chắn hủy phê duyệt không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("CancelApprove")",
+                    type: "POST",
+                    data: { code: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function Cancel() {
+            if (confirm("Bạn có chắc chắn hủy không?")) {
+                var ajaxParams = {
+                    url: "@Url.Action("Cancel")",
+                    type: "POST",
+                    data: { code: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function Reject() {
+            var params = {
+                url: "@Url.Action("Reject")",
+                data: { id: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function Approve() {
+            var params = {
+                url: "@Url.Action("Approve")",
+                data: { id: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function RequireUpdate() {
+            var params = {
+                url: "@Url.Action("RequireUpdate")",
+                data: { id: '@Model.ObjHeader.CODE', viewId: "@Model.ViewId" }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

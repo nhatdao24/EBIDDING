@@ -1,0 +1,65 @@
+﻿
+@{
+    var tongTrongSo = Convert.ToDecimal(ViewBag.TongTrongSo);
+    var bidId = ViewBag.BID_ID;
+    var bidService = new SMO.Service.EB.BidService();
+    var bid = bidService.CurrentRepository.Get(bidId);
+}
+
+<style>
+    .disabled {
+        pointer-events: none; /* Ngăn chặn tất cả sự kiện chuột */
+        opacity: 0.5; /* Làm mờ để chỉ ra rằng nó bị vô hiệu hóa */
+    }
+</style>
+
+@if (tongTrongSo < 100)
+{
+    if (ProfileUtilities.User.LANGUAGE == "vi")
+    {
+        <div class="col-red m-l-20 m-t-20 m-b-10 font-15">CHÚ Ý: TỔNG TRỌNG SỐ = @tongTrongSo % (CHƯA ĐỦ 100%)</div>
+    }
+    else
+    {
+        <div class="col-red m-l-20 m-t-20 m-b-10 font-15">NOTICE: SUM RATIO = @tongTrongSo % (NOT ENOUGH 100%)</div>
+    }
+}
+else if (tongTrongSo > 100)
+{
+    if (ProfileUtilities.User.LANGUAGE == "vi")
+    {
+        <div class="col-red m-l-20 m-t-20 m-b-10 font-15">CHÚ Ý: TỔNG TRỌNG SỐ = @tongTrongSo % (VƯỢT QUÁ 100%)</div>
+    }
+    else
+    {
+        <div class="col-red m-l-20 m-t-20 m-b-10 font-15">NOTICE: SUM RATIO = @tongTrongSo % (EXCEED 100%)</div>
+    }
+
+}
+
+<input type="hidden" id="hddParentSpec" value="" />
+@if (bid.STATUS == "01" || bid.STATUS == "04")
+{
+    <ul id="treeSpec" class="ztree"></ul>
+}
+else
+{
+    <ul id="treeSpec" class="ztree disabled"></ul>
+}
+<script type="text/javascript">
+    var zNodesSpec = jQuery.parseJSON('@Html.Raw(ViewBag.zNodeSpec)');
+    $(function () {
+        $.fn.zTree.init($("#treeSpec"), settingSpec, zNodesSpec);
+        var zTreeSpec = $.fn.zTree.getZTreeObj("treeSpec");
+        setTimeout(function () {
+            var selected = "@ViewBag.SpecSelected";
+            if (selected != null && selected !== "") {
+                var node = zTreeSpec.getNodesByParam("id", selected, null);
+                if (node != null) {
+                    $("#hddParentSpec").val(node[0].pId);
+                    zTree.selectNode(node[0]);
+                }
+            }
+        }, 500);
+    });
+</script>

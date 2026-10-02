@@ -1,0 +1,166 @@
+﻿@model SMO.Service.EB.ReviewSpecCouncilService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewSpecCouncil_Review";
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var numberRow = 0;
+    var numberSpec = 0;
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("UpdateReviewSpecCouncil", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ViewId)
+
+        <div class="card border-grey m-b-10">
+            <div class="body">
+                @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), string.Format("Forms.SubmitForm('{0}');", @Model.FormId), " ", "done_all")
+                <div style="float: right;">
+                    @Html.MyButton("cmdSave", "", "$('#" + Model.ViewId + "').toggleClass('full-screen')", " ", "zoom_out_map")
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-grey m-b-10">
+            <div class="table-responsive font-14">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <td rowspan="3" class="align-center strong" style="min-width: 50px;"><b>@LanguageUtilities.LangText("lblSTT", frmCode)</b></td>
+                            <td rowspan="3" class="align-center" style="min-width: 200px;"><b>@LanguageUtilities.LangText("lblNhaThau", frmCode)</b></td>
+                            @*<td rowspan="3" class="align-center" style="min-width: 150px;"><b>Loại hàng hóa</b></td>*@
+                            <td rowspan="3" class="align-center" style="min-width: 150px;"><b>@LanguageUtilities.LangText("lblCongViecThucHien", frmCode)</b></td>
+                            <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblGiaTri", frmCode)</b></td>
+                            <td rowspan="3" class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblTyLe", frmCode)</b></td>
+                            <td colspan="@Model.ObjListReviewSpec.Count" class="align-center"><b>@LanguageUtilities.LangText("lblCacChiTieuDanhGia", frmCode)</b></td>
+                            <td rowspan="3" class="align-center" style="min-width: 200px;"><b>@LanguageUtilities.LangText("lblGhiChu", frmCode)</b></td>
+                        </tr>
+                        <tr>
+                            @foreach (var spec in Model.ObjListReviewSpec)
+                            {
+                                numberSpec++;
+                                <td class="align-center" style="min-width: 100px;">
+                                    <b>@numberSpec</b>
+                                    @*<div>(@spec.RATIO %)</div>*@
+                                    <div>
+                                        <a href="#" title="@spec.DESCRIPTION">(T.Điểm: @spec.MAX_SCORE)</a>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                        <tr>
+                            @foreach (var spec in Model.ObjListReviewSpec)
+                            {
+                                <td class="align-center" style="min-width: 100px;"><b>@spec.NAME</b></td>
+                            }
+                        </tr>
+                        @foreach (var reviewContractor in Model.ObjListReviewContractor)
+                        {
+                            if (reviewContractor.ListDetail.Count > 0)
+                            {
+                                foreach (var detail in reviewContractor.ListDetail)
+                                {
+                                    numberRow++;
+                                    <tr>
+                                        <td class="align-center">@numberRow</td>
+                                        <td>
+                                            @reviewContractor.Contractor.TEN_NGAN
+                                            <div>Xếp hạng: @reviewContractor.Contractor.XEP_HANG</div>
+                                        </td>
+                                        @*<td>
+                                            @if (!string.IsNullOrWhiteSpace(detail.MATERIAL_TYPE))
+                                            {
+                                                foreach (var typeId in detail.MATERIAL_TYPE.Split(','))
+                                                {
+                                                    var find = UnitOfWork.Repository<MaterialTypeRepo>().Get(typeId);
+                                                    if (find != null)
+                                                    {
+                                                        <div>@find.TEXT</div>
+                                                    }
+                                                }
+                                            }
+                                        </td>*@
+                                        <td>
+                                            <div>@detail.INFO_BID</div>
+                                            @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                            {
+                                                foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                                {
+                                                    var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                    if (find != null)
+                                                    {
+                                                        var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                        <div><a href="#" onclick="@action">@find.PKID</a></div>
+                                                    }
+                                                }
+                                            }
+                                        </td>
+                                        <td class="align-center">
+                                            @detail.GIA_TRI.ToStringVN()
+                                        </td>
+                                        <td class="align-center">
+                                            @if (Model.ObjProject != null && Model.ObjProject.GIA_TRI_THUC_HIEN > 0)
+                                            {
+                                                <span>@(((detail.GIA_TRI / Model.ObjProject.GIA_TRI_THUC_HIEN) * 100).ToStringVN()) %</span>
+                                            }
+                                            else
+                                            {
+                                                <span>0 %</span>
+                                            }
+                                        </td>
+
+                                        @foreach (var spec in Model.ObjListReviewSpec)
+                                        {
+                                            var findSpecCouncil = Model.ObjListReviewSpecScore.FirstOrDefault(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID);
+                                            var indexSpecCouncil = Model.ObjListReviewSpecScore.IndexOf(findSpecCouncil);
+                                            <td>
+                                                @Html.HiddenFor(m => Model.ObjListReviewSpecScore[indexSpecCouncil].PKID)
+                                                @Html.HiddenFor(m => Model.ObjListReviewSpecScore[indexSpecCouncil].SPEC_ID)
+                                                @Html.HiddenFor(m => Model.ObjListReviewSpecScore[indexSpecCouncil].REVIEW_CONTRACTOR_DETAIL_ID)
+                                                @Html.HiddenFor(m => Model.ObjListReviewSpecScore[indexSpecCouncil].USER_SCORE)
+                                                <div class="form-group">
+                                                    <div class="form-line">
+                                                        <input class="form-control align-center valid input-validation-error" data-val="true" data-val-number="Vui lòng nhập kiểu số." data-val-required="Hãy nhập điểm." id="txt_@indexSpecCouncil" name="ObjListReviewSpecScore[@indexSpecCouncil].SCORE" placeholder="Chấm điểm" type="number" max="@spec.MAX_SCORE" min="0" value="@Model.ObjListReviewSpecScore[indexSpecCouncil].SCORE">
+                                                    </div>
+                                                    <span class="field-validation-valid" data-valmsg-for="ObjListReviewSpecScore[@indexSpecCouncil].SCORE" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </td>
+                                        }
+
+                                        <td>
+                                            @{ 
+                                                var findReviewNote = Model.ObjListReviewCouncilNote.FirstOrDefault(x => x.REVIEW_CONTRACTOR_DETAIL_ID == detail.PKID);
+                                                var indexReviewNote = Model.ObjListReviewCouncilNote.IndexOf(findReviewNote);
+                                            }
+                                            @Html.HiddenFor(m => Model.ObjListReviewCouncilNote[indexReviewNote].PKID)
+                                            @Html.HiddenFor(m => Model.ObjListReviewCouncilNote[indexReviewNote].REVIEW_CONTRACTOR_DETAIL_ID)
+                                            @Html.HiddenFor(m => Model.ObjListReviewCouncilNote[indexReviewNote].USER_SCORE)
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    <input class="form-control" id="txtReview_@indexReviewNote" name="ObjListReviewCouncilNote[@indexReviewNote].NOTES" type="text" value="@Model.ObjListReviewCouncilNote[indexReviewNote].NOTES">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            @*Forms.SubmitForm('@Model.FormId');*@
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

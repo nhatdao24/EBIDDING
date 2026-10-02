@@ -1,0 +1,390 @@
+﻿@model SMO.Service.EB.BidService
+@using SMO.Service.EB
+@using SMO.Service
+@using SMO.Core.Entities
+@using SMO.Repository.Implement.EB
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var serviceSpec = new BidSpecService();
+    serviceSpec.ObjDetail.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.ObjSpecContractor.BID_ID = Model.ObjDetail.PKID;
+    serviceSpec.GetListViewSpecScore();
+
+    var lstScore = new List<T_EB_CONTRACTOR_SCORE>();
+
+    foreach (var item in Model.ObjDetail.ListContractor)
+    {
+        var sumSystemScore = serviceSpec.ObjListSpecSystemScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        var sumUserScore = serviceSpec.ObjListSpecUserScore.Where(x => x.CONTRACTOR_ID == item.CONTRACTOR_ID).Sum(x => x.SCORE_MULTIPLY);
+        lstScore.Add(new T_EB_CONTRACTOR_SCORE()
+        {
+            BidContractor = item,
+            SYSTEM_SCORE = sumSystemScore,
+            USER_SCORE = sumUserScore
+        });
+    }
+
+    var frmCode = "frm_CloseBid_SelectContractor";
+    var contractorWin = Model.ObjDetail.ListContractor.FirstOrDefault(x => x.IS_WINNING);
+
+    var lstPrice = Model.UnitOfWork.Repository<SMO.Repository.Implement.EB.BidContractorPriceRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+    var lstSubmit = Model.UnitOfWork.Repository<BidSubmitRepo>().Queryable().Where(x => x.BID_ID == Model.ObjDetail.PKID).ToList();
+    var indexGiaTrungThau = 0;
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal" id="btnClose">✖</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("CloseBid", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="ContractorId" name="@Html.NameFor(x => x.ContractorId)" value="" />
+            @Html.HiddenFor(x => x.ObjDetail.PKID)
+            <div class="card">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20">
+                                @Html.MyButton("cmdCloseBid", @LanguageUtilities.LangText("lblDongThau", frmCode), "Submit();", "Alt+N", "done_all")
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped font-13">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th style="min-width: 250px;">@LanguageUtilities.LangText("lblNhaThau", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thTrangThaiDauThau", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thDiemHoiDong", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thGiaChaoThau", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thGiaHieuChinh", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thGiaThuongThao", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thGiaTrungThau", frmCode)</th>
+                                        <th>@LanguageUtilities.LangText("thFileDinhKem", frmCode)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="9" style="background-color: #F4F4F4 !important">
+                                            <b class="col-red">@LanguageUtilities.LangText("lblDanhSachSoBo", frmCode)</b>
+                                        </td>
+                                    </tr>
+                                    @foreach (var item in lstScore.Where(x => x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+                                    {
+                                        var contractor = Model.ObjDetail.ListContractor.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                                        if ((contractor.STATUS == "AP" || contractor.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                                        {
+                                            var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");
+                                            var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                                            var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                                            var findTrungThau = lstPrice.FirstOrDefault(x => x.TYPE == "3" && x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                                            <input type="hidden" class="contractorId" value="@item.BidContractor.CONTRACTOR_ID" />
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" class="filled-in chkContractor" onclick="OnChangeContractor(this);" id="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID" name="chkItem_Winning" value="@item.BidContractor.CONTRACTOR_ID" style="margin:0;" @(item.BidContractor.IS_WINNING ? "checked" : "" ) />
+                                                    <label for="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID"></label>
+                                                </td>
+                                                <td>
+                                                    <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                                                    <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                                                </td>
+                                                <td class="align-center">
+                                                    @if (contractor.STATUS == "AP")
+                                                    {
+                                                        <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                                                    }
+                                                </td>
+                                                <td class="align-center">
+                                                    @item.USER_SCORE.ToStringVN()
+                                                </td>
+
+                                                <td>
+                                                    @if (giaChaoThau != null)
+                                                    {
+                                                        @(giaChaoThau.PRICE > 0 ? giaChaoThau.PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaHieuChinh != null)
+                                                    {
+                                                        @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaThuongThao != null)
+                                                    {
+                                                        @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                                    }
+                                                </td>
+
+                                                <td>
+                                                    <div class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                                        <div style="display: table; width: 100%;">
+                                                            <div style="display: table-cell">
+                                                                <input type="hidden" name="ObjListPrice[@indexGiaTrungThau].CONTRACTOR_ID" value="@contractor.CONTRACTOR_ID" />
+
+                                                                <label>Giá trị</label>
+                                                                <div class="form-group">
+                                                                    <div class="form-line">
+                                                                        <input type="text" class="form-control" name="ObjListPrice[@indexGiaTrungThau].PRICE" value="" />
+                                                                    </div>
+                                                                </div>
+
+                                                                <label>Ghi chú</label>
+                                                                <div class="form-group">
+                                                                    <div class="form-line">
+                                                                        <input type="text" class="form-control" name="ObjListPrice[@indexGiaTrungThau].NOTE" value="" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                                        @Html.MyButton("cmdFileGia", @LanguageUtilities.LangText("cmdFileGia", frmCode), "UploadFile.InsertFile('#divFileDinhKem_" + contractor.CONTRACTOR_ID + "','file_" + contractor.CONTRACTOR_ID + "');", "Chọn file", "attach_file")
+                                                        <div id="divFileDinhKem_@contractor.CONTRACTOR_ID" class="p-t-10">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            indexGiaTrungThau++;
+                                        }
+                                    }
+                                    <tr>
+                                        <td colspan="9" style="background-color: #F4F4F4 !important">
+                                            <b class="col-blue">@LanguageUtilities.LangText("lblDanhSachConLai", frmCode)</b>
+                                        </td>
+                                    </tr>
+                                    @foreach (var item in lstScore.Where(x => !x.BidContractor.IS_SELECTED).OrderByDescending(x => x.USER_SCORE).ThenByDescending(x => x.SYSTEM_SCORE))
+                                    {
+                                        var contractor = Model.ObjDetail.ListContractor.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID);
+                                        if ((contractor.STATUS == "AP" || contractor.STATUS == "RJ") && lstSubmit.Count(x => x.CONTRACTOR_ID == contractor.CONTRACTOR_ID) > 0)
+                                        {
+                                            var giaChaoThau = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "0");
+                                            var giaHieuChinh = lstPrice.FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "1");
+                                            var giaThuongThao = lstPrice.OrderByDescending(x => x.C_ORDER).FirstOrDefault(x => x.CONTRACTOR_ID == item.BidContractor.CONTRACTOR_ID && x.TYPE == "2");
+                                            <input type="hidden" class="contractorId" value="@item.BidContractor.CONTRACTOR_ID" />
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" class="filled-in" id="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID" name="chkItem_Winning" value="@item.BidContractor.CONTRACTOR_ID" style="margin:0;" @(item.BidContractor.IS_WINNING ? "checked" : "" ) />
+                                                    <label for="chkItem_@Model.ViewId@item.BidContractor.CONTRACTOR_ID"></label>
+                                                </td>
+                                                <td>
+                                                    <div>@item.BidContractor.Contractor.TEN_NGAN</div>
+                                                    <div class="col-blue-grey">@item.BidContractor.Contractor.TEN_DAI</div>
+                                                </td>
+                                                <td class="align-center">
+                                                    @if (contractor.STATUS == "AP")
+                                                    {
+                                                        <span class="badge bg-blue">@LanguageUtilities.LangText("lblDaThamGia", frmCode)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-blue-grey">@LanguageUtilities.LangText("lblKhongThamGia", frmCode)</span>
+                                                    }
+                                                </td>
+                                                <td class="align-center">
+                                                    @item.USER_SCORE.ToStringVN()
+                                                </td>
+                                                <td>
+                                                    @if (giaChaoThau != null)
+                                                    {
+                                                        @(giaChaoThau.PRICE > 0 ? giaChaoThau.PRICE.ToStringVN() : "") @giaChaoThau.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaHieuChinh != null)
+                                                    {
+                                                        @(giaHieuChinh.PRICE > 0 ? giaHieuChinh.PRICE.ToStringVN() : "") @giaHieuChinh.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (giaThuongThao != null)
+                                                    {
+                                                        @(giaThuongThao.PRICE > 0 ? giaThuongThao.PRICE.ToStringVN() : "") @giaThuongThao.CURRENCY_CODE
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                                        <div style="display: table; width: 100%;">
+                                                            <div style="display: table-cell">
+                                                                <input type="hidden" name="ObjListPrice[@indexGiaTrungThau].CONTRACTOR_ID" value="@contractor.CONTRACTOR_ID" />
+
+                                                                <label>Giá trị</label>
+                                                                <div class="form-group">
+                                                                    <div class="form-line">
+                                                                        <input type="text" class="form-control" name="ObjListPrice[@indexGiaTrungThau].PRICE" value="" />
+                                                                    </div>
+                                                                </div>
+
+                                                                <label>Ghi chú</label>
+                                                                <div class="form-group">
+                                                                    <div class="form-line">
+                                                                        <input type="text" class="form-control" name="ObjListPrice[@indexGiaTrungThau].NOTE" value="" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="clsContractor clsContractor_@contractor.CONTRACTOR_ID">
+                                                        @Html.MyButton("cmdFileGia", @LanguageUtilities.LangText("cmdFileGia", frmCode), "UploadFile.InsertFile('#divFileDinhKem_" + contractor.CONTRACTOR_ID + "','file_" + contractor.CONTRACTOR_ID + "');", "Chọn file", "attach_file")
+                                                        <div id="divFileDinhKem_@contractor.CONTRACTOR_ID" class="p-t-10">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            indexGiaTrungThau++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <script type="text/javascript">
+            function OnChangeContractor(obj) {
+                $("#@Model.ViewId .clsContractor").hide();
+
+                    var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                        arr.push($(this).val());
+                    });
+
+                    if (arr.length == 0) {
+                        return;
+                        //$(".clsContractor").show();
+                    }
+
+                $.each(arr, function (key, value) {
+                    $("#@Model.ViewId .clsContractor_" + value).show();
+                    });
+                }
+
+                function Submit() {
+                    debugger;
+                    var nodeWinningChecked = $("input[name='chkItem_Winning']:checked");
+                    var arrWinning = [];
+                $.each(nodeWinningChecked, function (i, val) {
+                        arrWinning.push(nodeWinningChecked[i].defaultValue);
+                    });
+                var contractorId = arrWinning.join("|");
+                $('#ContractorId').val(contractorId);
+                var formData = new FormData($('#@Model.FormId')[0]);
+
+                if (UploadFile.ListFile.length == 0) {
+                    Message.func.AlertDanger({ Message: { Code: "", Message: "Chưa đính kèm file trúng thầu !" } });
+                    return;
+                }
+
+                for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                    $.each($(".contractorId"), function () {
+                        if (UploadFile.ListFile[i].FileGroup == "file_" + $(this).val()) {
+                            formData.append($(this).val(), UploadFile.ListFile[i].DataFile);
+                        }
+                    });
+
+                }
+
+                var checkFile = "";
+                $.each(nodeWinningChecked, function (i, val) {
+                    if (UploadFile.ListFile.some(file => file.FileGroup === "file_" + nodeWinningChecked[i].defaultValue)) {
+
+                    } else {
+                        checkFile = "False";
+                    }
+                });
+
+                if (checkFile == "False") {
+                    Message.func.AlertDanger({ Message: { Code: "", Message: "Chưa đính kèm file trúng thầu !" } });
+                    return;
+                }
+
+                Forms.ShowLoading();
+
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                console.log(percentComplete);
+
+                                if (percentComplete === 100) {
+                                    //alert("kakalot");
+                                }
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    type: "POST",
+                    url: "@Url.Action("CloseBid")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        $("#btnClose").click();
+                        Message.execute(response);
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            $(function () {
+                $("#@Model.ViewId .clsContractor").hide();
+
+            var arr = [];
+                $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+                if (arr.length == 0) {
+                    return;
+                    //$(".clsContractor").show();
+                }
+
+                $.each(arr, function (key, value) {
+                    $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+

@@ -1,0 +1,516 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FBBAA1A-8ADF-4E7D-9BFB-CED5268CC985}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SMO.Repository</RootNamespace>
+    <AssemblyName>SMO.Repository</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\SolutionDll\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentNHibernate, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentNHibernate.2.1.2\lib\net461\FluentNHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net461\Iesi.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate, Version=5.1.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernate.5.1.3\lib\net461\NHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.2.1.2\lib\net45\Remotion.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq.EagerFetching, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.EagerFetching.2.1.0\lib\net45\Remotion.Linq.EagerFetching.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\GenericRepository.cs" />
+    <Compile Include="Common\IGenericRepository.cs" />
+    <Compile Include="Common\IUnitOfWork.cs" />
+    <Compile Include="Common\NHConfigurationSingleton.cs" />
+    <Compile Include="Common\NHListener.cs" />
+    <Compile Include="Common\NHSessionFactorySingleton.cs" />
+    <Compile Include="Common\NHUnitOfWork.cs" />
+    <Compile Include="Common\Utils.cs" />
+    <Compile Include="Implement\AD\CountVisitRepo.cs" />
+    <Compile Include="Implement\AD\ResetPasswordRepo.cs" />
+    <Compile Include="Implement\AD\FormObjectRepo.cs" />
+    <Compile Include="Implement\AD\HoSoRepo.cs" />
+    <Compile Include="Implement\AD\ConnectionRepo.cs" />
+    <Compile Include="Implement\AD\RightProjectRepo.cs" />
+    <Compile Include="Implement\AD\RightProjectUserRepo.cs" />
+    <Compile Include="Implement\AD\SystemConfigRepo.cs" />
+    <Compile Include="Implement\AD\OrganizeRepo.cs" />
+    <Compile Include="Implement\AD\LanguageRepo.cs" />
+    <Compile Include="Implement\AD\FormRepo.cs" />
+    <Compile Include="Implement\AD\MessageRepo.cs" />
+    <Compile Include="Implement\AD\MenuRepo.cs" />
+    <Compile Include="Implement\AD\UserHistoryRepo.cs" />
+    <Compile Include="Implement\AD\UserOrgRepo.cs" />
+    <Compile Include="Implement\AD\UserProjectRepo.cs" />
+    <Compile Include="Implement\AD\UserRoleRepo.cs" />
+    <Compile Include="Implement\AD\UserRightRepo.cs" />
+    <Compile Include="Implement\AD\RoleDetailRepo.cs" />
+    <Compile Include="Implement\AD\UserGroupRoleRepo.cs" />
+    <Compile Include="Implement\AD\UserApproveRepo.cs" />
+    <Compile Include="Implement\AD\UserUserGroupRepo.cs" />
+    <Compile Include="Implement\AD\UserRepo.cs" />
+    <Compile Include="Implement\AD\UserGroupRepo.cs" />
+    <Compile Include="Implement\AD\RoleRepo.cs" />
+    <Compile Include="Implement\AD\RightRepo.cs" />
+    <Compile Include="Implement\CF\ConfigTemplateNotifyRepo.cs" />
+    <Compile Include="Implement\EB\BidCouncilEmailRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorPriceFileRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorPriceRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorEmailRepo.cs" />
+    <Compile Include="Implement\EB\BidHHDVRepo.cs" />
+    <Compile Include="Implement\EB\BidLeadershipCommentsRepo.cs" />
+    <Compile Include="Implement\EB\BidHistoryRepo.cs" />
+    <Compile Include="Implement\EB\BidPhaseFileRepo.cs" />
+    <Compile Include="Implement\EB\BidInternalAnswerFileRepo.cs" />
+    <Compile Include="Implement\EB\BidInternalAnswerRepo.cs" />
+    <Compile Include="Implement\EB\BidInternalQuestionFileRepo.cs" />
+    <Compile Include="Implement\EB\BidInternalQuestionRepo.cs" />
+    <Compile Include="Implement\CM\FileUploadRepo.cs" />
+    <Compile Include="Implement\CM\CommentRepo.cs" />
+    <Compile Include="Implement\CM\HistorySmoApiRepo.cs" />
+    <Compile Include="Implement\CM\SmsOTPRepo.cs" />
+    <Compile Include="Implement\CM\SmsHistoryRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorAnswerFileRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorQuestionFileRepo.cs" />
+    <Compile Include="Implement\EB\BidRequiredHistoryRepo.cs" />
+    <Compile Include="Implement\EB\BidRequiredFileRepo.cs" />
+    <Compile Include="Implement\EB\BidSpecCouncilRepo.cs" />
+    <Compile Include="Implement\EB\BidSpecDetailRepo.cs" />
+    <Compile Include="Implement\EB\BidRequireDetailRepo.cs" />
+    <Compile Include="Implement\EB\BidRequirePRRepo.cs" />
+    <Compile Include="Implement\EB\BidSpecContractorRepo.cs" />
+    <Compile Include="Implement\EB\BidSpecCouncilScoreRepo.cs" />
+    <Compile Include="Implement\EB\BidSpecRepo.cs" />
+    <Compile Include="Implement\EB\BidRequireRepo.cs" />
+    <Compile Include="Implement\EB\BidSubmitFileRepo.cs" />
+    <Compile Include="Implement\EB\BidSubmitRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorQuestionRepo.cs" />
+    <Compile Include="Implement\EB\BidCouncilRepo.cs" />
+    <Compile Include="Implement\EB\BidFileRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorAnswerRepo.cs" />
+    <Compile Include="Implement\EB\BidNewRepo.cs" />
+    <Compile Include="Implement\EB\BidContractorRepo.cs" />
+    <Compile Include="Implement\EB\ContractorMarketRepo.cs" />
+    <Compile Include="Implement\EB\ContractorContactRepo.cs" />
+    <Compile Include="Implement\EB\ContractorLocationRepo.cs" />
+    <Compile Include="Implement\EB\ContractorProductRepo.cs" />
+    <Compile Include="Implement\EB\ContractorProjectRepo.cs" />
+    <Compile Include="Implement\EB\ContractorFinanceRepo.cs" />
+    <Compile Include="Implement\EB\BidRepo.cs" />
+    <Compile Include="Implement\EB\ContractorScopeRepo.cs" />
+    <Compile Include="Implement\EB\ContractorRevenueRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalNoteRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalContractorDetailRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalContractorRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalHistoryRepo.cs" />
+    <Compile Include="Implement\EB\BidRequireUserRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalUserRepo.cs" />
+    <Compile Include="Implement\EB\ReviewRatingRepo.cs" />
+    <Compile Include="Implement\EB\ReviewFinalRepo.cs" />
+    <Compile Include="Implement\EB\ReviewSpecDetailRepo.cs" />
+    <Compile Include="Implement\EB\RequestRevenueRepo.cs" />
+    <Compile Include="Implement\EB\RequestScopeRepo.cs" />
+    <Compile Include="Implement\EB\ReviewContractorDetailRepo.cs" />
+    <Compile Include="Implement\EB\ReviewCouncilNoteRepo.cs" />
+    <Compile Include="Implement\EB\ReviewSpecRepo.cs" />
+    <Compile Include="Implement\EB\ReviewSpecScoreRepo.cs" />
+    <Compile Include="Implement\EB\ReviewCouncilRepo.cs" />
+    <Compile Include="Implement\EB\ReviewContractorRepo.cs" />
+    <Compile Include="Implement\EB\ReviewRepo.cs" />
+    <Compile Include="Implement\EB\RequestRepo.cs" />
+    <Compile Include="Implement\EB\ContractorRepo.cs" />
+    <Compile Include="Implement\MD\HhdvRepo.cs" />
+    <Compile Include="Implement\MD\MdReviewSpecDetailRepo.cs" />
+    <Compile Include="Implement\MD\MdRatingRepo.cs" />
+    <Compile Include="Implement\MD\OptionRepo.cs" />
+    <Compile Include="Implement\MD\NumberOfProjectRepo.cs" />
+    <Compile Include="Implement\MD\ActiveAreaRepo.cs" />
+    <Compile Include="Implement\MD\FAQQuestionRepo.cs" />
+    <Compile Include="Implement\MD\FrequentlyAskedRepo.cs" />
+    <Compile Include="Implement\MD\MdBidSpecDetailRepo.cs" />
+    <Compile Include="Implement\MD\MdReviewSpecRepo.cs" />
+    <Compile Include="Implement\MD\MdBidSpecRepo.cs" />
+    <Compile Include="Implement\MD\MaterialTypeRepo.cs" />
+    <Compile Include="Implement\MD\BidTypeRepo.cs" />
+    <Compile Include="Implement\MD\CurrencyRepo.cs" />
+    <Compile Include="Implement\MD\CountryRepo.cs" />
+    <Compile Include="Implement\CM\SmsRepo.cs" />
+    <Compile Include="Implement\CM\EmailRepo.cs" />
+    <Compile Include="Implement\CM\NotifyRepo.cs" />
+    <Compile Include="Implement\MD\DictionaryRepo.cs" />
+    <Compile Include="Implement\MD\DomainRepo.cs" />
+    <Compile Include="Implement\MD\MaterialRepo.cs" />
+    <Compile Include="Implement\MD\PackageRepo.cs" />
+    <Compile Include="Implement\MD\ProjectRepo.cs" />
+    <Compile Include="Implement\MD\RentUnitRepo.cs" />
+    <Compile Include="Implement\MD\ScopeMaterialRepo.cs" />
+    <Compile Include="Implement\MD\ScopeRepo.cs" />
+    <Compile Include="Implement\MD\ScopeTypeRepo.cs" />
+    <Compile Include="Implement\MD\TitleRepo.cs" />
+    <Compile Include="Implement\MD\VendorRepo.cs" />
+    <Compile Include="Implement\MD\UnitRepo.cs" />
+    <Compile Include="Implement\PR\PREBDetailRepo.cs" />
+    <Compile Include="Implement\PR\PREBFileRepo.cs" />
+    <Compile Include="Implement\PR\PREBHistoryRepo.cs" />
+    <Compile Include="Implement\PR\PRSAPRepo.cs" />
+    <Compile Include="Implement\PR\PREBRepo.cs" />
+    <Compile Include="Implement\RQ\RequestHistoryRepo.cs" />
+    <Compile Include="Implement\RQ\RequestToRepo.cs" />
+    <Compile Include="Implement\RQ\RequestDataRepo.cs" />
+    <Compile Include="Implement\RQ\RequestRepo.cs" />
+    <Compile Include="Implement\WF\ActivityLevelRepo.cs" />
+    <Compile Include="Implement\WF\ActivityLevelSenderRepo.cs" />
+    <Compile Include="Implement\WF\ActivityRepo.cs" />
+    <Compile Include="Implement\WF\ActivityLevelReceiverRepo.cs" />
+    <Compile Include="Implement\WF\ActivityLevelReceiverComRepo.cs" />
+    <Compile Include="Implement\WF\ProcessRepo.cs" />
+    <Compile Include="Interface\AD\ICountVisitRepo.cs" />
+    <Compile Include="Interface\AD\IResetPasswordRepo.cs" />
+    <Compile Include="Interface\AD\IFormObjectRepo.cs" />
+    <Compile Include="Interface\AD\IHoSoRepo.cs" />
+    <Compile Include="Interface\AD\IConnectionRepo.cs" />
+    <Compile Include="Interface\AD\IRightProjectRepo.cs" />
+    <Compile Include="Interface\AD\IRightProjectUserRepo.cs" />
+    <Compile Include="Interface\AD\ISystemConfigRepo.cs" />
+    <Compile Include="Interface\AD\IOrganizeRepo.cs" />
+    <Compile Include="Interface\AD\ILanguageRepo.cs" />
+    <Compile Include="Interface\AD\IFormRepo.cs" />
+    <Compile Include="Interface\AD\IMessageRepo.cs" />
+    <Compile Include="Interface\AD\IMenuRepo.cs" />
+    <Compile Include="Interface\AD\IUserHistoryRepo.cs" />
+    <Compile Include="Interface\AD\IUserOrgRepo.cs" />
+    <Compile Include="Interface\AD\IUserProjectRepo.cs" />
+    <Compile Include="Interface\AD\IUserRoleRepo.cs" />
+    <Compile Include="Interface\AD\IUserRightRepo.cs" />
+    <Compile Include="Interface\AD\IRoleDetailRepo.cs" />
+    <Compile Include="Interface\AD\IUserGroupRoleRepo.cs" />
+    <Compile Include="Interface\AD\IUserApproveRepo.cs" />
+    <Compile Include="Interface\AD\IUserUserGroupRepo.cs" />
+    <Compile Include="Interface\AD\IUserRepo.cs" />
+    <Compile Include="Interface\AD\IUserGroupRepo.cs" />
+    <Compile Include="Interface\AD\IRoleRepo.cs" />
+    <Compile Include="Interface\AD\IRightRepo.cs" />
+    <Compile Include="Interface\CF\IConfigTemplateNotify.cs" />
+    <Compile Include="Interface\EB\IBidCouncilEmailRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorPriceFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorPriceRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorEmailRepo.cs" />
+    <Compile Include="Interface\EB\IBidHHDVRepo.cs" />
+    <Compile Include="Interface\EB\IBidLeadershipCommentsRepo.cs" />
+    <Compile Include="Interface\EB\IBidHistoryRepo.cs" />
+    <Compile Include="Interface\EB\IBidPhaseFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidInternalAnswerFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidInternalAnswerRepo.cs" />
+    <Compile Include="Interface\EB\IBidInternalQuestionFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidInternalQuestionRepo.cs" />
+    <Compile Include="Interface\CM\IFileUploadRepo.cs" />
+    <Compile Include="Interface\CM\ISmsOTPRepo.cs" />
+    <Compile Include="Interface\CM\IHistorySmoApiRepo.cs" />
+    <Compile Include="Interface\CM\ICommentRepo.cs" />
+    <Compile Include="Interface\CM\ISmsHistoryRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorAnswerFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorQuestionFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorAnswerRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequiredHistoryRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequiredFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidSpecCouncilRepo.cs" />
+    <Compile Include="Interface\EB\IBidSpecDetailRepo.cs" />
+    <Compile Include="Interface\EB\IBidSpecContractorRepo.cs" />
+    <Compile Include="Interface\EB\IBidSpecCouncilScoreRepo.cs" />
+    <Compile Include="Interface\EB\IBidSpecRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequirePRRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequireDetailRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequireRepo.cs" />
+    <Compile Include="Interface\EB\IBidSubmitFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidSubmitRepo.cs" />
+    <Compile Include="Interface\EB\IBidFileRepo.cs" />
+    <Compile Include="Interface\EB\IBidNewRepo.cs" />
+    <Compile Include="Interface\EB\IBidCouncilRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorRepo.cs" />
+    <Compile Include="Interface\EB\IBidRepo.cs" />
+    <Compile Include="Interface\EB\IContractorFinanceRepo.cs" />
+    <Compile Include="Interface\EB\IContractorProjectRepo.cs" />
+    <Compile Include="Interface\EB\IContractorProductRepo.cs" />
+    <Compile Include="Interface\EB\IContractorLocationRepo.cs" />
+    <Compile Include="Interface\EB\IContractorMarketRepo.cs" />
+    <Compile Include="Interface\EB\IContractorContactRepo.cs" />
+    <Compile Include="Interface\EB\IBidContractorQuestionRepo.cs" />
+    <Compile Include="Interface\EB\IContractorScopeRepo.cs" />
+    <Compile Include="Interface\EB\IContractorRevenueRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalNoteRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalContractorDetailRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalContractorRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalHistoryRepo.cs" />
+    <Compile Include="Interface\EB\IBidRequireUserRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalUserRepo.cs" />
+    <Compile Include="Interface\EB\IReviewRatingRepo.cs" />
+    <Compile Include="Interface\EB\IReviewFinalRepo.cs" />
+    <Compile Include="Interface\EB\IReviewSpecDetailRepo.cs" />
+    <Compile Include="Interface\EB\IRequestRevenueRepo.cs" />
+    <Compile Include="Interface\EB\IRequestScopeRepo.cs" />
+    <Compile Include="Interface\EB\IReviewContractorDetailRepo.cs" />
+    <Compile Include="Interface\EB\IReviewContractorRepo.cs" />
+    <Compile Include="Interface\EB\IReviewCouncilNoteRepo.cs" />
+    <Compile Include="Interface\EB\IReviewCouncilRepo.cs" />
+    <Compile Include="Interface\EB\IReviewSpecRepo.cs" />
+    <Compile Include="Interface\EB\IReviewSpecScoreRepo.cs" />
+    <Compile Include="Interface\EB\IReviewRepo.cs" />
+    <Compile Include="Interface\EB\IRequestRepo.cs" />
+    <Compile Include="Interface\EB\IContractorRepo.cs" />
+    <Compile Include="Interface\MD\IHhdvRepo.cs" />
+    <Compile Include="Interface\MD\IMdReviewSpecDetailRepo.cs" />
+    <Compile Include="Interface\MD\IOptionRepo.cs" />
+    <Compile Include="Interface\MD\INumberOfProjectRepo.cs" />
+    <Compile Include="Interface\MD\IActiveAreaRepo.cs" />
+    <Compile Include="Interface\MD\IFAQQuestionRepo.cs" />
+    <Compile Include="Interface\MD\IFrequentlyAskedRepo.cs" />
+    <Compile Include="Interface\MD\IMdBidSpecDetailRepo.cs" />
+    <Compile Include="Interface\MD\IMdReviewSpecRepo.cs" />
+    <Compile Include="Interface\MD\IMdBidSpecRepo.cs" />
+    <Compile Include="Interface\MD\IMaterialTypeRepo.cs" />
+    <Compile Include="Interface\MD\IBidTypeRepo.cs" />
+    <Compile Include="Interface\MD\ICurrencyRepo.cs" />
+    <Compile Include="Interface\MD\ICountryRepo.cs" />
+    <Compile Include="Interface\CM\ISmsRepo.cs" />
+    <Compile Include="Interface\CM\IEmailRepo.cs" />
+    <Compile Include="Interface\CM\INotifyRepo.cs" />
+    <Compile Include="Interface\MD\IDictionaryRepo.cs" />
+    <Compile Include="Interface\MD\IDomainRepo.cs" />
+    <Compile Include="Interface\MD\IMaterialRepo.cs" />
+    <Compile Include="Interface\MD\IPackageRepo.cs" />
+    <Compile Include="Interface\MD\IProjectRepo .cs" />
+    <Compile Include="Interface\MD\IMdRatingRepo.cs" />
+    <Compile Include="Interface\MD\IRentUnitRepo.cs" />
+    <Compile Include="Interface\MD\IScopeMaterialRepo.cs" />
+    <Compile Include="Interface\MD\IScopeRepo.cs" />
+    <Compile Include="Interface\MD\IScopeTypeRepo.cs" />
+    <Compile Include="Interface\MD\ITitleRepo.cs" />
+    <Compile Include="Interface\MD\IVendorRepo.cs" />
+    <Compile Include="Interface\MD\IUnitRepo.cs" />
+    <Compile Include="Interface\PR\IPREBFileRepo.cs" />
+    <Compile Include="Interface\PR\IPREBHistoryRepo.cs" />
+    <Compile Include="Interface\PR\IPRSAPDetailRepo.cs" />
+    <Compile Include="Interface\PR\IPREBDetailRepo.cs" />
+    <Compile Include="Interface\PR\IPRSAPRepo.cs" />
+    <Compile Include="Interface\PR\IPREBRepo.cs" />
+    <Compile Include="Interface\RQ\IRequestHistoryRepo.cs" />
+    <Compile Include="Interface\RQ\IRequestToRepo.cs" />
+    <Compile Include="Interface\RQ\IRequestDataRepo.cs" />
+    <Compile Include="Interface\RQ\IRequestRepo.cs" />
+    <Compile Include="Interface\WF\IActivityLevelRepo.cs" />
+    <Compile Include="Interface\WF\IActivityLevelReceiverComRepo.cs" />
+    <Compile Include="Interface\WF\IActivityLevelReceiverRepo.cs" />
+    <Compile Include="Interface\WF\IActivityLevelSenderRepo.cs" />
+    <Compile Include="Interface\WF\IActivityRepo.cs" />
+    <Compile Include="Interface\WF\IProcessRepo.cs" />
+    <Compile Include="Mapping\AD\T_AD_COUNT_VISIT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_REQUEST_RESET_PASS_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_HOSO_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_CONNECTION_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_RIGHT_PROJECT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_RIGHT_PROJECT_USER_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_HISTORY_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_SYSTEM_CONFIG_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ORGANIZE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_LANGUAGE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_FORM_OBJECT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_FORM_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_MENU_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_ORG_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_PROJECT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_RIGHT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ROLE_DETAIL_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_GROUP_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_APPROVE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_USER_GROUP_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_RIGHT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_GROUP_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_MESSAGE_Map.cs" />
+    <Compile Include="Mapping\BaseMapping.cs" />
+    <Compile Include="Mapping\CF\T_CF_TEMPLATE_NOTIFY_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_FILE_UPLOAD_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_HISTORY_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_OTP_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_HISTORY_SMO_API_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_COMMENT_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_EMAIL_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_NOTIFY_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_COUNCIL_EMAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_EMAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_PRICE_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_PRICE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_HHDV_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_LEADERSHIP_COMMENTS_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_HISTORY_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_HISTORY_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SPEC_COUNCIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_SCOPE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_REVENUE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REQUEST_REVENUE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REQUEST_SCOPE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_HISTORY_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_NOTE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_CONTRACTOR_DETAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_CONTRACTOR_DETAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_CONTRACTOR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_COUNCIL_NOTE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_USER_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_USER_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_FINAL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_RATING_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_SPEC_SCORE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_COUNCIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_CONTRACTOR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_PHASE_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_INTERNAL_ANSWER_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_INTERNAL_ANSWER_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_INTERNAL_QUESTION_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_INTERNAL_QUESTION_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SPEC_COUNCIL_SCORE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SPEC_CONTRACTOR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SPEC_DETAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SPEC_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_DETAIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_PR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_REQUIRE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SUBMIT_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_SUBMIT_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_QUESTION_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_ANSWER_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_QUESTION_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_ANSWER_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_FILE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_NEW_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_COUNCIL_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_CONTRACTOR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_BID_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_FINANCE_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REQUEST_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_PROJECT_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_PRODUCT_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_LOCATION_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_MARKET_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_CONTACT_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_CONTRACTOR_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_SPEC_Map.cs" />
+    <Compile Include="Mapping\EB\T_EB_REVIEW_SPEC_DETAIL_Map.cs" />
+    <Compile Include="Mapping\MD\T_FAQ_QUESTION_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_HHDV_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_OPTION_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_NUMBER_OF_PROJECT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_BID_SPEC_DETAIL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_BID_SPEC_Map.cs" />
+    <Compile Include="Mapping\MD\T_FAQ_FREQUENTLY_ASKED_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_ACTIVE_AREA_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_MATERIAL_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_BID_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CURRENCY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_COUNTRY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DICTIONARY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DOMAIN_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_MATERIAL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PACKAGE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_RATING_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_RENT_UNIT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_REVIEW_SPEC_DETAIL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_REVIEW_SPEC_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SCOPE.cs" />
+    <Compile Include="Mapping\MD\T_MD_SCOPE_MATERIAL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SCOPE_TYPE.cs" />
+    <Compile Include="Mapping\MD\T_MD_TITLE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VENDOR_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_UNIT_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_EB_DETAIL_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_EB_FILE_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_EB_HISTORY_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_SAP_DETAIL_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_EB_HEADER_Map.cs" />
+    <Compile Include="Mapping\PR\T_PR_SAP_HEADER_Map.cs" />
+    <Compile Include="Mapping\RQ\T_RQ_REQUEST_DATA_Map.cs" />
+    <Compile Include="Mapping\RQ\T_RQ_REQUEST_HISTORY_Map.cs" />
+    <Compile Include="Mapping\RQ\T_RQ_REQUEST_TO_Map.cs" />
+    <Compile Include="Mapping\RQ\T_RQ_REQUEST_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_ACTIVITY_LEVEL_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_ACTIVITY_LEVEL_RECEIVER_COM_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_ACTIVITY_LEVEL_RECEIVER_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_ACTIVITY_LEVEL_SENDER_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_ACTIVITY_Map.cs" />
+    <Compile Include="Mapping\WF\T_WF_PROCESS_Map.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SMO.Core\SMO.Core.csproj">
+      <Project>{02fec8f7-5984-48ed-9d60-8808829629be}</Project>
+      <Name>SMO.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

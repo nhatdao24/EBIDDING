@@ -1,0 +1,103 @@
+﻿@model SMO.Service.EB.BidRequireService
+@using NHibernate.Linq
+@using SMO.Service.PR
+@{
+    var listPRCode = Model.ObjListPR.Select(x => x.PR_CODE).ToList();
+    var servicePREB = new PREBService();
+    var servicePRSAP = new PRSAPService();
+    servicePREB.ObjList = servicePREB.CurrentRepository.Queryable().Where(x => listPRCode.Contains(x.CODE)).Fetch(x => x.ListDetail).ToList();
+    servicePRSAP.ObjList = servicePRSAP.CurrentRepository.Queryable().Where(x => listPRCode.Contains(x.CODE)).ToList();
+
+    var frmCode = "frm_BidRequire_Index_ShowAllDetailPR";
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">✖</button>
+</div>
+<div class="modal-body">
+    <script src="~/Scripts/jquery.stickytable.min.js" type="text/javascript"></script>
+    <div class="content">
+        <div class="card">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdExcel", @LanguageUtilities.LangText("cmdExcel", frmCode), "ExportExcel();", "", "description")
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered font-13" id="tablePR">
+                        <tr>
+                            <th>@LanguageUtilities.LangText("thMaItem", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("thTenItem", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("thSoLuong", frmCode)</th>
+                            <th>@LanguageUtilities.LangText("thDVT", frmCode)</th>
+                        </tr>
+                        @foreach (var pr in servicePREB.ObjList)
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <b>@pr.CODE - @pr.REQUIRE_NAME</b>
+                                </td>
+                            </tr>
+
+                            foreach (var item in pr.ListDetail)
+                            {
+                                <tr>
+                                    <td>@item.MATERIAL_CODE</td>
+                                    <td>@item.Material.TEXT</td>
+                                    <td>@item.QUANTITY.ToStringVN()</td>
+                                    <td>@item.UNIT_CODE</td>
+                                </tr>
+                            }
+                        }
+
+                        @foreach (var pr in servicePRSAP.ObjList)
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <b>@pr.CODE - @pr.REQUIRE_NAME</b>
+                                </td>
+                            </tr>
+
+                            foreach (var item in pr.ListDetail)
+                            {
+                                <tr>
+                                    <td>@item.MATERIAL_CODE</td>
+                                    <td>@item.MATERIAL_NAME</td>
+                                    <td>@item.QUANTITY.ToStringVN()</td>
+                                    <td>@item.UNIT</td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function ExportExcel() {
+            var uri = 'data:application/vnd.ms-excel;base64,'
+             , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>'
+             , base64 = function (s) { return window.btoa(unescape(encodeURIComponent(s))) }
+             , format = function (s, c) { return s.replace(/{(\w+)}/g, function (m, p) { return c[p]; }) };
+            var table = $('#tablePR');
+            table.each(function () {
+                var ctx = { worksheet: "DataSource" || 'Worksheet', table: this.innerHTML };
+                window.location.href = uri + base64(format(template, ctx));
+                setTimeout(null, 2000);
+            });
+        }
+    </script>
+</div>
+

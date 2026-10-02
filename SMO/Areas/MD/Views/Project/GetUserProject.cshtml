@@ -1,0 +1,39 @@
+﻿@model SMO.Service.MD.ProjectService
+@{
+    var lstUser = Model.ObjUser;
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllUserProject" onclick="Forms.CheckAll('chkItemUserProject', '#chkAllUserProject')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllUserProject"></label>
+                </th>
+                <th>User Name</th>
+                <th>Tên</th>
+                <th>Chức danh</th>
+                <th>Đơn vị</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListUserProject)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemUserProject" name="chkItemUserProject" id="@("chkItemUserProject" + item.USER_NAME)" modelId="@item.USER_NAME" style="margin:0;" />
+                        <label for="@("chkItemUserProject" + item.USER_NAME)"></label>
+                    </td>
+                    <td>@item.USER_NAME</td>
+                    <td>@item.User.FULL_NAME</td>
+                    <td>@item.User.Title.NAME</td>
+                    <td>@item.User.Organize.NAME</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

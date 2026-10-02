@@ -1,0 +1,136 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@using SMO.Core.Entities
+@{
+    var number = 1;
+    var listBid = ViewBag.ListBid as List<T_EB_BID>;
+    var frmCode = "frm_EB_TopQuestion";
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+}
+
+@if (ProfileUtilities.User.IS_CHANGE_LANG)
+{
+    <div class="divLanguage">
+        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+    </div>
+}
+
+@foreach (var question in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+{
+    number = 1;
+
+    var bid = listBid.FirstOrDefault(x => x.PKID == question.BID_ID);
+
+    <div class="conversation">
+        <div class="question">
+            @if (question.TYPE == UserType.NhaThau)
+            {
+                <div class="user">@question.Contractor.TEN_NGAN ► CTD</div>
+            }
+            else
+            {
+                if (question.IS_ALL)
+                {
+                    <div class="user">CTD ► @LanguageUtilities.LangText("lblTatCa", "frm_EB_TopQuestion")</div>
+                }
+                else
+                {
+                    <div class="user">CTD ► @question.Contractor.TEN_NGAN</div>
+                }
+            }
+
+            <div class="time">
+                @question.CREATE_DATE.ToString()
+                @if (!question.IS_BID_CLOSE.Value)
+                {
+                    <span>(@LanguageUtilities.LangText("lblGDMoiThau", "frm_EB_TopQuestion"))</span>
+                }
+                else
+                {
+                    <span>(@LanguageUtilities.LangText("lblGDDongThau", "frm_EB_TopQuestion"))</span>
+                }
+                <div class="font-13">
+                    @if (lang == "vi")
+                    {
+                        <span>@bid.TEN_GOI_THAU</span>
+                    }
+                    else
+                    {
+                        <span>@bid.TEN_GOI_THAU_EN</span>
+                    }
+                </div>
+            </div>
+
+            <div class="content">
+                @Html.Raw(question.CONTENTS)
+            </div>
+            <div class="reply">
+                <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = bid.PKID, idMenu = "mnuTraoDoiNhaThau" }))">@LanguageUtilities.LangText("lblXemGoiThau", "frm_EB_TopQuestion")</a>
+            </div>
+            @if (question.ListFile.Count > 0)
+            {
+                <div class="file">
+                    @{Html.RenderPartial("ListFile", question.ListFile.Select(x => x.FileUpload).ToList());}
+                </div>
+            }
+
+        </div>
+
+        @if (question.ListAnswer.Count > 0)
+        {
+            if (!string.IsNullOrEmpty(Model.ObjDetail.CONTRACTOR_ID))
+            {
+                if (question.ListAnswer.Where(x => x.CONTRACTOR_ID == Model.ObjDetail.CONTRACTOR_ID).Count() == 0)
+                {
+                    continue;
+                }
+            }
+            <div class="answer">
+                @foreach (var answer in question.ListAnswer.OrderByDescending(x => x.CREATE_DATE))
+                {
+                    if (!string.IsNullOrEmpty(Model.ObjDetail.CONTRACTOR_ID) && answer.CONTRACTOR_ID != Model.ObjDetail.CONTRACTOR_ID)
+                    {
+                        continue;
+                    }
+
+                    if (question.TYPE == UserType.NhaThau)
+                    {
+                        <div class="user">CTD</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                    }
+                    else
+                    {
+                        <div class="user">@answer.Contractor.TEN_NGAN</div> <div class="time">@answer.CREATE_DATE.ToString()</div>
+                    }
+                    <div class="content">
+                        @Html.Raw(answer.CONTENTS)
+                    </div>
+
+                    if (answer.ListFile.Count > 0)
+                    {
+                        <div class="file">
+                            @{Html.RenderPartial("ListFile", answer.ListFile.Select(x => x.FileUpload).ToList());}
+                        </div>
+                    }
+
+                    if (number < question.ListAnswer.Count() && question.ListAnswer.Count() > 1)
+                    {
+                        <hr />
+                    }
+                    number++;
+                }
+            </div>
+        }
+    </div>
+    <hr />
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#divTopQuestion .body").slimScroll({
+            height: '400px'
+        });
+    })
+</script>

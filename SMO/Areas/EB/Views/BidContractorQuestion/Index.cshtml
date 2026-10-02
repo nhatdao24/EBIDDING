@@ -1,0 +1,117 @@
+﻿@model SMO.Service.EB.BidContractorQuestionService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    Model.ObjDetail.IS_BID_CLOSE = null;
+    var frmCode = "frm_BidContractorQuestion_Index";
+
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.BID_ID)
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-8">
+                @if (ProfileUtilities.User.IS_CHANGE_LANG)
+                {
+                    <div class="divLanguage">
+                        <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                    </div>
+                }
+                <div class="card border-grey">
+                    <div class="body">
+                        @Html.MyButton("cmdAddQuestion", @LanguageUtilities.LangText("cmdAddQuestion", frmCode), "AddQuestion();", "", "question_answer")
+                    </div>
+                </div>
+
+                <div id="divResult">
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-4">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle1", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content" style="padding-bottom: 0">
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, "", new { @id = "radioIsBidClose_All_" + Model.ViewId, @checked = true, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_All_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, false, new { @id = "radioIsBidClose_True_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_True_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDMoThau", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.IS_BID_CLOSE, true, new { @id = "radioIsBidClose_False_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioIsBidClose_False_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblGDDongThau", frmCode)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card m-t-10 border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content" style="padding-bottom: 0">
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, "", new { @id = "radioType_ALL_" + Model.ViewId, @checked = true, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioType_ALL_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblTatCa2", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, UserType.NhaThau, new { @id = "radioType_NT_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioType_NT_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblNhaThauHoi", frmCode)</label>
+                            </div>
+
+                            <div>
+                                @Html.RadioButtonFor(m => m.ObjDetail.TYPE, UserType.NB, new { @id = "radioType_FC_" + Model.ViewId, @onchange = "SubmitIndexContractorQuestion();", @class = "radio-col-blue-grey" })
+                                <label for="radioType_FC_@Model.ViewId" style="font-size: 13px;">@LanguageUtilities.LangText("lblFeconHoi", frmCode)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function AddAnswer(questionId) {
+            var params = {
+                url : "@Url.Action("CreateAnswer")",
+                data: { questionId: questionId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function AddQuestion() {
+            var bidId = '@Model.ObjDetail.BID_ID';
+            var contractorId = '@ProfileUtilities.User.CONTRACTOR_ID';
+            var params = {
+                url : "@Url.Action("CreateQuestion")",
+                data: { bidId: bidId, contractorId: contractorId }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function SubmitIndexContractorQuestion() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

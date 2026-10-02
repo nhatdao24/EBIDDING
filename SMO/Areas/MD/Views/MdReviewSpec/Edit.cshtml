@@ -1,0 +1,226 @@
+﻿@model SMO.Service.MD.MdReviewSpecService
+@using SMO.Core.Entities
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    var frmCode = "frm_MdReviewSpec_Edit";
+}
+
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PARENT_ID)
+        <div class="card border-grey">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <span class="page-header-icon" onclick="Forms.CloseRightContent();" style="float:right;">
+                    <i class="material-icons">arrow_forward</i>
+                </span>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">edit</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", LanguageUtilities.LangText("cmdSave", frmCode), "SubmitUpdateSpec();", "Alt+N", "done_all")
+                            @Html.MyButton("cmdDelete", LanguageUtilities.LangText("cmdDelete", frmCode), string.Format("DeleteSpec('{0}');", @Model.ObjHeader.PKID), "", "delete")
+                        </div>
+                    </div>
+
+                    <div>
+                        <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                            <li role="presentation" class="active"><a href="#tabThongTinChinh" data-toggle="tab">@LanguageUtilities.LangText("lblThongTinChinh", frmCode)</a></li>
+                            <li role="presentation"><a href="#tabThongTinChiTiet" data-toggle="tab">@LanguageUtilities.LangText("lblThangDiem", frmCode)</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade in active" id="tabThongTinChinh">
+                                <label>@LanguageUtilities.LangText("lblNAME", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjHeader.NAME, new { @data_bind = "value: ObjHeader.NAME" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblNAME_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjHeader.NAME_EN, new { @data_bind = "value: ObjHeader.NAME_EN" })
+                                    </div>
+                                </div>
+
+                                @*<label>@LanguageUtilities.LangText("lblROLE", frmCode)</label>
+                                    <div class="form-group">
+                                        <select name="@Html.NameFor(m => m.ObjHeader.VAI_TRO)" data-bind="value: ObjHeader.VAI_TRO" data-virtual-scroll="false" data-container="body" class="selectpicker show-tick form-control">
+                                            <option value="">Cả hai</option>
+                                            <option value="@VaiTroReview.BanDieuHanh">@VaiTroReview.GetText(VaiTroReview.BanDieuHanh)</option>
+                                            <option value="@VaiTroReview.CungUng">@VaiTroReview.GetText(VaiTroReview.CungUng)</option>
+                                        </select>
+                                    </div>*@
+
+                                @*<label>@LanguageUtilities.LangText("lblTYPE", frmCode)</label>
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetBidSpecType(), new { @class = "selectpicker show-tick dropdown", @data_bind = "value: ObjHeader.TYPE", @onchange = "OnChangeSpecType(this);" })
+                                    </div>*@
+
+                                <label>@LanguageUtilities.LangText("lblRATIO", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjHeader.RATIO, new { @data_bind = "value: ObjHeader.RATIO" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblMAX_SCORE", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjHeader.MAX_SCORE, new { @data_bind = "value: ObjHeader.MAX_SCORE" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="checkbox" id="chkIS_DEFAULT" style="margin:0;" class="filled-in" data-bind="checked: ObjHeader.IS_DEFAULT" />
+                                    <label for="chkIS_DEFAULT"></label> &nbsp;&nbsp;@LanguageUtilities.LangText("lblIS_DEFAULT", frmCode)
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblDESCRIPTION", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjHeader.DESCRIPTION, new { @data_bind = "value: ObjHeader.DESCRIPTION" })
+                                    </div>
+                                </div>
+
+                                <label>@LanguageUtilities.LangText("lblDESCRIPTION_EN", frmCode)</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextAreaFor(m => m.ObjHeader.DESCRIPTION_EN, new { @data_bind = "value: ObjHeader.DESCRIPTION_EN" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane fade" id="tabThongTinChiTiet">
+                                <div id="divDetailSpec">
+                                    <span class="waves-effect btn-outline-primary btn m-b-10" onclick="AddDetail();">
+                                        <span>Thêm</span>
+                                    </span>
+                                    <div style="border: 1px solid #e4e4e4; min-height: 200px" class="table-responsive">
+                                        <table class="table " style="margin-bottom:0px;">
+                                            <thead>
+                                                <tr>
+                                                    <th class="align-center">@LanguageUtilities.LangText("thGiaTri", frmCode)</th>
+                                                    <th width="100px" class="align-center">@LanguageUtilities.LangText("thDiem", frmCode)</th>
+                                                    <th width="10px" class="align-center">#</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody data-bind="template: { name: 'RowDetailSelectTemplate', foreach: ObjListDetail }"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/html" id="RowDetailSelectTemplate">
+        <tr>
+            <td>
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line" style="float:left; width: 42%; margin-right:2px;">
+                        <input type="text" data-bind="value: VALUE" class="form-control align-center" placeholder="Tiếng việt" />
+                    </div>
+
+                    <div class="form-line" style="float:left; width: 42%; margin-right:2px;">
+                        <input type="text" data-bind="value: VALUE_EN" class="form-control align-center" placeholder="Tiếng anh" />
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="form-line">
+                        <input type="text" data-bind="value: SCORE" class="form-control align-center" placeholder="Vd: 1-5" />
+                    </div>
+                </div>
+            </td>
+            <td>
+                <i class="material-icons col-red" onclick="RemoveDetail(this);" data-bind="attr: {order : C_ORDER}" style="cursor:pointer">remove_circle_outline</i>
+            </td>
+        </tr>
+    </script>
+
+    <script src="~/Scripts/PO/ko.model.ReviewSpec.js"></script>
+
+    <script type="text/javascript">
+        function DeleteSpec(specid){
+            if (confirm("Bạn có chắc chắn xóa tiêu chí này không?")) {
+                var ajaxParams = {
+                    url: '@Url.Action("Delete")',
+                    type: "POST",
+                    data: { id: specid },
+                    dataType : 'json',
+                    success: function (response) {
+                        if (response.State == true) {
+                            Forms.CloseRightContent();
+                        }
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+
+        function SubmitUpdateSpec() {
+            @*if (!$('#@Model.FormId').valid()) {
+                return false;
+            }*@
+
+            if (model.ObjHeader.RATIO() == 0) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Hệ số phải lớn hơn 0 !" } });
+                return;
+            }
+
+            if (model.ObjHeader.MAX_SCORE() == 0) {
+                Message.func.AlertDanger({ Message: { Code: "", Message: "Điểm tối đa phải lớn hơn 0 !" } });
+                return;
+            }
+
+            model.ViewId = '@Model.ViewId';
+            var ajaxParams = {
+                url: '@Url.Action("Update")',
+                type: 'POST',
+                dataType: 'JSON',
+                data: ko.toJS(model)
+            };
+            Forms.Ajax(ajaxParams);
+        };
+
+        var Header = ko.mapping.fromJS(@Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader, serializerSetting)));
+        var number = 1;
+        var model = new Model();
+        model.ObjHeader = Header;
+        var lstDetail = @Html.Raw(JsonConvert.SerializeObject(Model.ObjHeader.ListDetail.OrderBy(x => x.C_ORDER), serializerSetting));
+        $.each(lstDetail, function() {
+            model.ObjListDetail.push(new Detail(number, this.FROM_VALUE, this.TO_VALUE, this.VALUE, this.VALUE_EN, this.SCORE, this.PKID));
+            number = number + 1;
+        });
+
+        $(function () {
+            ko.applyBindings(model, document.getElementById('@Model.ViewId'));
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

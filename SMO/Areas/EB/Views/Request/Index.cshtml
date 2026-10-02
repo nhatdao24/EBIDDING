@@ -1,0 +1,108 @@
+﻿@model SMO.Service.EB.RequestService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_Request_Index";
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.SEARCH_IS_ONLY, new { @id = "hddSearchOnly" })
+        
+        <div class="card border-grey">
+            @if (ProfileUtilities.User.IS_CHANGE_LANG)
+            {
+                <div class="divLanguage">
+                    <i class="col-fecon material-icons" onclick="MaintainLanguageForm('@frmCode')" title="Chỉnh sửa ngôn ngữ">public</i>
+                </div>
+            }
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-b-10">
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.MA_SO_THUE, new { placeholder = LanguageUtilities.LangText("lblPlaceholder", frmCode), @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="page-search-advance m-b-20 row">
+                        <div class="col-md-4 col-xs-12">
+                            <label>@LanguageUtilities.LangText("lblTimTrangThai", frmCode)</label>
+                            <div class="input-group form-group">
+                                <select data-virtual-scroll="false" data-container="body" onchange="SubmitIndex();"
+                                        class="selectpicker show-tick dropdown form-control" name="@Html.NameFor(m => m.ObjDetail.STATUS)">
+                                    <option value=""></option>
+                                    <option value="@EB_Status.KhoiTao" selected>@LanguageUtilities.LangText("lblChuaXuLy", frmCode)</option>
+                                    <option value="@EB_Status.DaPheDuyet">@LanguageUtilities.LangText("lblDaXuLy", frmCode)</option>
+                                    <option value="@EB_Status.TuChoi">@LanguageUtilities.LangText("lblTuChoi", frmCode)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+    }
+
+    <script type="text/javascript">
+        function RejectRequest(requestId, tenNgan) {
+            if (!confirm("Bạn chắc chắn từ chối yêu cầu tạo tài khoản [" + tenNgan + "] không?")) {
+                return;
+            }
+            var comment = prompt("LÝ DO TỪ CHỐI:");
+            if (comment == undefined || comment == null || comment.trim() == "") {
+                alert("Hãy nhập lý do từ chối!");
+                return;
+            }
+            var ajaxParams = {
+                url: "@Url.Action("Reject")",
+                type: "POST",
+                data: { id: requestId, comment: comment },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                    SubmitIndex();
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function OnClickStatus(obj) {
+            $("#hddSearchOnly").val($(obj).is(":checked"));
+            SubmitIndex();
+        }
+
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            SubmitIndex();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

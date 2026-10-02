@@ -1,0 +1,443 @@
+﻿@model SMO.Service.EB.ReviewSpecCouncilService
+@using SMO.Repository.Common
+@using SMO.Repository.Implement.EB
+@using SMO.Core.Entities
+@using SMO.Service.EB
+@using SMO.Repository.Implement.MD
+@using Newtonsoft.Json
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var frmCode = "frm_ReviewSpecCouncil_Review";
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+    var lang = "vi";
+    if (ProfileUtilities.User != null)
+    {
+        lang = ProfileUtilities.User.LANGUAGE;
+    }
+    var numberRow = 0;
+    var numberSpec = 0;
+    decimal sumMax = Model.ObjReview.MAX_SCORE;
+    var lstUserScore = Model.ObjListReviewSpecScore.Select(x => x.USER_SCORE).Distinct().ToList();
+    var lstUser = Model.ObjReview.ListCouncil.ToList();
+}
+<div id='@Model.ViewId'>
+    <div class="card border-grey m-b-10">
+        <div>
+            <i class="material-icons col-fecon" onclick="$('#@Model.ViewId').toggleClass('full-screen')" style="float: right;margin-top: 20px; margin-right: 10px; cursor: pointer;" onclick="">zoom_out_map</i>
+        </div>
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle", frmCode)</a></li>
+            </ul>
+
+            <div class="tab-content row" style="padding-bottom: 0">
+                <div class="col-xs-12 col-sm-6" style="border-right: 1px solid #D7D7D7;">
+                    <div class="col-xs-12 col-sm-12">
+                        <label>@LanguageUtilities.LangText("lblNCC", frmCode)</label>
+                    </div>
+                    <div class="col-xs-12 col-sm-6">
+                        <input @(Model.ListContractorId.Count() == Model.ObjListReviewContractor.Count() ? "checked" : "") onclick="OnCheckAll(this);" type="checkbox" class="filled-in" name="chkALLContractor" id="chkALLContractor_@Model.ViewId" style="margin:0;" />
+                        <label for="chkALLContractor_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    @foreach (var item in Model.ObjListReviewContractor)
+                    {
+                        <div class="col-xs-12 col-sm-6">
+                            <input @(Model.ListContractorId.Contains(item.CONTRACTOR_ID) ? "checked" : "") onclick="OnChangeContractor(this);" type="checkbox" class="filled-in chkContractor" value="@item.CONTRACTOR_ID" id="chkItem_@Model.ViewId@item.CONTRACTOR_ID" style="margin:0;" />
+                            <label for="chkItem_@Model.ViewId@item.CONTRACTOR_ID"></label> &nbsp; &nbsp; @item.Contractor.TEN_NGAN
+                        </div>
+                    }
+                </div>
+                @if (Model.ObjReview.STATUS == Review_Status.KetThuc || (Model.ObjReview.STATUS != Review_Status.KetThuc && Model.ObjReview.CREATE_BY == ProfileUtilities.User.USER_NAME))
+                {
+                    <div class="col-xs-12 col-sm-6">
+                        <div class="col-xs-12 col-sm-12">
+                            <label>@LanguageUtilities.LangText("lblCouncil", frmCode)</label>
+                        </div>
+                        <div class="col-xs-12 col-sm-6">
+                            <input @(lstUserScore.Count == lstUser.Count ? "checked" : "") onclick="OnCheckAllCouncil(this);" type="checkbox" class="filled-in" name="chkALLCouncil" id="chkALLCouncil_@Model.ViewId" style="margin:0;" />
+                            <label for="chkALLCouncil_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                        </div>
+
+                        <div class="clearfix"></div>
+
+
+                        @foreach (var item in lstUser.Where(x => x.STATUS == Review_Status.KetThuc).ToList())
+                        {
+                            <div class="col-xs-12 col-sm-6">
+                                <input @(lstUserScore.Contains(item.USER_NAME) ? "checked" : "") onclick="OnChangeCouncil(this);" type="checkbox" class="filled-in chkCouncil" value="@item.USER_NAME" id="chkItem2_@Model.ViewId@item.USER_NAME" style="margin:0;" />
+                                <label for="chkItem2_@Model.ViewId@item.USER_NAME"></label> &nbsp; &nbsp; @item.USER_NAME @(item.STATUS == Review_Status.KetThuc?"(Đã kết thúc đánh giá)":"")
+                            </div>
+                        }
+                        @foreach (var item in lstUser.Where(x => x.STATUS != Review_Status.KetThuc).ToList())
+                        {
+                            <div class="col-xs-12 col-sm-6">
+                                <input type="checkbox" onclick="return false;" class="filled-in chkCouncil" value="@item.USER_NAME" id="chkItem2_@Model.ViewId@item.USER_NAME" style="margin:0;" />
+                                <label for="chkItem2_@Model.ViewId@item.USER_NAME"></label> &nbsp; &nbsp; @item.USER_NAME @(item.STATUS == Review_Status.KetThuc?"(Đã kết thúc đánh giá)":"(Chưa kết thúc đánh giá)")
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @*<div class="card border-grey m-b-10">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> @LanguageUtilities.LangText("lblTitle2", frmCode)</a></li>
+                </ul>
+
+                <div class="tab-content row" style="padding-bottom: 0">
+                    <div class="col-xs-12 col-sm-6">
+                        <input checked onclick="OnCheckAllCouncil(this);" type="checkbox" class="filled-in" name="chkALLCouncil" id="chkALLCouncil_@Model.ViewId" style="margin:0;" />
+                        <label for="chkALLCouncil_@Model.ViewId"></label> &nbsp; &nbsp; @LanguageUtilities.LangText("lblAll", frmCode)
+                    </div>
+
+                    <div class="clearfix"></div>
+
+
+                    @foreach (var item in Model.ObjListReviewCouncil)
+                    {
+                        <div class="col-xs-12 col-sm-6">
+                            <input @(lstUserScore.Contains(item.USER_NAME) ? "checked" : "") onclick="OnChangeCouncil(this);" type="checkbox" class="filled-in chkCouncil" value="@item.USER_NAME" id="chkItem2_@Model.ViewId@item.USER_NAME" style="margin:0;" />
+                            <label for="chkItem2_@Model.ViewId@item.USER_NAME"></label> &nbsp; &nbsp; @item.USER_NAME
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>*@
+
+    <div class="card border-grey m-b-10">
+        <div class="body">
+            @Html.MyButton("cmdExportExcel", LanguageUtilities.LangText("cmdExportExcel", frmCode), "ExportExcel();", " ", "cloud_download")
+            @Html.MyButton("cmdReport", "Xem báo cáo tổng hợp", "Report();", " ", "search")
+            @*<div style="float: right;">
+                    @Html.MyButton("cmdSave", "", "$('#" + Model.ViewId + "').toggleClass('full-screen')", " ", "zoom_out_map")
+                </div>*@
+        </div>
+    </div>
+
+    <div class="card border-grey m-b-10">
+        <div class="table-responsive font-14">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <td class="align-center" style="min-width: 50px;"><b>@LanguageUtilities.LangText("lblNhaCungCap", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblCongViecThucHien", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 100px;"><b>@LanguageUtilities.LangText("lblGiaTri", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 150px;"><b>@LanguageUtilities.LangText("lblChiTieuDanhGia", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 50px;"><b>@LanguageUtilities.LangText("lblHeSo", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 130px;"><b>@LanguageUtilities.LangText("lblDiemDanhGia", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 50px;"><b>@LanguageUtilities.LangText("lblTongDiem", frmCode)</b></td>
+                        <td class="align-center" style="min-width: 130px;"><b>@LanguageUtilities.LangText("lblGhiChu", frmCode)</b></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reviewContractor in Model.ObjListReviewContractor)
+                    {
+                        <tr class="clsContractor clsContractor_@reviewContractor.CONTRACTOR_ID">
+                            <td rowspan="@(reviewContractor.ListDetail.Count*Model.ObjListReviewSpec.Count+reviewContractor.ListDetail.Count + reviewContractor.ListDetail.Count*3 +1)">
+                                @reviewContractor.Contractor.TEN_NGAN
+                                @*<div>Xếp hạng: @reviewContractor.Contractor.XEP_HANG</div>*@
+                            </td>
+
+
+                        </tr>
+
+                        if (reviewContractor.ListDetail.Count > 0)
+                        {
+                            foreach (var detail in reviewContractor.ListDetail)
+                            {
+                                <tr class="clsContractor clsContractor_@reviewContractor.CONTRACTOR_ID">
+
+                                    <td class="align-center" rowspan="@(Model.ObjListReviewSpec.Count+4)">
+                                        <div>@detail.INFO_BID</div>
+                                        @if (!string.IsNullOrWhiteSpace(detail.INFO_BID_EBID))
+                                        {
+                                            foreach (var bidId in detail.INFO_BID_EBID.Split(','))
+                                            {
+                                                var find = UnitOfWork.Repository<BidRepo>().Get(bidId);
+                                                if (find != null)
+                                                {
+                                                    var action = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("MenuDetailBidManager", "Bid", new { id = find.PKID }));
+                                                    <div><a href="#" onclick="@action">@find.PKID</a></div>
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                    <td class="align-center" rowspan="@(Model.ObjListReviewSpec.Count+4)">
+                                        @detail.GIA_TRI.ToStringVN()
+                                    </td>
+
+                                </tr>
+                                @BuildSpec(Model.ObjListReviewSpec.Where(x => (x.PARENT_ID == "" || x.PARENT_ID == null)).OrderBy(x => x.C_ORDER).ToList(), string.Empty, Model, lang, detail.PKID, reviewContractor.CONTRACTOR_ID)
+                                <tr class="clsContractor clsContractor_@reviewContractor.CONTRACTOR_ID">
+                                    <td class="col-red">
+                                        @if (lang == "vi")
+                                        {
+                                            <b>Tổng điểm đạt được</b>
+                                        }
+                                        else
+                                        {
+                                            <b>Total score</b>
+                                        }
+                                    </td>
+                                    <td class="align-center col-red" id="medium_@detail.PKID">@Model.ObjListReviewSpec.Sum(x => x.RATIO)</td>
+                                    <td></td>
+                                    <td class="align-center col-red" id="total_@detail.PKID">
+                                        @detail.TOTAL_SCORE.ToStringVN()
+                                    </td>
+                                    <td class="align-center"></td>
+                                </tr>
+                                <tr class="clsContractor clsContractor_@reviewContractor.CONTRACTOR_ID">
+                                    <td class="col-red">
+                                        @if (lang == "vi")
+                                        {
+                                            <b>Điểm trung bình</b>
+                                        }
+                                        else
+                                        {
+                                            <b>Medium score</b>
+                                        }
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="align-center col-red" id="totalMedium_@detail.PKID">
+                                        @((detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)).ToStringVN())
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr class="clsContractor clsContractor_@reviewContractor.CONTRACTOR_ID">
+                                    <td class="col-red">
+                                        @if (lang == "vi")
+                                        {
+                                            <b>Xếp loại</b>
+                                        }
+                                        else
+                                        {
+                                            <b>Classification</b>
+                                        }
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="align-center col-red" id="rating_@detail.PKID">
+                                        @if (Model.ObjListRating.FirstOrDefault(m => m.FROM_VALUE <= (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) && (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) <= m.TO_VALUE) != null)
+                                        {
+                                            @Model.ObjListRating.FirstOrDefault(m => m.FROM_VALUE <= (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) && (detail.TOTAL_SCORE / Model.ObjListReviewSpec.Sum(x => x.RATIO)) <= m.TO_VALUE).RATING;
+                                        }
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#@Model.ViewId .clsContractor").hide();
+
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+        });
+        function OnCheckAll(obj) {
+            $('#@Model.ViewId .chkContractor:checkbox').prop('checked', $(obj).is(':checked'));
+            OnChangeContractor();
+        }
+
+        function OnChangeContractor(obj) {
+            if (obj != null && $(obj).is(':checked') == false) {
+                $('#chkALLContractor_@Model.ViewId').prop('checked', false);
+            }
+
+            $("#@Model.ViewId .clsContractor").hide();
+
+            var arr = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            if (arr.length == 0) {
+                return;
+                //$(".clsContractor").show();
+            }
+
+            $.each(arr, function (key, value) {
+                $("#@Model.ViewId .clsContractor_" + value).show();
+            });
+        }
+
+        function OnCheckAllCouncil(obj) {
+            $('#@Model.ViewId .chkCouncil:checkbox').prop('checked', $(obj).is(':checked'));
+            OnChangeCouncil();
+        }
+        function OnChangeCouncil(obj) {
+            if (obj != null && $(obj).is(':checked') == false) {
+                $('#chkALLCouncil_@Model.ViewId').prop('checked', false);
+            }
+
+            var arr = [];
+            $('#@Model.ViewId .chkCouncil:checkbox:checked').each(function () {
+                arr.push($(this).val());
+            });
+
+            var arrContractor = [];
+            $('#@Model.ViewId .chkContractor:checkbox:checked').each(function () {
+                arrContractor.push($(this).val());
+            });
+
+            var ajaxParams = {
+                url: "@Url.Action("Summary")",
+                data: { reviewId: '@ViewBag.ReviewId', viewId: '@ViewBag.ViewId', lstContractor: arrContractor.join("|"), lstCouncil: arr.join("|") },
+                htmlTarget: '#@ViewBag.ViewId #divContentDetail'
+            };
+            Forms.LoadAjax(ajaxParams);
+        }
+        function ExportExcel() {
+            var url = "@Url.Action("ExportExcelSumary")" + "?reviewId=@ViewBag.ReviewId";
+            window.open(url, '_blank');
+        }
+        function Report() {
+            var params = {
+                url : "@Url.Action("Report")",
+                data: { reviewId: '@ViewBag.ReviewId' }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjax(params);
+        }
+    </script>
+</div>
+
+@helper BuildSpec(List<T_EB_REVIEW_SPEC> ListSpec, string numberParent, ReviewSpecCouncilService service, string lang, string detailId, string contractorId)
+{
+    int number = 0;
+    int number2 = 0;
+    decimal score = 0;
+    foreach (var spec in ListSpec)
+    {
+        var findSpecCouncil = Model.ObjListReviewSpecScore.Where(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detailId).OrderBy(x => x.USER_SCORE).ToList();
+        if (Model.ObjReview.STATUS != Review_Status.KetThuc && Model.ObjListReviewSpecScore.Count(x => x.SPEC_ID == spec.PKID && x.REVIEW_CONTRACTOR_DETAIL_ID == detailId && x.USER_SCORE == ProfileUtilities.User.USER_NAME) > 0)
+        {
+            findSpecCouncil = findSpecCouncil.Where(x => x.USER_SCORE == ProfileUtilities.User.USER_NAME).ToList();
+        }
+        decimal value = 0;
+        var newId = Guid.NewGuid().ToString();
+        if (findSpecCouncil.Count > 0)
+        {
+            //value = (findSpecCouncil.Sum(x => x.SCORE) / findSpecCouncil.Count) * ((decimal)spec.RATIO) / 100;
+            value = ((decimal)findSpecCouncil.Sum(x => x.SCORE) / (decimal)findSpecCouncil.Count);
+        }
+        number++;
+        <tr class="clsContractor clsContractor_@contractorId">
+            <td colspan="@((Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) > 0)?5:0)">
+                @if (lang == "vi")
+                {
+                    if (Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) == 0)
+                    {
+                        <span>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString()). @spec.NAME</span>
+                    }
+                    else
+                    {
+                        <b>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString()). @spec.NAME</b>
+                    }
+                    if (Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) == 0)
+                    {
+                        <div>
+                            <a onclick="$('#divThangDiem_@spec.PKID').toggle();" style="cursor: pointer" class="col-blue-grey">@LanguageUtilities.LangText("lblThangDiem", "frm_BidSpec_CouncilScore")</a>
+                        </div>
+                        <div id="divThangDiem_@spec.PKID" style="display: none;" class="m-t-10">
+                            <table class="table table-bordered table-striped">
+                                <tbody>
+                                    @foreach (var detail in spec.ListDetail.OrderBy(x => x.C_ORDER))
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (lang == "vi")
+                                                {
+                                                    <div>@detail.VALUE</div>
+                                                }
+                                                else
+                                                {
+                                                    <div>@detail.VALUE_EN</div>
+                                                }
+                                            </td>
+                                            <td class="align-center">@detail.SCORE</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                }
+                else
+                {
+                    if (Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) == 0)
+                    {
+                        <span>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString()). @spec.NAME_EN</span>
+                    }
+                    else
+                    {
+                        <b>@(string.IsNullOrEmpty(numberParent) ? number.ToString() : numberParent + "." + number.ToString()). @spec.NAME_EN</b>
+                    }
+                }
+            </td>
+            @if (Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) == 0)
+            {
+                score = value * spec.RATIO;
+                <td class="align-center">
+                    @spec.RATIO.ToStringVN()
+                </td>
+                <td class="align-center" style="min-width: 50px">
+                    <a href="#">@value.ToStringVN()</a>
+                    <div id="div_@newId">
+                        @foreach (var item in findSpecCouncil)
+                        {
+                            <div class="col-red">@item.USER_SCORE : @item.SCORE</div>
+                        }
+                    </div>
+                </td>
+                <td class="align-center total_spec_@detailId" id="totalSpec_@(detailId)_@spec.PKID">
+                    @score.ToStringVN()
+                </td>
+                <td>
+                    <div>
+                        @foreach (var item in findSpecCouncil)
+                        {
+                            if (!string.IsNullOrEmpty(item.NOTES))
+                            {
+                                <div class="col-red">@item.USER_SCORE : @item.NOTES</div>
+                            }
+                        }
+                    </div>
+                </td>
+            }
+        </tr>
+
+
+        if (Model.ObjListReviewSpec.Count(x => x.PARENT_ID == spec.PKID) > 0)
+        {
+            <div class="p-l-30">
+                @BuildSpec(Model.ObjListReviewSpec.Where(x => x.PARENT_ID == spec.PKID).OrderBy(x => x.C_ORDER).ToList(), number.ToString(), service, lang, detailId, contractorId)
+            </div>
+        }
+    }
+}

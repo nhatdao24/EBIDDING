@@ -1,0 +1,130 @@
+﻿@model SMO.Service.ReportService
+@using SMO.Service
+@using SMO.Repository.Implement.EB
+@using SMO.Repository.Implement.MD
+@using SMO.Repository.Common
+@using SMO.Core.Entities
+@{
+    IUnitOfWork UnitOfWork = new NHUnitOfWork();
+
+    var queryReview = UnitOfWork.Repository<ReviewFinalRepo>().Queryable();
+    var queryReviewContractor = UnitOfWork.Repository<ReviewFinalContractorRepo>().Queryable();
+    var queryReviewUser = UnitOfWork.Repository<ReviewFinalUserRepo>().Queryable();
+    var queryContractor = UnitOfWork.Repository<ContractorRepo>().Queryable();
+
+    var isQueryContractor = false;
+    var isQueryReview = false;
+    if (!string.IsNullOrEmpty(Model.MaNhaThau))
+    {
+        queryContractor = queryContractor.Where(
+            x => x.MA_SO_THUE.Contains(Model.MaNhaThau) ||
+            x.TEN_DAI.Contains(Model.MaNhaThau) ||
+            x.TEN_NGAN.Contains(Model.MaNhaThau) ||
+            x.EMAIL.Contains(Model.MaNhaThau)
+            );
+        isQueryContractor = true;
+    }
+    if (!string.IsNullOrEmpty(Model.XepHang))
+    {
+        queryReviewContractor = queryReviewContractor.Where(x => x.RATE == Model.XepHang);
+        //var lstContractorId = queryReviewContractor.Select(x => x.CONTRACTOR_ID).ToList();
+        //queryContractor = queryContractor.Where(x => lstContractorId.Contains(x.PKID));
+        //isQueryContractor = true;
+    }
+    if (Model.NgayPheDuyet_TuNgay.HasValue)
+    {
+        queryReview = queryReview.Where(x => x.APPROVE_DATE.Value.Date >= Model.NgayPheDuyet_TuNgay.Value.Date);
+        isQueryReview = true;
+    }
+
+    if (Model.NgayPheDuyet_DenNgay.HasValue)
+    {
+        queryReview = queryReview.Where(x => x.APPROVE_DATE.Value.Date <= Model.NgayPheDuyet_DenNgay.Value.Date);
+        isQueryReview = true;
+    }
+
+    if (isQueryContractor)
+    {
+        var lstContractorId = queryContractor.Select(x => x.PKID).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstContractorId.Contains(x.CONTRACTOR_ID));
+    }
+
+    if (isQueryReview)
+    {
+        var lstReviewId = queryReview.Select(x => x.CODE).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstReviewId.Contains(x.REVIEW_ID));
+        queryReviewUser = queryReviewUser.Where(x => lstReviewId.Contains(x.REVIEW_ID));
+    }
+    else
+    {
+        var lstAllReview = queryReview.ToList();
+        var lstReviewId = lstAllReview.Select(x => x.CODE).ToList();
+        queryReviewContractor = queryReviewContractor.Where(x => lstReviewId.Contains(x.REVIEW_ID));
+        queryReviewUser = queryReviewUser.Where(x => lstReviewId.Contains(x.REVIEW_ID));
+    }
+
+    var lstReviewContractor = queryReviewContractor.OrderBy(x => x.CONTRACTOR_ID).ToList();
+    var lstReview = queryReview.ToList();
+    var lstReviewUser = queryReviewUser.ToList();
+    var stt = 0;
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="align-center">STT</th>
+                <th class="align-center" style="min-width: 100px;">Mã số đợt xếp hạng</th>
+                <th class="align-center" style="min-width: 200px;">Tên đợt xếp hạng</th>
+                <th class="align-center" style="min-width: 200px;">Tên nhà thầu</th>
+                <th class="align-center" style="min-width: 50px;">Kết quả xếp hạng</th>
+                <th class="align-center" style="min-width: 150px;">Ngày phê duyệt xếp hạng</th>
+                <th class="align-center" style="min-width: 100px;">Người phê duyệt xếp hạng</th>
+                <th class="align-center" style="min-width: 100px;">Người lập</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lstReviewContractor.OrderByDescending(x => x.ReviewFinal.CREATE_DATE).ToList())
+            {
+                stt++;
+                var review = lstReview.FirstOrDefault(x => x.CODE == item.REVIEW_ID);
+                var lstUserApprove = lstReviewUser.Where(x => x.REVIEW_ID == item.REVIEW_ID).ToList();
+                //var lstContractorActiveArea = lstActiveArea.Where(x => item.ACTIVE_AREA.Contains(x.CODE)).ToList();
+                var url = Url.Action("Detail", "ReviewFinal", new { area = "EB" });
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.REVIEW_ID + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                <tr>
+                    <td class="align-center">@stt</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.REVIEW_ID</a>
+                    </td>
+                    <td class="align-center" ondblclick="@vdbclickAction">
+                        @review.DESCRIPTION
+                    </td>
+                    <td class="align-center">
+                        @item.Contractor.TEN_NGAN
+                    </td>
+                    <td class="align-center">
+                        @item.RATE
+                    </td>
+                    <td class="align-center">
+                        <div>@(review.APPROVE_DATE.HasValue? review.APPROVE_DATE.Value.ToString(Global.DateToStringFormat):"")</div>
+                    </td>
+                    <td class="align-center">
+                        @foreach (var user in lstUserApprove)
+                        {
+                            <div>- @user.User.FULL_NAME</div>
+                        }
+                    </td>
+                    <td class="align-center">
+                        @review.UserCreate.FULL_NAME
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

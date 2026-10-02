@@ -1,0 +1,51 @@
+﻿@model SMO.Service.EB.BidRequireService
+@{
+    var frmCode = "frm_BidRequire_AddUser";
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("thUserName", frmCode)</th>
+                <th>@LanguageUtilities.LangText("thHoTen", frmCode)</th>
+                <th>Chức danh</th>
+                <th>@LanguageUtilities.LangText("thDonVi", frmCode)</th>
+                <th width="50px;">@LanguageUtilities.LangText("thChonUser", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListSearchUser)
+            {
+                <tr>
+                    <td>@item.USER_NAME</td>
+                    <td>@item.FULL_NAME</td>
+                    <td>@(item.Title.NAME ?? "Chưa có thông tin chức danh")</td>
+                    <td>
+                        @if (item.Organize != null && !string.IsNullOrEmpty(item.Organize.NAME))
+                        {
+                            @item.Organize.NAME
+                        }
+                    </td>
+                    <td class="align-center">
+                        <i class="material-icons col-fecon" id="ic_@item.USER_NAME" onclick="@($"AddUser('{item.USER_NAME}',1,'false');"); $(this).html('check')" style="cursor:pointer">add_circle_outline</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    $(function () {
+        debugger;
+        $.each(model.ObjListUser(), function () {
+            $("#ic_" + this.USER_NAME()).attr("onclick", "");
+            $("#ic_" + this.USER_NAME()).html("check");
+        });
+
+        Forms.CompleteUI();
+    });
+</script>
+

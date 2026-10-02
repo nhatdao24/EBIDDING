@@ -1,0 +1,103 @@
+﻿@model SMO.Service.EB.BidService
+
+@{ 
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+<div class="page-heading">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h1>DANH SÁCH GÓI THẦU</h1>
+            </div>
+            <div class="col-md-6">
+                <ul class="bread-crumb">
+                    <li>
+                        <a title="HOME" href="/">
+                            Trang chủ
+                        </a>
+                    </li>
+                    <li class="separator">
+                        &#47;
+                    </li>
+                    <li>
+                        <a title="HOME" href="/GoiThau">
+                            Gói thầu
+                        </a>
+                    </li>
+                    <li class="separator">
+                        &#47;
+                    </li>
+                    <li>
+                        Chi tiết
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="blog-section">
+    <div class="container">
+
+        <div class="col-md-9">
+            <div class="blog-posts">
+                <div class="blog-post single-post">
+                    <div class="post-content">
+                        <h3>@Model.ObjDetail.ListNew.FirstOrDefault().TIEU_DE</h3>
+                        <img src="@Model.ObjDetail.ListNew.FirstOrDefault().IMAGE_PATH" style="width: 100%">
+                        <p>
+                            <strong>Loại gói thầu</strong>:&nbsp;&nbsp; @Model.ObjDetail.TYPE<br>
+                            <strong>Ngày mở thầu</strong>:&nbsp;&nbsp; @(Model.ObjDetail.NGAY_MO_THAU.HasValue ? Model.ObjDetail.NGAY_MO_THAU.Value.ToString(Global.DateToStringFormat) : "")<br>
+                            <strong>Ngày đóng thầu</strong>:&nbsp;&nbsp; @(Model.ObjDetail.NGAY_DONG_THAU.HasValue ? Model.ObjDetail.NGAY_DONG_THAU.Value.ToString(Global.DateToStringFormat) : "")<br>
+                        </p>
+                        <p>
+                            @Html.Raw(Model.ObjDetail.ListNew.FirstOrDefault().BAI_VIET)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="col-md-3">
+            <div class="sidebar">
+                <div class="widget services-post">
+                    <div class="widget-title">
+                        <h4>DANH SÁCH FILE HỒ SƠ</h4>
+                    </div>
+                    <ul>
+                        <li>
+                            <a href="#" class="button-brochures">
+                                <i class="icomoon-icon-file-pdf"></i>
+                                Chỉ dẫn nhà thầu.doc
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="button-brochures">
+                                <i class="icomoon-icon-file-pdf"></i>
+                                Bảng dữ liệu.doc
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="button-brochures">
+                                <i class="icomoon-icon-file-pdf"></i>
+                                Tiêu chuẩn đánh giá.doc
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="button-brochures">
+                                <i class="icomoon-icon-file-pdf"></i>
+                                Yêu cầu kỹ thuật.doc
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>*@
+    </div>
+</section>
+
+<script type="text/javascript">
+    $(function () {
+        $(".mnu-goithau").addClass('active');
+    });
+</script>

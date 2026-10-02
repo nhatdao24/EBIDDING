@@ -1,0 +1,194 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout_Portal.cshtml";
+}
+
+@{
+    var lang = "vi";
+    if (Request.Cookies["lang"] != null)
+    {
+        lang = Request.Cookies["lang"].Value;
+    }
+
+    if (lang != "vi" && lang != "en")
+    {
+        lang = "vi";
+    }
+}
+
+<style>
+    b {
+        font-weight: 700;
+    }
+</style>
+
+<div class="top_heading  _out">
+    <div class="top_site_main " style="color: rgb(255, 255, 255); background-image: url('/Content/Images/gioi-thieu-fecon.jpg'); padding-top: 140px;">
+        <span class="overlay-top-header" style="background: rgba(0,0,0,0.5); box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);"></span>
+    </div>
+    <div class="breadcrumbs-wrapper">
+        <div class="container">
+            @if (lang == "vi")
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>TRANG CHỦ</span></a></li>
+                    <li itemprop="itemListElement"><span>CHÍNH SÁCH BẢO MẬT THÔNG TIN</span></li>
+                </ul>
+            }
+            else
+            {
+                <ul itemprop="breadcrumb" itemscope="" id="breadcrumbs" class="breadcrumbs">
+                    <li itemprop="itemListElement"><a href="https://coteccons.vn/"><span>HOME</span></a></li>
+                    <li itemprop="itemListElement"><span>PRIVACY</span></li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+<div class="container site-content sidebar-right" style="transform: none;">
+    <div class="text-center">
+        <h4>CHÍNH SÁCH BẢO MẬT THÔNG TIN</h4>
+    </div>
+        <p>Chính sách bảo mật này quy định về việc thu thập, lưu trữ, sử dụng và chia sẻ thông tin cá nhân của người dùng trên Website VietinBank EBIDDING (sau đây gọi là “Website”). Chúng tôi cam kết bảo vệ dữ liệu cá nhân của người dùng theo quy định pháp luật hiện hành tại Việt Nam, bao gồm Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.</p>
+
+    <p>
+    <p><b>Điều 1. Phạm vi thu thập thông tin </b></p>
+    <p>Chúng tôi chỉ thu thập và sử dụng thông tin cá nhân khi có sự đồng ý của người dùng, phù hợp với phạm vi và mục đích đã được công bố trong chính sách này.</p>
+    <p><b>1.1 Thông tin do người dùng cung cấp: </b></p>
+    <ul style="margin-left: 35px">
+        <li>
+            <p><b>Khi tạo Tài khoản:</b> Người dùng cung cấp các thông tin bao gồm nhưng không giới hạn tên Công ty, mã số thuế, loại hình doanh nghiệp, quốc gia, tên người đại diện, số lượng nhân viên, vốn điều lệ, địa chỉ, lĩnh vực hoạt động, địa chỉ trang web, địa chỉ email, số điện thoại, doanh thu 03 năm gần nhất, khu vực hoạt động, lĩnh vực chính.</p>
+            <p>Tài khoản và mật khẩu của người dùng sẽ được chúng tôi cung cấp thông qua việc thông báo vào email đăng ký của người dùng. </p>
+        </li>
+        <li>
+            <p><b>Thông tin bổ sung sau khi đăng nhập:</b> Người dùng cung cấp thêm các thông tin gồm: logo Công ty, thông tin liên lạc, thị trường kinh doanh, trụ sở văn phòng, dự án đã tham gia, thông tin tài chính, và hàng hóa dịch vụ đang cung cấp.</p>
+        </li>
+    </ul>
+
+    <p><b>1.2. Những thông tin Chúng tôi thu thập trong quá trình sử dụng</b></p>
+    <p>Trong quá trình người dùng đăng nhập/sử dụng các dịch vụ/tiện ích trên Website, chúng tôi thu thập những thông tin mà người dùng điền, tạo, tải lên hoặc nhận được từ những người khác, bao gồm nhưng không giới hạn như:</p>
+    <ul style="margin-left: 35px">
+        <li>Các cụm từ người dùng tìm kiếm;</li>
+        <li>Các nội dung người dùng xem;</li>
+        <li>Những người đã liên lạc hoặc chia sẻ nội dung;</li>
+        <li>Thông tin xác nhận tham gia gói thầu;</li>
+        <li>Thông tin, nội dung, câu hỏi, câu trả lời, các tệp, file đính kèm mà người dùng tải lên/trao đổi với chúng tôi;</li>
+        <li>Thông tin chào thầu và Hồ sơ thầu dưới dạng thông tin hoặc file đính kèm.</li>
+        <li>Các thông tin khác những thông tin mà người dùng tạo, tải lên hoặc nhận được từ những người khác khi người dùng hoạt động trên Website.</li>
+    </ul>
+
+    <p><b>1.3. Sự đồng ý</b></p>
+    <p>Việc cung cấp các thông tin nêu trên là hoàn toàn tự nguyện. Người dùng có thể rút lại sự đồng ý hoặc yêu cầu ngừng thu thập, lưu trữ dữ liệu cá nhân bất kỳ lúc nào thông qua yêu cầu gửi tới Bộ phận Hỗ trợ Khách hàng của chúng tôi.</p>
+
+    <p><b>Điều 2: Mục đích thu thập thông tin</b></p>
+    <p>Thông tin thu thập được sử dụng nhằm các mục đích đã được người dùng đồng ý, cụ thể gồm:</p>
+    <ul style="margin-left: 35px">
+        <li>Đánh giá, chấm thầu và lựa chọn nhà thầu phù hợp;</li>
+        <li>Gửi cho người dùng/công ty/nhà thầu những thông tin cần thiết về các gói thầu và các thông tin liên quan;</li>
+        <li>Thông báo, liên lạc, trao đổi với người dùng/công ty/nhà thầu;</li>
+        <li>Cung cấp, duy trì, cải thiện, phát triển các nội dung mới cần thiết, hữu ích trên Website của chúng tôi, để phục vụ tốt hơn, thuận tiện hơn cho người dùng cũng như những cá nhân/tổ chức khác, ví dụ như xử lý những cụm từ người dùng tìm kiếm để trả về kết quả chính xác hơn, khắc phục các sự cố mà người dùng báo cáo cho chúng tôi;</li>
+        <li>Ngăn ngừa các hoạt động phá hủy hoặc giả mạo tài khoản của người dùng/công ty/nhà thầu;</li>
+        <li>Cung cấp thông tin theo quy định pháp luật hoặc theo yêu cầu của cơ quan nhà nước có thẩm quyền;</li>
+        <li>Mục đích khác nếu được sự đồng ý của người dùng.</li>
+    </ul>
+
+    <p><b>Điều 3: Chia sẻ thông tin với bên thứ ba</b></p>
+    <p>Chúng tôi không chia sẻ thông tin thu thập được với các cá nhân, tổ chức bên ngoài, trừ các trường hợp sau đây:</p>
+    <ul style="margin-left: 35px">
+        <li>Có sự đồng ý của người dùng;</li>
+        <li>Theo yêu cầu của cơ quan nhà nước có thẩm quyền;</li>
+        <li>Theo quy định pháp luật.</li>
+    </ul>
+
+    <p><b>Điều 4: Lưu trữ và Bảo vệ thông tin</b></p>
+    <p><b>4.1. Thời gian lưu trữ.</b></p>
+    <p>Hầu hết các thông tin được thu thập sẽ được lưu trữ tại cơ sở dữ liệu của chúng tôi. Máy chủ lưu trữ được đặt tại Việt Nam. Thời gian lưu trữ dữ liệu cá nhân tuân theo các quy định của pháp luật về bảo vệ bí mật thông tin cá nhân và/hoặc các điều luật hiện hành khác. Chúng tôi lưu trữ dữ liệu cá nhân của người dùng cho đến khi hoàn thành các mục đích thu thập, hoặc không còn cần thiết, không còn phục vụ mục đích thu thập dữ liệu, hoặc theo yêu cầu hủy hoặc xóa thông tin từ người dùng, dữ liệu sẽ được xóa hoặc ẩn danh.</p>
+    <p><b>4.2. Biện pháp bảo vệ thông tin.</b></p>
+    <p>Chúng tôi liên tục bảo vệ các thông tin thu thập được bằng các hình thức như: mật khẩu, tường lửa, mã hóa, duyệt web an toàn, cùng các hình thức thích hợp khác và chỉ cấp phép việc truy cập và xử lý dữ liệu cho các đối tượng phù hợp. Đồng thời, chúng tôi cũng có đội ngũ chuyên gia thường xuyên túc trực để kiểm soát những rủi ro có thể xảy ra với những thông tin thu thập được. Nếu phát hiện thấy điều gì đó có khả năng gây rủi ro mà chúng tôi cho là người dùng nên biết, chúng tôi sẽ thông báo cho người dùng và hướng dẫn người dùng thực hiện các bước để được bảo vệ tốt hơn.</p>
+    <p>Mật khẩu của người dùng được lưu trữ và bảo vệ bằng phương pháp mã hoá trong cơ sở dữ liệu của hệ thống. Để bảo mật, chúng tôi khuyên người dùng không nên dùng lại mật khẩu này trên các Website khác, và cất giữ nó cẩn thận. Trong mọi trường hợp, người dùng không nên cung cấp thông tin mật khẩu cho bất kỳ người nào dù là người của chúng tôi trừ khi người dùng hiểu rõ các rủi ro khi để lộ mật khẩu. Nếu quên mật khẩu, người dùng có thể liên lạc với chúng tôi để được hướng dẫn cách thức lấy lại.</p>
+
+    <p><b>Điều 5: Quyền của người dùng đối với thông tin cá nhân</b></p>
+    <p><b>5.1.</b> Quyền được biết, truy cập và yêu cầu chỉnh sửa dữ liệu cá nhân của mình: Người dùng có quyền tự kiểm tra, cập nhật, điều chỉnh hoặc xóa thông tin của mình bằng cách đăng nhập vào tài khoản và chỉnh sửa thông tin của mình hoặc đề nghị chúng tôi hỗ trợ.</p>
+    <p><b>5.2.</b> Quyền rút lại sự đồng ý: Người dùng có quyền rút lại sự đồng ý về việc thu thập và sử dụng thông tin cá nhân. Việc rút lại sự đồng ý có thể ảnh hưởng đến khả năng cung cấp dịch vụ của chúng tôi.</p>
+    <p><b>5.3.</b> Quyền yêu cầu xóa dữ liệu cá nhân khi không còn cần thiết cho mục đích thu thập.</p>
+    <p><b>5.4.</b> Quyền hạn chế xử lý dữ liệu cá nhân trong một số trường hợp nhất định.</p>
+    <p><b>5.5.</b> Quyền phản đối việc xử lý dữ liệu cá nhân vì lý do chính đáng.</p>
+    <p><b>5.6.</b> Quyền khiếu nại, tố cáo và khởi kiện về việc xử lý dữ liệu cá nhân không đúng quy định.</p>
+
+    <p><b>Điều 6: Trách nhiệm của chúng tôi </b></p>
+    <p>Chúng tôi cam kết bảo vệ dữ liệu cá nhân của người dùng bằng các biện pháp kỹ thuật và tổ chức phù hợp, đảm bảo rằng dữ liệu cá nhân không bị truy cập, sử dụng, tiết lộ, thay đổi hoặc phá hủy trái phép. Chúng tôi cũng sẽ thông báo cho người dùng về bất kỳ vi phạm bảo mật nào có thể ảnh hưởng đến dữ liệu cá nhân của người dùng.</p>
+
+    <p><b>Điều 7: Thay đổi, cập nhật chính sách bảo mật</b></p>
+    <p>Chính sách bảo mật này có thể được cập nhật nhằm phản ánh các thay đổi về pháp luật hoặc dịch vụ của chúng tôi. Chúng tôi sẽ đăng bất kỳ thay đổi, cập nhật nào đối với Chính sách Bảo mật trên Website này. Việc tiếp tục sử dụng Website sau khi có thay đổi đồng nghĩa với việc người dùng chấp nhận các thay đổi này.</p>
+    @*<p><i>- Những thông tin bạn tạo và/hoặc cung cấp cho chúng tôi </i></p>
+        <p>Khi tạo một Tài khoản trên trang CTD E-BIDDING (sau đây gọi là “Website”), bạn cung cấp cho chúng tôi các thông tin chính sau: </p>
+        <p>* Tên Công ty, mã số thuế, loại hình doanh nghiệp, quốc gia, tên người đại diện, số lượng nhân viên, vốn điều lệ, địa chỉ, lĩnh vực hoạt động, địa chỉ trang web, địa chỉ email, số điện thoại. </p>
+        <p>
+            Tài khoản và mật khẩu của bạn sẽ được Chúng tôi cung cấp thông qua việc thông báo vào mail mà bạn đã cung cấp. Sau khi đăng nhập tài khoản thành công, bạn cung cấp cho Chúng tôi thêm các thông tin, hình ảnh, file/tài liệu sau:
+        </p>
+        <p>* Logo Công ty, Thông tin liên lạc, Thị trường kinh doanh, Trụ sở văn phòng, Dự án đã tham gia, Thông tin tài chính và hàng hóa dịch vụ đang cung cấp.  </p>
+        <p>
+            Để tránh hiểu sai, những thông tin chúng tôi thu thập bao gồm cả những thông tin, hình ảnh, file/tài liệu mà bạn cung cấp khi đăng ký tài khoản và cả những thông tin, hình ảnh, file/tài liệu mà bạn cập nhật, sửa đổi, bổ sung trong quá trình hoạt động.
+        </p>
+        <p>
+            <i>- Những thông tin chúng tôi thu thập trong quá trình bạn đăng nhập/hoạt động trên Website </i>
+        </p>
+        <p>
+            Trong quá trình bạn đăng nhập/sử dụng các dịch vụ/tiện ích trên Website, chúng tôi cũng có thể thu thập những thông tin mà bạn điền, tạo, tải lên hoặc nhận được từ những người khác, bao gồm nhưng không giới hạn như:
+        </p>
+        <p>* Các cụm từ mà bạn tìm kiếm; </p>
+        <p>* Các nội dung mà bạn xem; </p>
+        <p>* Những người mà bạn liên lạc hoặc chia sẻ nội dung; </p>
+        <p>* Thông tin xác nhận tham gia gói thầu; </p>
+        <p>* Thông tin, nội dung, câu hỏi, câu trả lời, các tệp, file đính kèm mà bạn tải lên/trao đổi với CTD; </p>
+        <p>* Thông tin chào thầu; </p>
+        <p>* Hồ sơ thầu dưới dạng thông tin hoặc file đính kèm; </p>
+        <p>Ngoài ra, Chúng tôi cũng thu thập những thông tin mà bạn tạo, tải lên hoặc nhận được từ những người khác khi bạn hoạt động trên Website. </p>
+        <p><i>- Những thông tin mà chúng tôi lưu trữ cùng với Tài khoản của bạn. </i></p>*@
+    </p>
+
+    @*<p>
+        <p><b>Điều 2: Mục đích thu thập thông tin   </b></p>
+        <p>Thông tin Chúng tôi thu thập được từ bạn, được sử dụng nhằm các mục đích sau: </p>
+        <p>* Đánh giá, chấm thầu và lựa chọn nhà thầu phù hợp; </p>
+        <p>* Gửi cho bạn/công ty/nhà thầu những thông tin cần thiết về các gói thầu và các thông tin liên quan; </p>
+        <p>* Thông báo, liên lạc, trao đổi với bạn/công ty/nhà thầu; </p>
+        <p>* Cung cấp, duy trì, cải thiện, phát triển các nội dung mới cần thiết, hữu ích trên Website của Chúng tôi, để phục vụ tốt hơn, thuận tiện hơn cho bạn cũng như những cá nhân/tổ chức khác, ví dụ như xử lý những cụm từ bạn tìm kiếm để trả về kết quả chính xác hơn, khắc phục các sự cố mà bạn báo cáo cho Chúng tôi; </p>
+        <p>* Ngăn ngừa các hoạt động phá hủy hoặc giả mạo tài khoản của bạn/công ty/nhà thầu; </p>
+        <p>* Cung cấp thông tin theo quy định pháp luật hoặc theo yêu cầu của cơ quan nhà nước có thẩm quyền; </p>
+        <p>* Mục đích khác nếu được sự đồng ý của bạn. </p>
+        </p>
+
+        <p>
+        <p><b>Điều 3: Chia sẻ thông tin với bên thứ ba </b></p>
+        <p>Chúng tôi không chia sẻ thông tin thu thập được với các cá nhân, công ty, tổ chức bên ngoài CTD và các đơn vị thành viên, trừ các trường hợp sau đây: </p>
+        <p>* Có sự đồng ý của bạn; </p>
+        <p>* Theo yêu cầu của cơ quan nhà nước có thẩm quyền; </p>
+        <p>* Theo quy định pháp luật. </p>
+        </p>
+
+        <p>
+        <p><b>Điều 4: Lưu trữ và Bảo vệ thông tin  </b></p>
+        <p>
+            Hầu hết các thông tin được thu thập sẽ được lưu trữ tại cơ sở dữ liệu của chúng tôi. Máy chủ lưu trữ được đặt tại Việt NamThời gian lưu trữ dữ liệu cá nhân tuân theo các quy định của pháp luật về bảo vệ bí mật thông tin cá nhân và/hoặc các điều luật hiện hành khác. Có nghĩa là, chúng tôi sẽ hủy hoặc xóa thông tin nhận dạng ra khỏi dữ liệu cá nhân của bạn khi chúng tôi có lý do hợp lý để xác định rằng (i) việc lưu giữ dữ liệu cá nhân đó không còn phục vụ mục đích thu thập dữ liệu cá nhân đó nữa; (ii) việc lưu giữ không còn cần thiết cho bất kỳ mục đích hợp pháp hay mục đích kinh doanh nào và (iii) không còn các lợi ích hợp pháp nào khác để tiếp tục lưu giữ các dữ liệu cá nhân này.
+        </p>
+        <p>
+            Chúng tôi liên tục bảo vệ các thông tin thu thập được bằng các hình thức như: mật khẩu, tường lửa, mã hóa, duyệt web an toàn, cùng các hình thức thích hợp khác và chỉ cấp phép việc truy cập và xử lý dữ liệu cho các đối tượng phù hợp. Đồng thời chúng tôi cũng có đội ngũ chuyên gia thường xuyên túc trực để kiểm soát những rủi ro có thể xảy ra với những thông tin thu thập được. Nếu phát hiện thấy điều gì đó có khả năng gây rủi ro mà chúng tôi cho là bạn nên biết, chúng tôi sẽ thông báo cho bạn và hướng dẫn bạn thực hiện các bước để được bảo vệ tốt hơn.
+        </p>
+        <p>
+            Mật khẩu của bạn được lưu trữ và bảo vệ bằng phương pháp mã hoá trong cơ sở dữ liệu của hệ thống, vì thế nó rất an toàn. Tuy nhiên, chúng tôi khuyên bạn không nên dùng lại mật khẩu này trên các Website khác. Mật khẩu của bạn là cách duy nhất để bạn đăng nhập vào tài khoản thành viên của mình trong Website này, vì thế hãy cất giữ nó cẩn thận. Trong mọi trường hợp bạn không nên cung cấp thông tin mật khẩu cho bất kỳ người nào dù là người của chúng tôi trừ khi bạn hiểu  rõ các rủi ro khi để lộ mật khẩu. Nếu quên mật khẩu, bạn có thể liên lạc với Chúng tôi theo thông tin trên Website để được hướng dẫn cách thức lấy lại mật khẩu.
+        </p>
+        </p>
+
+        <p>
+        <p><b>Điều 5: Chỉnh sửa và xóa thông tin    </b></p>
+        <p>Bạn có quyền tự kiểm tra, cập nhật, điều chỉnh hoặc xóa thông tin của mình bằng cách đăng nhập vào tài khoản và chỉnh sửa thông tin của mình hoặc đề nghị chúng tôi thực hiện việc này. </p>
+        <p>Chúng tôi sẽ không chỉnh sửa hoặc xóa các thông tin của bạn, trừ trường hợp thuộc một trong các trường hợp sau: (i) sự đồng ý từ bạn; (ii) hết thời gian lưu trữ; (iii) theo yêu cầu của cơ quan nhà nước có thẩm quyền; (iv) Website ngừng hoạt động hoặc không còn tồn tại; (v) theo quy định pháp luật. </p>
+        </p>
+
+        <p>
+        <p><b>Điều 6: Thay đổi, cập nhật chính sách bảo mật    </b></p>
+        <p>
+            Chính sách Bảo mật này có thể thay đổi theo thời gian. Chúng tôi sẽ đăng bất kỳ thay đổi, cập nhật nào đối với Chính sách Bảo mật trên Website này.
+        </p>
+        </p>*@
+</div>

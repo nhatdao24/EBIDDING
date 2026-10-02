@@ -1,0 +1,74 @@
+﻿@model SMO.Service.PR.PRSAPService
+@{ 
+    var frmCode = "frm_PRSAP_Index";
+}
+
+<div class="table-responsive">
+    <img src="/Content/IconFileType/excel-48.png" alt="" class="export-excel-table" onclick="ExportTableToExcel(this)" />
+    <table class="table table-condensed table-bordered table-striped" style="font-size: 13px;">
+        <thead>
+            <tr>
+                <th class="align-center">@LanguageUtilities.LangText("lblMaPR", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblTenPR", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblMatHang", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblDonVi", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblBoPhan", frmCode)</th>
+                <th>@LanguageUtilities.LangText("lblNguoiDeNghi", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblNgayYeuCau", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblThoiHan", frmCode)</th>
+                <th class="align-center">@LanguageUtilities.LangText("lblYeuCauThau", frmCode)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", new { id = item.CODE }));
+                <tr>
+                    
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.REQUIRE_NAME</td>
+                    <td ondblclick="@vdbclickAction" style="word-wrap: normal;">
+                        @foreach (var detail in item.ListDetail)
+                        {
+                            <div>@detail.MATERIAL_NAME - @detail.QUANTITY.ToStringVN() @detail.UNIT</div>
+                        }
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.COMPANY_NAME
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.DEPARTMENT_NAME
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        @item.REQUIRE_USER
+                    </td>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @(item.REQUIRE_DATE.HasValue ? item.REQUIRE_DATE.Value.ToString("dd/MM/yyyy") : "")
+                    </td>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        @(item.DESTINATION_DATE.HasValue ? item.DESTINATION_DATE.Value.ToString("dd/MM/yyyy") : "")
+                    </td>
+                    <td class="align-center">
+                        @foreach (var bidRequire in item.ListBidRequirePR)
+                        {
+                            <div>
+                                <a href="#" onclick="@string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", "BidRequire", new {@area = "EB", id = bidRequire.HEADER_CODE }))">
+                                    @bidRequire.HEADER_CODE
+                                </a>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+   
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>
